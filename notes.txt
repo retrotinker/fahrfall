@@ -1,0 +1,201 @@
+cycle budget
+------------
+cycles per frame				~14914
+cycles per frame w/ hi-speed during vsync	~18834
+
+cycles during vblank				~3920
+cycles during vblank w/ hi-speed		~7840
+
+estimated costs:
+
+	sprite + score draw	~3000
+	sidescroll effect	~4000
+	audio playback		~2000
+	audio generation	~4500
+	game logic		~750
+	-------------------	------
+	Total			~14250
+
+kernel flow
+-----------
+
+frame:
+
+	while more "display active" work
+
+		do some work (less than 1 HSYNC period)
+
+		sync
+
+		decrement line count
+
+		if line count is zero, reset and play next audio sample
+
+	while !VSYNC
+
+		sync
+
+		decrement line count
+
+		if line count is zero, reset and play next audio sample
+
+	/* VBLANK period begins */
+
+	turn-on hi-speed
+
+	while more VBLANK work
+
+		do some work (less than 1 hi-speed HSYNC period)
+
+		sync
+
+		decrement line count
+
+		if line count is zero, reset and play next audio sample
+
+	turn-off hi-speed
+
+	while more lines in current frame
+
+		sync
+
+		decrement line count
+
+		if line count is zero, reset and play next audio sample
+
+	/* VBLANK period ends */
+
+	next frame
+
+features
+--------
+different platform designs
+
+variable platform density
+
+variable platform distribution
+
+variable platform speed
+
+bonus items
+
+power-up items
+
+extra lives?
+
+feedback "flash" screens (e.g. "WOW!")
+
+intro / splash screen ("To sleep, perchance to dream...")
+
+hi-score screen?
+
+attract mode?
+
+interstitial screens?
+	
+audio
+-----
+(this needs to be rethought for performance...)
+
+525 lines for two frames?  or only 524?
+
+Assume "lines per sample" = 15?
+
+105 * 5 = 525 => 105 audio samples for every two frames
+
+Assume "max frequency" = (105 * 60 / 2) / 2 = 1575 Hz
+	- in reality, only C4 and _lower_ is practical
+
+for 105/2 samples per frame,
+	calculate 53 samples on even frames, 52 samples on odd
+
+dual audio read/write buffers swapped every 2 frames
+
+input sample values are signed 6-bit (unsigned may be alright)
+	- sum of 4 samples automatically averaged and converted for DAC!
+	- above sum still needs conversion to unsigned for DAC
+	- could use signed 7-bit values and 2 samples for same effect...
+
+notes are described by...
+	- tone duration
+	- wave step
+
+audio channel status data:
+	- wave count (position)
+	- envelope
+	- envelope multiplier (shift value?)
+	- envelope duration
+	- envelope step delay
+	- envelope step
+	- wave form? (could just use square wave...)
+
+Assume wave table size is 128?
+
+music note wave step calculation:
+
+	calculate wave step using following formula
+
+		note frequency * wave table size
+		--------------------------------
+		       max frequency * 2
+
+(for square wave, just calculate frequency ratio...)
+
+silence (i.e. rest) has wave step of 0
+	- wave table offset 0 should have 0 as value?
+	- may need to preload wave count to avoid constant 0 for some steps...?
+
+need music compiler to convert notes into data table!
+
+envelope described by table of step delay counts and shift values
+	- fixed size?  16 bytes?  maybe less?
+	- A, D, and R periods should range from ~50ms to ~2s (or less)
+	- S period is indefinite length
+	- How to determine start of R?
+
+audio write buffer fill:
+
+	for each channel
+
+		decrement tone duration
+
+		if zero then select next note
+			# describe note selection
+
+		add wave step to wave count and mask for wave table size
+
+		use wave count as index to pick sample from wave table
+
+		decrement envelope duration
+
+		if zero reset envelope step
+
+			clear envelope step
+
+			clear envelope step delay count
+
+			reset envelope duration
+				- use envelope multiplier
+
+		decrement envelope step delay
+
+		if zero then advance envelope step
+
+			increment envelope step
+
+			load new envelope step delay
+				- use envelope multiplier
+
+		use envelope step count as index to pick shift value
+
+		apply shift value to channel sample
+
+	compute output sample (add channel samples together)
+
+	convert sample to unsigned value (add #$80...is this necessary?)
+
+	store sample at current write buffer fill position
+
+audio playback:
+
+	(see kernel flow)
