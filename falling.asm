@@ -10,10 +10,12 @@ SCNLINS	equ	96
 SCNQRTR	equ	SCNWIDE*SCNLINS/4
 SCNHALF	equ	SCNQRTR*2
 
+SCORLEN	equ	6
+
 BBLACK	equ	$80
 WBLACK	equ	$8080
 
-SSCLRIN	equ	$b5		Initial value for side scroll effect
+SSCLRIN	equ	$b5		Initial value for side-scroll effect
 
 	org	LOAD
 
@@ -28,7 +30,7 @@ CLSLOOP	std	,x++
 
 	clr	>FRAMCNT	Initialize frame sequence counter
 
-	lda	#SSCLRIN	 Seed the side-scroll color data
+	lda	#SSCLRIN	Seed the side-scroll color data
 	sta	>SCRDATO
 	sta	>SCRDATM
 	sta	>SCRDATI
@@ -50,7 +52,7 @@ VSYNC	lda	$ff03		Wait for Vsync
 	eora    #$0f
 	sta	>SCRDATO	Store current outer scroll top color data
 
-	ldx	#SCNBASE
+	ldx	#(SCNBASE+6*SCNWIDE)
 SCRLOOP	std	,x
 	std	(SCNWIDE-2),x
 	tfr     a,b		Advance outer scroll color data
@@ -67,14 +69,12 @@ SCRLOOP	std	,x
 
 	* Move the player
 
-	* Draw the score
-
 * Must get here before end of Vblank (~7840 cycles from VSYNC)
 	clr	$ffd8		Lo-speed during display
 
 * "Display active" work goes here
 
-	lda	>FRAMCNT	Paint half of the middle side scrolls
+	lda	>FRAMCNT	Paint half of the middle side-scrolls
 	anda	#$01
 	bne	SCRMID2
 
@@ -87,6 +87,7 @@ SCRMID1	lda	>SCRDATM	Retrieve last middle scroll top color data
 	sta	>SCRDATM	Store current middle scroll top color data
 
 	ldx	#SCNBASE	Paint the 1st half of the middle side-scroll
+	ldx	#(SCNBASE+6*SCNWIDE)
 	ldd	#(SCNBASE+SCNHALF)
 	pshs	d
 	jsr	>SCRMID
@@ -99,7 +100,7 @@ SCRMID2	ldx	#(SCNBASE+SCNHALF)	Paint the 2nd half...
 	jsr	>SCRMID
 	leas	2,s
 
-SCRMIDX	lda	>FRAMCNT	Paint a quarter of the inner side scrolls
+SCRMIDX	lda	>FRAMCNT	Paint a quarter of the inner side-scrolls
 	lsla
 	ldy	#SCRINRB
 	jmp	a,y
@@ -118,6 +119,7 @@ SCRINR1	lda	>SCRDATI	Retrieve last inner scroll top color data
 	sta	>SCRDATI	Store current inner scroll top color data
 
 	ldx	#SCNBASE	Paint the 1st quarter of the inner side-scroll
+	ldx	#(SCNBASE+6*SCNWIDE)
 	ldd	#(SCNBASE+SCNQRTR)
 	bra	SCRINRJ
 
@@ -144,6 +146,17 @@ SCRINRX	lda	>FRAMCNT
 	anda	#$03
 	sta	>FRAMCNT
 
+	* Draw the score (Is this worth doing every frame?)
+	ldx	#HISCORE
+	ldy	#SCNBASE
+	lda	#SCORLEN
+	jsr	>DRWSTR
+
+	ldx	#CURSCOR
+	ldy	#(SCNBASE+SCNWIDE-SCORLEN)
+	lda	#SCORLEN
+	jsr	>DRWSTR
+
 * Check for user break (development only)
 CHKUART	lda	$ff69		Check for serial port activity
 	bita	#$08
@@ -154,7 +167,7 @@ CHKUART	lda	$ff69		Check for serial port activity
 * End of main game loop
 VLOOP	jmp	VSYNC
 
-* Paint the middle side scrolls
+* Paint the middle side-scrolls
 SCRMID	lda	>SCRCURM
 SCRMDLP	tfr     a,b		No ldd above, B gets clobbered anyway
 	adda    #$30
@@ -168,7 +181,7 @@ SCRMDLP	tfr     a,b		No ldd above, B gets clobbered anyway
 	sta	>SCRCURM
 	rts
 
-* Paint the inner side scrolls
+* Paint the inner side-scrolls
 SCRINR	lda	>SCRCURI
 SCRINLP	tfr     a,b		No ldd above, B gets clobbered anyway
 	adda    #$30
@@ -182,6 +195,29 @@ SCRINLP	tfr     a,b		No ldd above, B gets clobbered anyway
 	sta	>SCRCURI
 	rts
 
+* Draw a normal text string on the SG12 display
+* 	X points to the source
+*	Y points to the dest
+*	A holds the length of the string
+*	B gets clobbered
+*	Do not pass-in a zero length!
+
+DRWSTR	ldb	,x
+	stb	,y
+	stb	SCNWIDE,y
+	stb	2*SCNWIDE,y
+	stb	3*SCNWIDE,y
+	stb	4*SCNWIDE,y
+	stb	5*SCNWIDE,y
+
+	deca			More characters?
+	beq	DRWSTRX
+	leax	1,x
+	leay	1,y
+	bra	DRWSTR
+
+DRWSTRX	rts
+
 * Data storage goes here for now, may need a different org later...
 FRAMCNT	rmb	1
 
@@ -190,5 +226,8 @@ SCRDATM	rmb	1
 SCRDATI	rmb	1
 SCRCURM	rmb	1
 SCRCURI	rmb	1
+
+CURSCOR	fcb	$70,$70,$70,$70,$70,$70
+HISCORE	fcb	$30,$30,$30,$30,$30,$30
 
 	end	INIT
