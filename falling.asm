@@ -11,6 +11,8 @@ SCNQRTR	equ	SCNWIDE*SCNLINS/4
 SCNHALF	equ	SCNQRTR*2
 
 SCORLEN	equ	6
+SPIKLEN	equ	20
+SPIKHGT	equ	6
 
 BBLACK	equ	$80
 WBLACK	equ	$8080
@@ -34,6 +36,8 @@ CLSLOOP	std	,x++
 	sta	>SCRDATO
 	sta	>SCRDATM
 	sta	>SCRDATI
+
+	jsr	>DRWSPKS	Draw the spikes at the top center of the screen
 
 * Main game loop is from here to VLOOP
 VSYNC	lda	$ff03		Wait for Vsync
@@ -65,9 +69,9 @@ SCRLOOP	std	,x
 	std	,x
 	std	(SCNWIDE-2),x
 
-	* Move the platforms
+	* Draw the platforms
 
-	* Move the player
+	* Draw the player
 
 * Must get here before end of Vblank (~7840 cycles from VSYNC)
 	clr	$ffd8		Lo-speed during display
@@ -146,6 +150,12 @@ SCRINRX	lda	>FRAMCNT
 	anda	#$03
 	sta	>FRAMCNT
 
+	* Read the controls
+
+	* Compute movement
+
+	* Compute score
+
 	* Draw the score (Is this worth doing every frame?)
 	ldx	#HISCORE
 	ldy	#SCNBASE
@@ -167,7 +177,12 @@ CHKUART	lda	$ff69		Check for serial port activity
 * End of main game loop
 VLOOP	jmp	VSYNC
 
+*
 * Paint the middle side-scrolls
+*	X points at the start of the side-scroll bar section
+*	2,S points at end of the side-scroll bar section
+*	A,B get clobbered
+*
 SCRMID	lda	>SCRCURM
 SCRMDLP	tfr     a,b		No ldd above, B gets clobbered anyway
 	adda    #$30
@@ -181,7 +196,12 @@ SCRMDLP	tfr     a,b		No ldd above, B gets clobbered anyway
 	sta	>SCRCURM
 	rts
 
+*
 * Paint the inner side-scrolls
+*	X points at the start of the side-scroll bar section
+*	2,S points at end of the side-scroll bar section
+*	A,B get clobbered
+*
 SCRINR	lda	>SCRCURI
 SCRINLP	tfr     a,b		No ldd above, B gets clobbered anyway
 	adda    #$30
@@ -195,13 +215,14 @@ SCRINLP	tfr     a,b		No ldd above, B gets clobbered anyway
 	sta	>SCRCURI
 	rts
 
+*
 * Draw a normal text string on the SG12 display
 * 	X points to the source
 *	Y points to the dest
 *	A holds the length of the string
 *	B gets clobbered
 *	Do not pass-in a zero length!
-
+*
 DRWSTR	ldb	,x
 	stb	,y
 	stb	SCNWIDE,y
@@ -217,6 +238,41 @@ DRWSTR	ldb	,x
 	bra	DRWSTR
 
 DRWSTRX	rts
+
+*
+* Draw the spikes in the top center of the screen
+*	X,Y,A,B get clobbered
+*
+DRWSPKS	ldx	#(SPIKES-1)		A offset will always be >= 1
+	ldy	#(SCNBASE+SCORLEN-1)
+	lda	#SPIKHGT
+	pshs	a
+	lda	#SPIKLEN
+DRWSPLP	ldb	a,x
+	stb	a,y
+	deca
+	bne	DRWSPLP
+	leax	SPIKLEN,x
+	leay	SCNWIDE,y
+	dec	,s
+	beq	DRWSPKX
+	lda	#SPIKLEN
+	bra	DRWSPLP
+DRWSPKX	leas	1,s
+	rts
+
+SPIKES	fcb	$ff,$bf,$bf,$ff,$bf,$bf,$bf,$bf,$ff,$bf
+	fcb	$bf,$ff,$bf,$bf,$bf,$bf,$bf,$ff,$bf,$ff
+	fcb	$bf,$bf,$ff,$bf,$bf,$bf,$ff,$bf,$bf,$bf
+	fcb	$ff,$bf,$bf,$bf,$ff,$bf,$bf,$bf,$ff,$bf
+	fcb	$f5,$bf,$ba,$ff,$ba,$bf,$fa,$bf,$ba,$ff
+	fcb	$bf,$b5,$ff,$b5,$bf,$f5,$bf,$b5,$ff,$fa
+	fcb	$b5,$ff,$ba,$ff,$ba,$ff,$ba,$ff,$ba,$ff
+	fcb	$bf,$f5,$bf,$f5,$bf,$f5,$bf,$f5,$bf,$fa
+	fcb	$f0,$f5,$b0,$f5,$f0,$b5,$f0,$f5,$b0,$f5
+	fcb	$fa,$b0,$fa,$f0,$ba,$f0,$fa,$b0,$fa,$f0
+	fcb	$f0,$f5,$f0,$f5,$f0,$f5,$f0,$f5,$f0,$f5
+	fcb	$fa,$f0,$fa,$f0,$fa,$f0,$fa,$f0,$fa,$f0
 
 * Data storage goes here for now, may need a different org later...
 FRAMCNT	rmb	1
