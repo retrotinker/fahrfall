@@ -34,7 +34,7 @@ BBLACK	equ	$80		Single byte color code for black
 WBLACK	equ	$8080		Double byte color code for black
 
 BSCLRIN	equ	$b5		Initial value for bg-scroll effect
-FLMXRIN	equ	$40
+FLMXRIN	equ	$40		Initial XOR value for flame effect
 
 	org	DATA
 
@@ -69,20 +69,20 @@ CLSLOOP	std	,x++
 	cmpx	#(SCNBASE+SCNSIZE)
 	bne	CLSLOOP
 
-	ldx	#CURSCOR
-	lda	#(SCORLEN-1)
-	ldb	#$70
-INCSCLP	stb	a,x
-	deca
-	bne	INCSCLP
-	stb	a,x
-
-	ldx	#HISCORE
+	ldx	#HISCORE	Initialize high score
 	lda	#(SCORLEN-1)
 	ldb	#$30
 INHSCLP	stb	a,x
 	deca
 	bne	INHSCLP
+	stb	a,x
+
+	ldx	#CURSCOR	Initialize current score
+	lda	#(SCORLEN-1)
+	ldb	#$70
+INCSCLP	stb	a,x
+	deca
+	bne	INCSCLP
 	stb	a,x
 
 	clr	FRAMCNT		Initialize frame sequence counter
@@ -136,6 +136,8 @@ VSYNC	lda	$ff03		Wait for Vsync
 
 	* Compute movement
 
+	* Detect collisions
+
 	* Compute score
 
 	lda	FRAMCNT		Bump the frame counter
@@ -163,6 +165,7 @@ VLOOP	jmp	VSYNC
 
 *
 * Paint the bg-scroll effects
+*	X,Y,A,B get clobbered
 *
 SCRLPNT	lda	FRAMCNT
 	bita	#$01
@@ -330,7 +333,7 @@ SCRMILP	std	9,x
 	lda	FRAMCNT		Compute the branch
 	anda	#$0f
 	cmpa	#$08
-	bge	SCRIBT2
+	bge	SCRIBR2
 	lsla
 	ldy	#SCRINBT
 	jmp	a,y
@@ -384,12 +387,12 @@ SCRIN7	ldx	#(SCNBASE+SCN7SXT)	Paint 8th 16th...
 	ldy	#(SCNBASE+SCNHALF)
 	bra	SCRINCM
 
-SCRIBT2	ldy	#SCRINT2
+SCRIBR2	ldy	#SCRIBT2
 	anda	#$07
 	lsla
 	jmp	a,y
 
-SCRINT2	bra	SCRIN8
+SCRIBT2	bra	SCRIN8
 	bra	SCRIN9
 	bra	SCRINA
 	bra	SCRINB
