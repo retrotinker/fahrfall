@@ -88,6 +88,7 @@ INHSCLP	stb	a,x
 	sta	SCRTCOT
 	sta	SCRTCMO
 	sta	SCRTCMI
+	sta	SCRTCIN
 
 	lda	#FLMXRIN	Seed the flame effect data
 	sta	FLAMXOR
