@@ -6,14 +6,29 @@ LOAD	equ	$1c00		Actual load address for binary
 
 SCNBASE	equ	$0400		Base address for screen memory
 SCNSIZE	equ	$0c00		Size of screen memory
-SCNWIDE	equ	32		Width of screen in bytes
+SCNWIDT	equ	32		Width of screen in bytes
 SCNLINS	equ	96		Height of screen in lines
-SCNQRTR	equ	SCNWIDE*SCNLINS/4
+SCNQRTR	equ	SCNWIDT*SCNLINS/4
 SCNHALF	equ	SCNQRTR*2
+SCN3QTR	equ	SCNHALF+SCNQRTR
+SCNEIGT	equ	SCNWIDT*SCNLINS/8
+SCN3EGT	equ	SCNQRTR+SCNEIGT
+SCN5EGT	equ	SCNHALF+SCNEIGT
+SCN7EGT	equ	SCN3QTR+SCNEIGT
+SCNSIXT	equ	SCNWIDT*SCNLINS/16
+SCN3SXT	equ	SCNEIGT+SCNSIXT
+SCN5SXT	equ	SCNQRTR+SCNSIXT
+SCN7SXT	equ	SCN3EGT+SCNSIXT
+SCN9SXT	equ	SCNHALF+SCNSIXT
+SCNBSXT	equ	SCN5EGT+SCNSIXT
+SCNDSXT	equ	SCN3QTR+SCNSIXT
+SCNFSXT	equ	SCN7EGT+SCNSIXT
 
-SCORLEN	equ	6		Number of digits in score display
-SPIKLEN	equ	20		Width of spikes in bytes
-SPIKHGT	equ	6		Height of spikes in lines
+SCORLEN	equ	8		Number of digits in score display
+
+SPIKLEN	equ	SCNWIDT-SCORLEN*2	Width of spikes in bytes
+SPIKHGT	equ	6			Height of spikes in lines
+SPIKSIZ	equ	SPIKHGT*SCNWIDT 	Size of spike/score area
 
 BBLACK	equ	$80		Single byte color code for black
 WBLACK	equ	$8080		Double byte color code for black
@@ -25,11 +40,14 @@ SSCLRIN	equ	$b5		Initial value for side-scroll effect
 
 FRAMCNT	rmb	1		Rolling frame sequence counter
 
-SCRDATO	rmb	1		Color data for side-scroll effect
-SCRDATM	rmb	1			"
-SCRDATI	rmb	1			"
-SCRCURM	rmb	1			"
-SCRCURI	rmb	1			"
+SCRTCOT	rmb	1		Color data for side-scroll effect
+SCRTCMO	rmb	1			"
+SCRTCMI	rmb	1			"
+SCRTCIN	rmb	1			"
+SCRCCOT	rmb	1			"
+SCRCCMO	rmb	1			"
+SCRCCMI	rmb	1			"
+SCRCCIN	rmb	1			"
 
 CURSCOR	rmb	SCORLEN		Display storage for current score
 HISCORE	rmb	SCORLEN		Display storage for high score
@@ -64,9 +82,9 @@ INHSCLP	stb	a,x
 	clr	FRAMCNT		Initialize frame sequence counter
 
 	lda	#SSCLRIN	Seed the side-scroll color data
-	sta	SCRDATO
-	sta	SCRDATM
-	sta	SCRDATI
+	sta	SCRTCOT
+	sta	SCRTCMO
+	sta	SCRTCMI
 
 	jsr	>DRWSPKS	Draw the spikes at the top center of the screen
 
@@ -92,7 +110,7 @@ VSYNC	lda	$ff03		Wait for Vsync
 	jsr	>DRWSTR
 
 	ldx	#CURSCOR
-	ldy	#(SCNBASE+SCNWIDE-SCORLEN)
+	ldy	#(SCNBASE+SCNWIDT-SCORLEN)
 	lda	#SCORLEN
 	jsr	>DRWSTR
 
@@ -109,7 +127,7 @@ VSYNC	lda	$ff03		Wait for Vsync
 
 	lda	FRAMCNT		Bump the frame counter
 	inca
-	anda	#$03
+	anda	#$0f
 	sta	FRAMCNT
 
 * Check for user break (development only)
@@ -123,136 +141,293 @@ CHKUART	lda	$ff69		Check for serial port activity
 VLOOP	jmp	VSYNC
 
 *
-* Paint the middle side-scrolls
-*	X points at the start of the side-scroll bar section
-*	2,S points at end of the side-scroll bar section
-*	A,B get clobbered
-*
-SCRMID	lda	SCRCURM
-SCRMDLP	tfr     a,b		No ldd above, B gets clobbered anyway
-	adda    #$30
-	ora     #$80
-	eora    #$0f
-	std	2,x
-	std	(SCNWIDE-4),x
-	leax	SCNWIDE,x
-	cmpx	2,s
-	bne	SCRMDLP
-	sta	SCRCURM
-	rts
-
-*
-* Paint the inner side-scrolls
-*	X points at the start of the side-scroll bar section
-*	2,S points at end of the side-scroll bar section
-*	A,B get clobbered
-*
-SCRINR	lda	SCRCURI
-SCRINLP	tfr     a,b		No ldd above, B gets clobbered anyway
-	adda    #$30
-	ora     #$80
-	eora    #$0f
-	std	4,x
-	std	(SCNWIDE-6),x
-	leax	SCNWIDE,x
-	cmpx	2,s
-	bne	SCRINLP
-	sta	SCRCURI
-	rts
-
-*
 * Paint the side-scroll effects
 *
 SCRLPNT	lda	FRAMCNT
+	bita	#$01
+	bne	SCROUT1
 
-	lda	SCRDATO		Retrieve last outer scroll top color data
-	tfr     a,b
+	lda	SCRTCOT		Retrieve last outer scroll top color data
+	tfr     a,b		Advance the color data
 	adda    #$30
 	ora     #$80
 	eora    #$0f
-	sta	SCRDATO		Store current outer scroll top color data
+	sta	SCRTCOT		Store current outer scroll top color data
+	ldx	#SCNBASE
+	ldy	#(SCNBASE+SCNHALF)
+	pshs	y
 
-	ldx	#(SCNBASE+6*SCNWIDE)
-SCRLOOP	std	,x
-	std	(SCNWIDE-2),x
-	tfr     a,b		Advance outer scroll color data
+	bra	SCROTLP
+
+SCROUT1	lda	SCRCCOT		Retrieve last outer scroll current color data
+	tfr     a,b		Recreate B half of the color data
+	subb    #$30
+	orb     #$80
+	eorb    #$0f
+	ldx	#(SCNBASE+SCNHALF)
+	ldy	#(SCNBASE+SCNSIZE)
+	pshs	y
+
+SCROTLP	std	,x
+	std	(SCNWIDT-2),x
+	tfr     a,b		Advance the color data
 	adda    #$30
 	ora     #$80
 	eora    #$0f
-	leax	SCNWIDE,x
-	cmpx	#(SCNBASE+SCNSIZE-SCNWIDE)
-	bne	SCRLOOP
-	std	,x
-	std	(SCNWIDE-2),x
-
-	lda	FRAMCNT		Paint half of the middle side-scrolls
-	anda	#$01
-	bne	SCRMID2
-
-SCRMID1	lda	SCRDATM		Retrieve last middle scroll top color data
-	sta	SCRCURM		Store current middle scroll starting color data
-	tfr     a,b
-	adda    #$30
-	ora     #$80
-	eora    #$0f
-	sta	SCRDATM		Store current middle scroll top color data
-
-	ldx	#SCNBASE	Paint the 1st half of the middle side-scroll
-	ldx	#(SCNBASE+6*SCNWIDE)
-	ldd	#(SCNBASE+SCNHALF)
-	pshs	d
-	jsr	>SCRMID
+	leax	SCNWIDT,x
+	cmpx	,s
+	blt	SCROTLP
 	leas	2,s
-	bra	SCRMIDX
+	sta	SCRCCOT
 
-SCRMID2	ldx	#(SCNBASE+SCNHALF)	Paint the 2nd half...
-	ldd	#(SCNBASE+SCNSIZE)
-	pshs	d
-	jsr	>SCRMID
-	leas	2,s
-
-SCRMIDX	lda	FRAMCNT		Paint a quarter of the inner side-scrolls
+	lda	FRAMCNT		Compute the branch
+	anda	#$03
 	lsla
-	ldy	#SCRINRB
+	ldy	#SCRMOBT
 	jmp	a,y
 
-SCRINRB	bra	SCRINR1
-	bra	SCRINR2
-	bra	SCRINR3
-	bra	SCRINR4
+SCRMOBT	bra	SCRMO0
+	bra	SCRMO1
+	bra	SCRMO2
+	bra	SCRMO3
 
-SCRINR1	lda	SCRDATI		Retrieve last inner scroll top color data
-	sta	SCRCURI		Store current inner scroll starting color data
+SCRMO0	lda	SCRTCMO		Retrieve last outer-mid scroll top color data
 	tfr     a,b
 	adda    #$30
 	ora     #$80
 	eora    #$0f
-	sta	SCRDATI		Store current inner scroll top color data
+	sta	SCRTCMO		Store current outer-mid scroll top color data
 
-	ldx	#SCNBASE	Paint the 1st quarter of the inner side-scroll
-	ldx	#(SCNBASE+6*SCNWIDE)
-	ldd	#(SCNBASE+SCNQRTR)
-	bra	SCRINRJ
+	ldx	#SCNBASE		Paint 1st qtr...
+	ldy	#(SCNBASE+SCNQRTR)
+	pshs	y
+	bra	SCRMOLP
 
-SCRINR2	ldx	#(SCNBASE+SCNQRTR)	Paint the 2nd quarter...
-	ldd	#(SCNBASE+2*SCNQRTR)
-	bra	SCRINRJ
+SCRMO1	ldx	#(SCNBASE+SCNQRTR)	Paint 2nd qtr...
+	ldy	#(SCNBASE+SCNHALF)
+	bra	SCRMOCM
 
-SCRINR3	ldx	#(SCNBASE+2*SCNQRTR)	Paint the 3rd quarter...
-	ldd	#(SCNBASE+3*SCNQRTR)
+SCRMO2	ldx	#(SCNBASE+SCNHALF)	Paint 3rd qtr...
+	ldy	#(SCNBASE+SCN3QTR)
+	bra	SCRMOCM
 
-SCRINRJ	pshs	d
-	jsr	>SCRINR
+SCRMO3	ldx	#(SCNBASE+SCN3QTR)	Paint 4th qtr...
+	ldy	#(SCNBASE+SCNSIZE)
+
+SCRMOCM	lda	SCRCCMO
+	tfr     a,b		Recreate B half of the color data
+	subb    #$30
+	orb     #$80
+	eorb    #$0f
+	pshs	y
+
+SCRMOLP	std	2,x
+	std	(SCNWIDT-4),x
+	tfr     a,b		Advance the color data
+	adda    #$30
+	ora     #$80
+	eora    #$0f
+	leax	SCNWIDT,x
+	cmpx	,s
+	blt	SCRMOLP
 	leas	2,s
-	bra	SCRINRX
+	sta	SCRCCMO
 
-SCRINR4	ldx	#(SCNBASE+3*SCNQRTR)	Paint the 4th quarter...
-	ldd	#(SCNBASE+SCNSIZE)
-	pshs	d
-	jsr	>SCRINR
+	lda	FRAMCNT		Compute the branch
+	anda	#$07
+	lsla
+	ldy	#SCRMIBT
+	jmp	a,y
+
+SCRMIBT	bra	SCRMI0
+	bra	SCRMI1
+	bra	SCRMI2
+	bra	SCRMI3
+	bra	SCRMI4
+	bra	SCRMI5
+	bra	SCRMI6
+	bra	SCRMI7
+
+SCRMI0	lda	SCRTCMI		Retrieve last inner-mid scroll top color data
+	tfr     a,b
+	adda    #$30
+	ora     #$80
+	eora    #$0f
+	sta	SCRTCMI		Store current inner-mid scroll top color data
+
+	ldx	#SCNBASE		Paint 1st 8th...
+	ldy	#(SCNBASE+SCNEIGT)
+	pshs	y
+	bra	SCRMILP
+
+SCRMI1	ldx	#(SCNBASE+SCNEIGT)	Paint 2nd 8th...
+	ldy	#(SCNBASE+SCNQRTR)
+	bra	SCRMICM
+
+SCRMI2	ldx	#(SCNBASE+SCNQRTR)	Paint 3rd 8th...
+	ldy	#(SCNBASE+SCN3EGT)
+	bra	SCRMICM
+
+SCRMI3	ldx	#(SCNBASE+SCN3EGT)	Paint 4th 8th...
+	ldy	#(SCNBASE+SCNHALF)
+	bra	SCRMICM
+
+SCRMI4	ldx	#(SCNBASE+SCNHALF)	Paint 5th 8th...
+	ldy	#(SCNBASE+SCN5EGT)
+	bra	SCRMICM
+
+SCRMI5	ldx	#(SCNBASE+SCN5EGT)	Paint 6th 8th...
+	ldy	#(SCNBASE+SCN3QTR)
+	bra	SCRMICM
+
+SCRMI6	ldx	#(SCNBASE+SCN3QTR)	Paint 7th 8th...
+	ldy	#(SCNBASE+SCN7EGT)
+	bra	SCRMICM
+
+SCRMI7	ldx	#(SCNBASE+SCN7EGT)	Paint 8th 8th...
+	ldy	#(SCNBASE+SCNSIZE)
+
+SCRMICM	lda	SCRCCMI
+	tfr     a,b		Recreate B half of the color data
+	subb    #$30
+	orb     #$80
+	eorb    #$0f
+	pshs	y
+
+SCRMILP	std	4,x
+	std	(SCNWIDT-6),x
+	tfr     a,b		Advance the color data
+	adda    #$30
+	ora     #$80
+	eora    #$0f
+	leax	SCNWIDT,x
+	cmpx	,s
+	blt	SCRMILP
 	leas	2,s
+	sta	SCRCCMI
 
-SCRINRX	rts
+	lda	FRAMCNT		Compute the branch
+	anda	#$0f
+	cmpa	#$0c
+	lbge	SCRINB2
+	lsla
+	ldy	#SCRINBT
+	jmp	a,y
+
+SCRINBT	bra	SCRIN0
+	bra	SCRIN1
+	bra	SCRIN2
+	bra	SCRIN3
+	bra	SCRIN4
+	bra	SCRIN5
+	bra	SCRIN6
+	bra	SCRIN7
+	bra	SCRIN8
+	bra	SCRIN9
+	bra	SCRINA
+	bra	SCRINB
+
+SCRIN0	lda	SCRTCIN		Retrieve last inner scroll top color data
+	tfr     a,b
+	adda    #$30
+	ora     #$80
+	eora    #$0f
+	sta	SCRTCIN		Store current inner scroll top color data
+
+	ldx	#SCNBASE		Paint 1st 16th...
+	ldy	#(SCNBASE+SCNSIXT)
+	pshs	y
+	lbra	SCRINLP
+
+SCRIN1	ldx	#(SCNBASE+SCNSIXT)	Paint 2nd 16th...
+	ldy	#(SCNBASE+SCNEIGT)
+	lbra	SCRINCM
+
+SCRIN2	ldx	#(SCNBASE+SCNEIGT)	Paint 3rd 16th...
+	ldy	#(SCNBASE+SCN3SXT)
+	lbra	SCRINCM
+
+SCRIN3	ldx	#(SCNBASE+SCN3SXT)	Paint 4th 16th...
+	ldy	#(SCNBASE+SCNQRTR)
+	bra	SCRINCM
+
+SCRIN4	ldx	#(SCNBASE+SCNQRTR)	Paint 5th 16th...
+	ldy	#(SCNBASE+SCN5SXT)
+	bra	SCRINCM
+
+SCRIN5	ldx	#(SCNBASE+SCN5SXT)	Paint 6th 16th...
+	ldy	#(SCNBASE+SCN3EGT)
+	bra	SCRINCM
+
+SCRIN6	ldx	#(SCNBASE+SCN3EGT)	Paint 7th 16th...
+	ldy	#(SCNBASE+SCN7SXT)
+	bra	SCRINCM
+
+SCRIN7	ldx	#(SCNBASE+SCN7SXT)	Paint 8th 16th...
+	ldy	#(SCNBASE+SCNHALF)
+	bra	SCRINCM
+
+SCRIN8	ldx	#(SCNBASE+SCNHALF)	Paint 9th 16th...
+	ldy	#(SCNBASE+SCN9SXT)
+	bra	SCRINCM
+
+SCRIN9	ldx	#(SCNBASE+SCN9SXT)	Paint 10th 16th...
+	ldy	#(SCNBASE+SCN5EGT)
+	bra	SCRINCM
+
+SCRINA	ldx	#(SCNBASE+SCN5EGT)	Paint 11th 16th...
+	ldy	#(SCNBASE+SCNBSXT)
+	bra	SCRINCM
+
+SCRINB	ldx	#(SCNBASE+SCNBSXT)	Paint 12th 16th...
+	ldy	#(SCNBASE+SCN3QTR)
+	bra	SCRINCM
+
+SCRINB2	ldy	#SCRINT2
+	anda	#$03
+	lsla
+	jmp	a,y
+
+SCRINT2	bra	SCRINC
+	bra	SCRIND
+	bra	SCRINE
+	bra	SCRINF
+
+SCRINC	ldx	#(SCNBASE+SCN3QTR)	Paint 13th 16th...
+	ldy	#(SCNBASE+SCNDSXT)
+	bra	SCRINCM
+
+SCRIND	ldx	#(SCNBASE+SCNDSXT)	Paint 14th 16th...
+	ldy	#(SCNBASE+SCN7EGT)
+	bra	SCRINCM
+
+SCRINE	ldx	#(SCNBASE+SCN7EGT)	Paint 15th 16th...
+	ldy	#(SCNBASE+SCNFSXT)
+	bra	SCRINCM
+
+SCRINF	ldx	#(SCNBASE+SCNFSXT)	Paint 16th 16th...
+	ldy	#(SCNBASE+SCNSIZE)
+
+SCRINCM	lda	SCRCCIN
+	tfr     a,b		Recreate B half of the color data
+	subb    #$30
+	orb     #$80
+	eorb    #$0f
+	pshs	y
+
+SCRINLP	std	6,x
+	std	(SCNWIDT-8),x
+	tfr     a,b		Advance the color data
+	adda    #$30
+	ora     #$80
+	eora    #$0f
+	leax	SCNWIDT,x
+	cmpx	,s
+	blt	SCRINLP
+	leas	2,s
+	sta	SCRCCIN
+
+	rts
 
 *
 * Draw a normal text string on the SG12 display
@@ -264,11 +439,11 @@ SCRINRX	rts
 *
 DRWSTR	ldb	,x
 	stb	,y
-	stb	SCNWIDE,y
-	stb	2*SCNWIDE,y
-	stb	3*SCNWIDE,y
-	stb	4*SCNWIDE,y
-	stb	5*SCNWIDE,y
+	stb	SCNWIDT,y
+	stb	2*SCNWIDT,y
+	stb	3*SCNWIDT,y
+	stb	4*SCNWIDT,y
+	stb	5*SCNWIDT,y
 
 	deca			More characters?
 	beq	DRWSTRX
@@ -292,7 +467,7 @@ DRWSPLP	ldb	a,x
 	deca
 	bne	DRWSPLP
 	leax	SPIKLEN,x
-	leay	SCNWIDE,y
+	leay	SCNWIDT,y
 	dec	,s
 	beq	DRWSPKX
 	lda	#SPIKLEN
@@ -300,17 +475,17 @@ DRWSPLP	ldb	a,x
 DRWSPKX	leas	1,s
 	rts
 
-SPIKES	fcb	$ff,$bf,$bf,$ff,$bf,$bf,$bf,$bf,$ff,$bf
-	fcb	$bf,$ff,$bf,$bf,$bf,$bf,$bf,$ff,$bf,$ff
-	fcb	$bf,$bf,$ff,$bf,$bf,$bf,$ff,$bf,$bf,$bf
-	fcb	$ff,$bf,$bf,$bf,$ff,$bf,$bf,$bf,$ff,$bf
-	fcb	$f5,$bf,$ba,$ff,$ba,$bf,$fa,$bf,$ba,$ff
-	fcb	$bf,$b5,$ff,$b5,$bf,$f5,$bf,$b5,$ff,$fa
-	fcb	$b5,$ff,$ba,$ff,$ba,$ff,$ba,$ff,$ba,$ff
-	fcb	$bf,$f5,$bf,$f5,$bf,$f5,$bf,$f5,$bf,$fa
-	fcb	$f0,$f5,$b0,$f5,$f0,$b5,$f0,$f5,$b0,$f5
-	fcb	$fa,$b0,$fa,$f0,$ba,$f0,$fa,$b0,$fa,$f0
-	fcb	$f0,$f5,$f0,$f5,$f0,$f5,$f0,$f5,$f0,$f5
-	fcb	$fa,$f0,$fa,$f0,$fa,$f0,$fa,$f0,$fa,$f0
+SPIKES	fcb	$bf,$ff,$bf,$bf,$bf,$bf,$ff,$bf
+	fcb	$bf,$ff,$bf,$bf,$bf,$bf,$bf,$ff
+	fcb	$ff,$bf,$bf,$bf,$ff,$bf,$bf,$bf
+	fcb	$ff,$bf,$bf,$bf,$ff,$bf,$bf,$bf
+	fcb	$ba,$ff,$ba,$bf,$fa,$bf,$ba,$ff
+	fcb	$bf,$b5,$ff,$b5,$bf,$f5,$bf,$b5
+	fcb	$ba,$ff,$ba,$ff,$ba,$ff,$ba,$ff
+	fcb	$bf,$f5,$bf,$f5,$bf,$f5,$bf,$f5
+	fcb	$b0,$f5,$f0,$b5,$f0,$f5,$b0,$f5
+	fcb	$fa,$b0,$fa,$f0,$ba,$f0,$fa,$b0
+	fcb	$f0,$f5,$f0,$f5,$f0,$f5,$f0,$f5
+	fcb	$fa,$f0,$fa,$f0,$fa,$f0,$fa,$f0
 
 	end	INIT
