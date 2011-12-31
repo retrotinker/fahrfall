@@ -26,14 +26,15 @@ SCNFSXT	equ	SCN7EGT+SCNSIXT
 
 SCORLEN	equ	8		Number of digits in score display
 
-SPIKLEN	equ	SCNWIDT-SCORLEN*2	Width of spikes in bytes
-SPIKHGT	equ	6			Height of spikes in lines
-SPIKSIZ	equ	SPIKHGT*SCNWIDT 	Size of spike/score area
+FLAMLEN	equ	SCNWIDT-SCORLEN*2	Width of flames in bytes
+FLAMHGT	equ	6			Height of flames in lines
+FLAMSIZ	equ	FLAMHGT*SCNWIDT 	Size of flame/score area
 
 BBLACK	equ	$80		Single byte color code for black
 WBLACK	equ	$8080		Double byte color code for black
 
 SSCLRIN	equ	$b5		Initial value for side-scroll effect
+FLMXRIN	equ	$40
 
 	org	DATA
 	setdp	DATA / 256
@@ -51,6 +52,8 @@ SCRCCIN	rmb	1			"
 
 CURSCOR	rmb	SCORLEN		Display storage for current score
 HISCORE	rmb	SCORLEN		Display storage for high score
+
+FLAMXOR	rmb	1		Current XOR value for flame effect
 
 	org	LOAD
 
@@ -86,7 +89,8 @@ INHSCLP	stb	a,x
 	sta	SCRTCMO
 	sta	SCRTCMI
 
-	jsr	>DRWSPKS	Draw the spikes at the top center of the screen
+	lda	#FLMXRIN	Seed the flame effect data
+	sta	FLAMXOR
 
 * Main game loop is from here to VLOOP
 VSYNC	lda	$ff03		Wait for Vsync
@@ -103,21 +107,22 @@ VSYNC	lda	$ff03		Wait for Vsync
 
 	* Draw the player
 
-	* Draw the score (Is this worth doing every frame?)
-	ldx	#HISCORE
-	ldy	#SCNBASE
-	lda	#SCORLEN
-	jsr	>DRWSTR
-
-	ldx	#CURSCOR
-	ldy	#(SCNBASE+SCNWIDT-SCORLEN)
-	lda	#SCORLEN
-	jsr	>DRWSTR
-
 * Must get here before end of Vblank (~7840 cycles from VSYNC)
 	clr	$ffd8		Lo-speed during display
 
 * "Display active" work goes here
+
+	ldx	#HISCORE	Draw the high score
+	ldy	#SCNBASE
+	lda	#SCORLEN
+	jsr	>DRWSTR
+
+	ldx	#CURSCOR	Draw the current score
+	ldy	#(SCNBASE+SCNWIDT-SCORLEN)
+	lda	#SCORLEN
+	jsr	>DRWSTR
+
+	jsr	>DRWFLMS	Draw the flames at the top center of the screen
 
 	* Read the controls
 
@@ -128,7 +133,13 @@ VSYNC	lda	$ff03		Wait for Vsync
 	lda	FRAMCNT		Bump the frame counter
 	inca
 	anda	#$0f
-	sta	FRAMCNT
+	bne	FCSTOR
+
+	ldb	#FLMXRIN		Cycle the flame effect data
+	eorb	FLAMXOR
+	stb	FLAMXOR
+
+FCSTOR	sta	FRAMCNT
 
 * Check for user break (development only)
 CHKUART	lda	$ff69		Check for serial port activity
@@ -454,38 +465,39 @@ DRWSTR	ldb	,x
 DRWSTRX	rts
 
 *
-* Draw the spikes in the top center of the screen
+* Draw the flames in the top center of the screen
 *	X,Y,A,B get clobbered
 *
-DRWSPKS	ldx	#(SPIKES-1)		A offset will always be >= 1
+DRWFLMS	ldx	#(FLAMES-1)		A offset will always be >= 1
 	ldy	#(SCNBASE+SCORLEN-1)
-	lda	#SPIKHGT
+	lda	#FLAMHGT
 	pshs	a
-	lda	#SPIKLEN
+	lda	#FLAMLEN
 DRWSPLP	ldb	a,x
+	eorb	FLAMXOR
 	stb	a,y
 	deca
 	bne	DRWSPLP
-	leax	SPIKLEN,x
+	leax	FLAMLEN,x
 	leay	SCNWIDT,y
 	dec	,s
-	beq	DRWSPKX
-	lda	#SPIKLEN
+	beq	DRWFLMX
+	lda	#FLAMLEN
 	bra	DRWSPLP
-DRWSPKX	leas	1,s
+DRWFLMX	leas	1,s
 	rts
 
-SPIKES	fcb	$bf,$ff,$bf,$bf,$bf,$bf,$ff,$bf
+FLAMES	fcb	$bf,$ff,$bf,$bf,$bf,$bf,$ff,$bf
 	fcb	$bf,$ff,$bf,$bf,$bf,$bf,$bf,$ff
 	fcb	$ff,$bf,$bf,$bf,$ff,$bf,$bf,$bf
 	fcb	$ff,$bf,$bf,$bf,$ff,$bf,$bf,$bf
-	fcb	$ba,$ff,$ba,$bf,$fa,$bf,$ba,$ff
-	fcb	$bf,$b5,$ff,$b5,$bf,$f5,$bf,$b5
-	fcb	$ba,$ff,$ba,$ff,$ba,$ff,$ba,$ff
-	fcb	$bf,$f5,$bf,$f5,$bf,$f5,$bf,$f5
-	fcb	$b0,$f5,$f0,$b5,$f0,$f5,$b0,$f5
-	fcb	$fa,$b0,$fa,$f0,$ba,$f0,$fa,$b0
-	fcb	$f0,$f5,$f0,$f5,$f0,$f5,$f0,$f5
+	fcb	$b5,$ff,$ba,$bf,$ff,$bf,$ba,$ff
+	fcb	$bf,$b5,$ff,$bf,$bf,$f5,$bf,$ba
+	fcb	$b0,$ff,$b0,$ff,$ba,$ff,$ba,$f5
+	fcb	$ba,$f5,$bf,$f5,$bf,$f0,$bf,$f0
+	fcb	$b0,$f5,$f0,$b5,$fa,$f5,$b0,$f5
+	fcb	$fa,$b0,$fa,$f5,$ba,$f0,$fa,$b0
+	fcb	$f0,$f5,$f0,$f5,$f0,$f5,$f0,$f0
 	fcb	$fa,$f0,$fa,$f0,$fa,$f0,$fa,$f0
 
 	end	INIT
