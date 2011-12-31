@@ -24,7 +24,7 @@ SCNBSXT	equ	SCN5EGT+SCNSIXT
 SCNDSXT	equ	SCN3QTR+SCNSIXT
 SCNFSXT	equ	SCN7EGT+SCNSIXT
 
-SCORLEN	equ	8		Number of digits in score display
+SCORLEN	equ	6		Number of digits in score display
 
 FLAMLEN	equ	SCNWIDT-SCORLEN*2	Width of flames in bytes
 FLAMHGT	equ	6			Height of flames in lines
@@ -192,12 +192,11 @@ SCROUT1	lda	SCRCCOT		Retrieve last outer scroll current color data
 	ldy	#(SCNBASE+SCNSIZE)
 	pshs	y
 
-SCROTLP	std	1,x
-	std	(SCNWIDT-3),x
-	tfr     a,b		Advance the color data
-	adda    #$30
-	ora     #$80
+SCROTLP	sta	0,x
 	eora    #$0f
+	sta	(SCNWIDT-1),x
+	adda    #$30		Advance the color data
+	ora     #$80
 	leax	SCNWIDT,x
 	cmpx	,s
 	blt	SCROTLP
@@ -245,12 +244,15 @@ SCRMOCM	lda	SCRCCMO
 	eorb    #$0f
 	pshs	y
 
-SCRMOLP	std	5,x
-	std	(SCNWIDT-7),x
-	tfr     a,b		Advance the color data
+SCRMOLP	std	3,x
+	exg	a,b
+	eora    #$0f
+	eorb    #$0f
+	std	(SCNWIDT-5),x
+	tfr     b,a		Advance the color data
 	adda    #$30
 	ora     #$80
-	eora    #$0f
+	eorb    #$0f
 	leax	SCNWIDT,x
 	cmpx	,s
 	blt	SCRMOLP
@@ -319,11 +321,16 @@ SCRMICM	lda	SCRCCMI
 	pshs	y
 
 SCRMILP	std	9,x
+	sta	8,x
+	exg	a,b
+	eora    #$0f
+	eorb    #$0f
 	std	(SCNWIDT-11),x
-	tfr     a,b		Advance the color data
+	stb	(SCNWIDT-9),x
+	tfr     b,a		Advance the color data
 	adda    #$30
 	ora     #$80
-	eora    #$0f
+	eorb    #$0f
 	leax	SCNWIDT,x
 	cmpx	,s
 	blt	SCRMILP
@@ -439,12 +446,15 @@ SCRINCM	lda	SCRCCIN
 	eorb    #$0f
 	pshs	y
 
-SCRINLP	std	13,x
-	std	(SCNWIDT-15),x
-	tfr     a,b		Advance the color data
+SCRINLP	std	14,x
+	exg	a,b
+	eora    #$0f
+	eorb    #$0f
+	std	(SCNWIDT-16),x
+	tfr     b,a		Advance the color data
 	adda    #$30
 	ora     #$80
-	eora    #$0f
+	eorb    #$0f
 	leax	SCNWIDT,x
 	cmpx	,s
 	blt	SCRINLP
@@ -486,31 +496,31 @@ DRWFLMS	ldx	#(FLAMES-1)		A offset will always be >= 1
 	lda	#FLAMHGT
 	pshs	a
 	lda	#FLAMLEN
-DRWSPLP	ldb	a,x
+DRWFMLP	ldb	a,x
 	eorb	FLAMXOR
 	stb	a,y
 	deca
-	bne	DRWSPLP
+	bne	DRWFMLP
 	leax	FLAMLEN,x
 	leay	SCNWIDT,y
 	dec	,s
 	beq	DRWFLMX
 	lda	#FLAMLEN
-	bra	DRWSPLP
+	bra	DRWFMLP
 DRWFLMX	leas	1,s
 	rts
 
-FLAMES	fcb	$bf,$ff,$bf,$bf,$bf,$bf,$ff,$bf
-	fcb	$bf,$ff,$bf,$bf,$bf,$bf,$bf,$ff
-	fcb	$ff,$bf,$bf,$bf,$ff,$bf,$bf,$bf
-	fcb	$ff,$bf,$bf,$bf,$ff,$bf,$bf,$bf
-	fcb	$b5,$ff,$ba,$bf,$ff,$bf,$ba,$ff
-	fcb	$bf,$b5,$ff,$bf,$bf,$f5,$bf,$ba
-	fcb	$b0,$ff,$b0,$ff,$ba,$ff,$ba,$f5
-	fcb	$ba,$f5,$bf,$f5,$bf,$f0,$bf,$f0
-	fcb	$b0,$f5,$f0,$b5,$fa,$f5,$b0,$f5
-	fcb	$fa,$b0,$fa,$f5,$ba,$f0,$fa,$b0
-	fcb	$f0,$f5,$f0,$f5,$f0,$f5,$f0,$f0
-	fcb	$fa,$f0,$fa,$f0,$fa,$f0,$fa,$f0
+FLAMES	fcb	$bf,$ff,$ff,$ff,$bf,$ff,$ff,$ff,$ff,$bf
+	fcb	$bf,$ff,$ff,$ff,$ff,$bf,$ff,$ff,$ff,$bf
+	fcb	$bf,$ff,$ff,$ff,$bf,$bf,$ff,$ff,$bf,$bf
+	fcb	$bf,$bf,$ff,$ff,$bf,$bf,$ff,$ff,$ff,$bf
+	fcb	$b5,$bf,$ff,$bf,$bf,$bf,$bf,$ff,$ba,$bf
+	fcb	$bf,$b5,$ff,$bf,$bf,$b5,$bf,$ff,$bf,$ba
+	fcb	$b0,$bf,$bf,$bf,$ba,$bf,$ba,$bf,$ba,$b5
+	fcb	$ba,$b5,$bf,$b5,$bf,$b0,$bf,$bf,$bf,$b0
+	fcb	$b0,$b5,$ba,$b5,$ba,$b5,$ba,$b5,$b0,$b5
+	fcb	$ba,$b0,$ba,$b5,$ba,$b0,$ba,$b5,$ba,$b0
+	fcb	$b0,$b5,$b0,$b5,$b0,$b5,$b0,$b5,$b0,$b0
+	fcb	$ba,$b0,$ba,$b0,$ba,$b0,$ba,$b0,$ba,$b0
 
 	end	INIT
