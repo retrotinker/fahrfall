@@ -33,7 +33,7 @@ FLAMSIZ	equ	FLAMHGT*SCNWIDT 	Size of flame/score area
 BBLACK	equ	$80		Single byte color code for black
 WBLACK	equ	$8080		Double byte color code for black
 
-SSCLRIN	equ	$b5		Initial value for side-scroll effect
+BSCLRIN	equ	$b5		Initial value for bg-scroll effect
 FLMXRIN	equ	$40
 
 	org	DATA
@@ -41,7 +41,7 @@ FLMXRIN	equ	$40
 
 FRAMCNT	rmb	1		Rolling frame sequence counter
 
-SCRTCOT	rmb	1		Color data for side-scroll effect
+SCRTCOT	rmb	1		Color data for bg-scroll effect
 SCRTCMO	rmb	1			"
 SCRTCMI	rmb	1			"
 SCRTCIN	rmb	1			"
@@ -84,7 +84,7 @@ INHSCLP	stb	a,x
 
 	clr	FRAMCNT		Initialize frame sequence counter
 
-	lda	#SSCLRIN	Seed the side-scroll color data
+	lda	#BSCLRIN	Seed the bg-scroll color data
 	sta	SCRTCOT
 	sta	SCRTCMO
 	sta	SCRTCMI
@@ -102,7 +102,11 @@ VSYNC	lda	$ff03		Wait for Vsync
 
 * Vblank work goes here
 
-	jsr	>SCRLPNT	Paint the outer side-scrolls
+	* Erase the player
+
+	* Erase the platforms(?)
+
+	jsr	>SCRLPNT	Paint the bg-scrolls
 
 	* Draw the platforms
 
@@ -134,9 +138,11 @@ VSYNC	lda	$ff03		Wait for Vsync
 	lda	FRAMCNT		Bump the frame counter
 	inca
 	anda	#$0f
+	tfr	a,b
+	andb	#$03
 	bne	FCSTOR
 
-	ldb	#FLMXRIN		Cycle the flame effect data
+	ldb	#FLMXRIN	Cycle the flame effect data
 	eorb	FLAMXOR
 	stb	FLAMXOR
 
@@ -153,7 +159,7 @@ CHKUART	lda	$ff69		Check for serial port activity
 VLOOP	jmp	VSYNC
 
 *
-* Paint the side-scroll effects
+* Paint the bg-scroll effects
 *
 SCRLPNT	lda	FRAMCNT
 	bita	#$01
@@ -180,8 +186,8 @@ SCROUT1	lda	SCRCCOT		Retrieve last outer scroll current color data
 	ldy	#(SCNBASE+SCNSIZE)
 	pshs	y
 
-SCROTLP	std	,x
-	std	(SCNWIDT-2),x
+SCROTLP	std	1,x
+	std	(SCNWIDT-3),x
 	tfr     a,b		Advance the color data
 	adda    #$30
 	ora     #$80
@@ -233,8 +239,8 @@ SCRMOCM	lda	SCRCCMO
 	eorb    #$0f
 	pshs	y
 
-SCRMOLP	std	2,x
-	std	(SCNWIDT-4),x
+SCRMOLP	std	5,x
+	std	(SCNWIDT-7),x
 	tfr     a,b		Advance the color data
 	adda    #$30
 	ora     #$80
@@ -306,8 +312,8 @@ SCRMICM	lda	SCRCCMI
 	eorb    #$0f
 	pshs	y
 
-SCRMILP	std	4,x
-	std	(SCNWIDT-6),x
+SCRMILP	std	9,x
+	std	(SCNWIDT-11),x
 	tfr     a,b		Advance the color data
 	adda    #$30
 	ora     #$80
@@ -427,8 +433,8 @@ SCRINCM	lda	SCRCCIN
 	eorb    #$0f
 	pshs	y
 
-SCRINLP	std	6,x
-	std	(SCNWIDT-8),x
+SCRINLP	std	13,x
+	std	(SCNWIDT-15),x
 	tfr     a,b		Advance the color data
 	adda    #$30
 	ora     #$80
