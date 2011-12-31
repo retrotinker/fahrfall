@@ -37,7 +37,6 @@ BSCLRIN	equ	$b5		Initial value for bg-scroll effect
 FLMXRIN	equ	$40
 
 	org	DATA
-	setdp	DATA / 256
 
 FRAMCNT	rmb	1		Rolling frame sequence counter
 
@@ -57,7 +56,11 @@ FLAMXOR	rmb	1		Current XOR value for flame effect
 
 	org	LOAD
 
-INIT	clr	$ffc5		Select SG12 mode
+INIT	lda	#(DATA/256)	Set direct page register
+	tfr	a,dp
+	setdp	DATA/256
+
+	clr	$ffc5		Select SG12 mode
 
 	ldx	#SCNBASE	Clear screen
 	ldd	#WBLACK
@@ -326,8 +329,8 @@ SCRMILP	std	9,x
 
 	lda	FRAMCNT		Compute the branch
 	anda	#$0f
-	cmpa	#$0c
-	lbge	SCRINB2
+	cmpa	#$08
+	bge	SCRIBT2
 	lsla
 	ldy	#SCRINBT
 	jmp	a,y
@@ -340,10 +343,6 @@ SCRINBT	bra	SCRIN0
 	bra	SCRIN5
 	bra	SCRIN6
 	bra	SCRIN7
-	bra	SCRIN8
-	bra	SCRIN9
-	bra	SCRINA
-	bra	SCRINB
 
 SCRIN0	lda	SCRTCIN		Retrieve last inner scroll top color data
 	tfr     a,b
@@ -367,7 +366,7 @@ SCRIN2	ldx	#(SCNBASE+SCNEIGT)	Paint 3rd 16th...
 
 SCRIN3	ldx	#(SCNBASE+SCN3SXT)	Paint 4th 16th...
 	ldy	#(SCNBASE+SCNQRTR)
-	bra	SCRINCM
+	lbra	SCRINCM
 
 SCRIN4	ldx	#(SCNBASE+SCNQRTR)	Paint 5th 16th...
 	ldy	#(SCNBASE+SCN5SXT)
@@ -385,6 +384,20 @@ SCRIN7	ldx	#(SCNBASE+SCN7SXT)	Paint 8th 16th...
 	ldy	#(SCNBASE+SCNHALF)
 	bra	SCRINCM
 
+SCRIBT2	ldy	#SCRINT2
+	anda	#$07
+	lsla
+	jmp	a,y
+
+SCRINT2	bra	SCRIN8
+	bra	SCRIN9
+	bra	SCRINA
+	bra	SCRINB
+	bra	SCRINC
+	bra	SCRIND
+	bra	SCRINE
+	bra	SCRINF
+
 SCRIN8	ldx	#(SCNBASE+SCNHALF)	Paint 9th 16th...
 	ldy	#(SCNBASE+SCN9SXT)
 	bra	SCRINCM
@@ -400,16 +413,6 @@ SCRINA	ldx	#(SCNBASE+SCN5EGT)	Paint 11th 16th...
 SCRINB	ldx	#(SCNBASE+SCNBSXT)	Paint 12th 16th...
 	ldy	#(SCNBASE+SCN3QTR)
 	bra	SCRINCM
-
-SCRINB2	ldy	#SCRINT2
-	anda	#$03
-	lsla
-	jmp	a,y
-
-SCRINT2	bra	SCRINC
-	bra	SCRIND
-	bra	SCRINE
-	bra	SCRINF
 
 SCRINC	ldx	#(SCNBASE+SCN3QTR)	Paint 13th 16th...
 	ldy	#(SCNBASE+SCNDSXT)
