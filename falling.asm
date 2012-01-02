@@ -39,6 +39,7 @@ BYELOW	equ	$9f		Color code for two yellow pixels
 
 BSCLRIN	equ	$b5		Initial value for bg-scroll effect
 FLMMSKI	equ	$40		Initial mask value for flame effect
+FLMCNTI	equ	$03		Initial count value for flame effect
 
 	org	DATA
 
@@ -57,6 +58,7 @@ CURSCOR	rmb	SCORLEN		Display storage for current score
 HISCORE	rmb	SCORLEN		Display storage for high score
 
 FLAMMSK	rmb	1		Current mask value for flame effect
+FLAMCNT	rmb	1		Current count of frames until next flicker
 
 LFSRDAT	rmb	2
 
@@ -101,6 +103,8 @@ INCSCLP	stb	a,x
 
 	lda	#FLMMSKI	Seed the flame effect data
 	sta	FLAMMSK
+	lda	#FLMCNTI
+	sta	FLAMCNT
 
 	ldd	TIMVAL		Seed the LFSR data
 	std	LFSRDAT
@@ -152,17 +156,21 @@ VSYNC	lda	$ff03		Wait for Vsync
 	lda	FRAMCNT		Bump the frame counter
 	inca
 	anda	#$0f
-	tfr	a,b
-	andb	#$03
-	bne	FCSTOR
-
-	ldb	#FLMMSKI	Cycle the flame effect data
-	eorb	FLAMMSK
-	stb	FLAMMSK
-
-FCSTOR	sta	FRAMCNT
+	sta	FRAMCNT
 
 	jsr	LFSRADV		Advance the LFSR
+
+	dec	FLAMCNT		Countdown until next flame flicker
+	bne	CHKUART
+
+	lda	#FLMMSKI	Cycle the flame effect data
+	eora	FLAMMSK
+	sta	FLAMMSK
+
+	lda	LFSRDAT		Grab part of the LFSR value
+	anda	#$03		Limit the range of the values
+	adda	#$01		Enforce a minimum value
+	sta	FLAMCNT
 
 * Check for user break (development only)
 CHKUART	lda	$ff69		Check for serial port activity
