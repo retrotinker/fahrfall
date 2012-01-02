@@ -33,8 +33,10 @@ FLAMSIZ	equ	FLAMHGT*SCNWIDT 	Size of flame/score area
 BBLACK	equ	$80		Single byte color code for black
 WBLACK	equ	$8080		Double byte color code for black
 
+BYELOW	equ	$9f		Color code for two yellow pixels
+
 BSCLRIN	equ	$b5		Initial value for bg-scroll effect
-FLMXRIN	equ	$40		Initial XOR value for flame effect
+FLMMSKI	equ	$40		Initial mask value for flame effect
 
 	org	DATA
 
@@ -52,7 +54,7 @@ SCRCCIN	rmb	1			"
 CURSCOR	rmb	SCORLEN		Display storage for current score
 HISCORE	rmb	SCORLEN		Display storage for high score
 
-FLAMXOR	rmb	1		Current XOR value for flame effect
+FLAMMSK	rmb	1		Current mask value for flame effect
 
 	org	LOAD
 
@@ -93,8 +95,8 @@ INCSCLP	stb	a,x
 	sta	SCRTCMI
 	sta	SCRTCIN
 
-	lda	#FLMXRIN	Seed the flame effect data
-	sta	FLAMXOR
+	lda	#FLMMSKI	Seed the flame effect data
+	sta	FLAMMSK
 
 * Main game loop is from here to VLOOP
 VSYNC	lda	$ff03		Wait for Vsync
@@ -147,9 +149,9 @@ VSYNC	lda	$ff03		Wait for Vsync
 	andb	#$03
 	bne	FCSTOR
 
-	ldb	#FLMXRIN	Cycle the flame effect data
-	eorb	FLAMXOR
-	stb	FLAMXOR
+	ldb	#FLMMSKI	Cycle the flame effect data
+	eorb	FLAMMSK
+	stb	FLAMMSK
 
 FCSTOR	sta	FRAMCNT
 
@@ -497,8 +499,10 @@ DRWFLMS	ldx	#(FLAMES-1)		A offset will always be >= 1
 	pshs	a
 	lda	#FLAMLEN
 DRWFMLP	ldb	a,x
-	eorb	FLAMXOR
-	stb	a,y
+	cmpb	#BYELOW
+	beq	DRWSKOR
+	orb	FLAMMSK
+DRWSKOR	stb	a,y
 	deca
 	bne	DRWFMLP
 	leax	FLAMLEN,x
@@ -510,12 +514,12 @@ DRWFMLP	ldb	a,x
 DRWFLMX	leas	1,s
 	rts
 
-FLAMES	fcb	$bf,$ff,$ff,$ff,$bf,$ff,$ff,$ff,$ff,$bf
+FLAMES	fcb	$bf,$ff,$9f,$ff,$ff,$ff,$9f,$9f,$ff,$ff
+	fcb	$ff,$ff,$9f,$9f,$ff,$ff,$ff,$9f,$ff,$bf
+	fcb	$bf,$ff,$ff,$ff,$bf,$ff,$ff,$ff,$ff,$bf
 	fcb	$bf,$ff,$ff,$ff,$ff,$bf,$ff,$ff,$ff,$bf
-	fcb	$bf,$ff,$ff,$ff,$bf,$bf,$ff,$ff,$bf,$bf
-	fcb	$bf,$bf,$ff,$ff,$bf,$bf,$ff,$ff,$ff,$bf
-	fcb	$b5,$bf,$ff,$bf,$bf,$bf,$bf,$ff,$ba,$bf
-	fcb	$bf,$b5,$ff,$bf,$bf,$b5,$bf,$ff,$bf,$ba
+	fcb	$b5,$bf,$ff,$bf,$bf,$bf,$ff,$ff,$ba,$bf
+	fcb	$bf,$b5,$ff,$bf,$bf,$b5,$ff,$ff,$bf,$ba
 	fcb	$b0,$bf,$bf,$bf,$ba,$bf,$ba,$bf,$ba,$b5
 	fcb	$ba,$b5,$bf,$b5,$bf,$b0,$bf,$bf,$bf,$b0
 	fcb	$b0,$b5,$ba,$b5,$ba,$b5,$ba,$b5,$b0,$b5
