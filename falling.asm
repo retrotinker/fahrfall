@@ -260,27 +260,22 @@ SCRMO2	ldx	#(SCNBASE+SCNHALF)	Paint 3rd qtr...
 SCRMO3	ldx	#(SCNBASE+SCN3QTR)	Paint 4th qtr...
 	ldy	#(SCNBASE+SCNSIZE)
 
-SCRMOCM	lda	SCRCCMO
-	tfr     a,b		Recreate B half of the color data
-	subb    #$30
-	orb     #$80
-	eorb    #$0f
+SCRMOCM	ldb	SCRCCMO
+	tfr     b,a		Recreate A half of the color data
+	eora    #$0f
 	pshs	y
 
 SCRMOLP	std	3,x
-	exg	a,b
-	eora    #$0f
-	eorb    #$0f
 	std	(SCNWIDT-5),x
-	tfr     b,a		Advance the color data
-	adda    #$30
-	ora     #$80
+	addb    #$30		Advance the color data
+	orb     #$80
+	tfr     b,a
 	eorb    #$0f
 	leax	SCNWIDT,x
 	cmpx	,s
 	blt	SCRMOLP
 	leas	2,s
-	sta	SCRCCMO
+	stb	SCRCCMO
 
 	lda	FRAMCNT		Compute the branch
 	anda	#$07
@@ -338,22 +333,17 @@ SCRMI7	ldx	#(SCNBASE+SCN7EGT)	Paint 8th 8th...
 
 SCRMICM	lda	SCRCCMI
 	tfr     a,b		Recreate B half of the color data
-	subb    #$30
-	orb     #$80
 	eorb    #$0f
 	pshs	y
 
 SCRMILP	std	9,x
 	sta	8,x
-	exg	a,b
-	eora    #$0f
-	eorb    #$0f
 	std	(SCNWIDT-11),x
 	stb	(SCNWIDT-9),x
-	tfr     b,a		Advance the color data
-	adda    #$30
+	adda    #$30		Advance the color data
 	ora     #$80
-	eorb    #$0f
+	tfr     a,b
+	eora    #$0f
 	leax	SCNWIDT,x
 	cmpx	,s
 	blt	SCRMILP
@@ -464,20 +454,15 @@ SCRINF	ldx	#(SCNBASE+SCNFSXT)	Paint 16th 16th...
 
 SCRINCM	lda	SCRCCIN
 	tfr     a,b		Recreate B half of the color data
-	subb    #$30
-	orb     #$80
 	eorb    #$0f
 	pshs	y
 
 SCRINLP	std	14,x
-	exg	a,b
-	eora    #$0f
-	eorb    #$0f
 	std	(SCNWIDT-16),x
-	tfr     b,a		Advance the color data
-	adda    #$30
+	adda    #$30	Advance the color data
 	ora     #$80
-	eorb    #$0f
+	tfr     a,b
+	eora    #$0f
 	leax	SCNWIDT,x
 	cmpx	,s
 	blt	SCRINLP
