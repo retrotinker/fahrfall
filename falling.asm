@@ -24,6 +24,8 @@ SCNBSXT	equ	SCN5EGT+SCNSIXT
 SCNDSXT	equ	SCN3QTR+SCNSIXT
 SCNFSXT	equ	SCN7EGT+SCNSIXT
 
+TIMVAL	equ	$0112		Extended BASIC's free-running time counter
+
 SCORLEN	equ	6		Number of digits in score display
 
 FLAMLEN	equ	SCNWIDT-SCORLEN*2	Width of flames in bytes
@@ -55,6 +57,8 @@ CURSCOR	rmb	SCORLEN		Display storage for current score
 HISCORE	rmb	SCORLEN		Display storage for high score
 
 FLAMMSK	rmb	1		Current mask value for flame effect
+
+LFSRDAT	rmb	2
 
 	org	LOAD
 
@@ -97,6 +101,9 @@ INCSCLP	stb	a,x
 
 	lda	#FLMMSKI	Seed the flame effect data
 	sta	FLAMMSK
+
+	ldd	TIMVAL		Seed the LFSR data
+	std	LFSRDAT
 
 * Main game loop is from here to VLOOP
 VSYNC	lda	$ff03		Wait for Vsync
@@ -154,6 +161,8 @@ VSYNC	lda	$ff03		Wait for Vsync
 	stb	FLAMMSK
 
 FCSTOR	sta	FRAMCNT
+
+	jsr	LFSRADV		Advance the LFSR
 
 * Check for user break (development only)
 CHKUART	lda	$ff69		Check for serial port activity
@@ -463,6 +472,33 @@ SCRINLP	std	14,x
 	leas	2,s
 	sta	SCRCCIN
 
+	rts
+
+*
+* Advance the LFSR value
+*	A,B get clobbered
+*
+* 	Wikipedia article on LFSR cites this polynomial for a maximal 16-bit LFSR:
+*
+*		x16 + x14 + x13 + x11 + 1
+*
+*	http://en.wikipedia.org/wiki/Linear_feedback_shift_register
+*
+LFSRADV	lda	LFSRDAT		Get MSB of LFSR data
+	eora	#$04		Capture x11 of LFSR polynomial
+	lsla
+	lsla
+	eora	LFSRDAT		Capture X13 of LFSR polynomial
+	lsla
+	eora	LFSRDAT		Capture X14 of LFSR polynomial
+	lsla
+	lsla
+	eora	LFSRDAT		Capture X16 of LFSR polynomial
+	lsla			Move result to Carry bit of CC
+	ldd	LFSRDAT		Get all of LFSR data
+	rolb			Shift through 16 bits of LFSR
+	rola
+	std	LFSRDAT		Store the result
 	rts
 
 *
