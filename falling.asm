@@ -40,6 +40,10 @@ BYELOW	equ	$9f		Color code for two yellow pixels
 BSCLRIN	equ	$b5		Initial value for bg-scroll effect
 FLMMSKI	equ	$40		Initial mask value for flame effect
 FLMCNTI	equ	$03		Initial count value for flame effect
+FLMCTRG	equ	$03		Range mask of flame count values
+FLMCTMN	equ	$01		Minimum flame count value
+
+FRMCTRG	equ	$0f		Range mask of frame count values
 
 	org	DATA
 
@@ -155,7 +159,7 @@ VSYNC	lda	$ff03		Wait for Vsync
 
 	lda	FRAMCNT		Bump the frame counter
 	inca
-	anda	#$0f
+	anda	#FRMCTRG
 	sta	FRAMCNT
 
 	jsr	LFSRADV		Advance the LFSR
@@ -168,8 +172,8 @@ VSYNC	lda	$ff03		Wait for Vsync
 	sta	FLAMMSK
 
 	lda	LFSRDAT		Grab part of the LFSR value
-	anda	#$03		Limit the range of the values
-	adda	#$01		Enforce a minimum value
+	anda	#FLMCTRG	Limit the range of the values
+	adda	#FLMCTMN	Enforce a minimum value
 	sta	FLAMCNT
 
 * Check for user break (development only)
