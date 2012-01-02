@@ -2,7 +2,7 @@
 
 CFLAGS=-Wall
 
-TARGETS=falling.bin falling.s19
+TARGETS=fahrfall.bin fahrfall.s19
 
 all: $(TARGETS)
 

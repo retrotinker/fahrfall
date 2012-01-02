@@ -1,4 +1,4 @@
-	nam	falling
+	nam	fahrfall
 	ttl	Game inspired by "Man Goes Down" and/or "Downfall"
 
 DATA	equ	$0300		Base address for random storage
