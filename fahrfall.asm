@@ -77,6 +77,7 @@ LFSRDAT	rmb	2
 PLTBASE	rmb	2		Current base address for drawing platform
 PLTDATA	rmb	1		Mask representing platform configuration
 PLTCNTR	rmb	1		Countdown until next platform movement
+PLTCOLR	rmb	4		Color data for drawing platform
 
 	org	LOAD
 
@@ -127,9 +128,16 @@ INCSCLP	stb	a,x
 
 	ldd	#PLTBSIN	Initialize platform movement variables
 	std	PLTBASE
-	clr	PLTDATA
 	lda	#PLTFCIN
 	sta	PLTCNTR
+
+	ldd	#WYELOW		Initialize platform color values
+	std	PLTCOLR
+	ldd	#WYELOW
+	std	PLTCOLR+2
+
+	lda	LFSRDAT+1	Apply LFSR to platform data
+	sta	PLTDATA
 
 * Main game loop is from here to VLOOP
 VSYNC	lda	$ff03		Wait for Vsync
@@ -223,72 +231,116 @@ VLOOP	jmp	VSYNC
 
 *
 * Draw the platforms
-*	X,A,B get clobbered
+*	X,Y,A,B get clobbered
 *
 PLTDRAW	ldx	PLTBASE
-	ldd	#WYELOW
+	lda	PLTDATA
+	pshs	a
+	ldd	PLTCOLR
+	ldy	PLTCOLR+2
+
+PLTDRW0	lsr	,s
+	bcc	PLTDRW1
 	std	,x
 	std	$02,x
+	sty	$20,x
+	sty	$22,x
+PLTDRW1	lsr	,s
+	bcc	PLTDRW2
 	std	$04,x
 	std	$06,x
+	sty	$24,x
+	sty	$26,x
+PLTDRW2	lsr	,s
+	bcc	PLTDRW3
 	std	$08,x
 	std	$0a,x
+	sty	$28,x
+	sty	$2a,x
+PLTDRW3	lsr	,s
+	bcc	PLTDRW4
 	std	$0c,x
 	std	$0e,x
+	sty	$2c,x
+	sty	$2e,x
+PLTDRW4	lsr	,s
+	bcc	PLTDRW5
 	std	$10,x
 	std	$12,x
+	sty	$30,x
+	sty	$32,x
+PLTDRW5	lsr	,s
+	bcc	PLTDRW6
 	std	$14,x
 	std	$16,x
+	sty	$34,x
+	sty	$36,x
+PLTDRW6	lsr	,s
+	bcc	PLTDRW7
 	std	$18,x
 	std	$1a,x
+	sty	$38,x
+	sty	$3a,x
+PLTDRW7	lsr	,s
+	bcc	PLTDRW8
 	std	$1c,x
 	std	$1e,x
-	std	$20,x
-	std	$22,x
-	std	$24,x
-	std	$26,x
-	std	$28,x
-	std	$2a,x
-	std	$2c,x
-	std	$2e,x
-	std	$30,x
-	std	$32,x
-	std	$34,x
-	std	$36,x
-	std	$38,x
-	std	$3a,x
-	std	$3c,x
-	std	$3e,x
+	sty	$3c,x
+	sty	$3e,x
+
+PLTDRW8	leas	1,s
 	rts
 
 *
 * Erase the platforms
-*	X,A,B get clobbered
+*	X,Y,A,B get clobbered
 *
 PLTERAS	lda	#PLTFCIN	Check for platform movement
 	cmpa	PLTCNTR
-	bne	PLTERX		Skip erase if no movement
+	bne	PLTERAX		Skip erase if no movement
 
 	ldx	PLTBASE		Erase the platforms
 	leax	(2*SCNWIDT),x
+	lda	PLTDATA
+	pshs	a
 	ldd	#WBLACK
+
+PLTERA0	lsr	,s
+	bcc	PLTERA1
 	std	,x
 	std	$02,x
+PLTERA1	lsr	,s
+	bcc	PLTERA2
 	std	$04,x
 	std	$06,x
+PLTERA2	lsr	,s
+	bcc	PLTERA3
 	std	$08,x
 	std	$0a,x
+PLTERA3	lsr	,s
+	bcc	PLTERA4
 	std	$0c,x
 	std	$0e,x
+PLTERA4	lsr	,s
+	bcc	PLTERA5
 	std	$10,x
 	std	$12,x
+PLTERA5	lsr	,s
+	bcc	PLTERA6
 	std	$14,x
 	std	$16,x
+PLTERA6	lsr	,s
+	bcc	PLTERA7
 	std	$18,x
 	std	$1a,x
+PLTERA7	lsr	,s
+	bcc	PLTERA8
 	std	$1c,x
 	std	$1e,x
-PLTERX	rts
+
+PLTERA8	leas	1,s
+
+PLTERAX	rts
 
 *
 * Paint the bg-scroll effects
