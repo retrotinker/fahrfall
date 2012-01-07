@@ -32,18 +32,25 @@ FLAMLEN	equ	SCNWIDT-SCORLEN*2	Width of flames in bytes
 FLAMHGT	equ	6			Height of flames in lines
 FLAMSIZ	equ	FLAMHGT*SCNWIDT 	Size of flame/score area
 
-BBLACK	equ	$80		Single byte color code for black
-WBLACK	equ	$8080		Double byte color code for black
-
-BYELOW	equ	$9f		Color code for two yellow pixels
-
-BSCLRIN	equ	$b5		Initial value for bg-scroll effect
 FLMMSKI	equ	$40		Initial mask value for flame effect
 FLMCNTI	equ	$03		Initial count value for flame effect
 FLMCTRG	equ	$03		Range mask of flame count values
 FLMCTMN	equ	$01		Minimum flame count value
 
+BBLACK	equ	$80		Single byte color code for black
+WBLACK	equ	$8080		Double byte color code for black
+
+BYELOW	equ	$9f		Color code for two yellow pixels
+WYELOW	equ	$9f9f		Color code for four yellow pixels
+
+BSCLRIN	equ	$b5		Initial value for bg-scroll effect
+
 FRMCTRG	equ	$0f		Range mask of frame count values
+
+PLTFTOP	equ	SCNBASE-SCNWIDT		Top of the platform animation section
+PLTBSIN	equ	SCNBASE+SCNSIZE-SCNWIDT	Bottom of platform animation section
+PLTFRNG	equ	SCNLINS		Height in lines of platform animation section
+PLTFCIN	equ	$05		Default count value for platform movement
 
 	org	DATA
 
@@ -65,6 +72,10 @@ FLAMMSK	rmb	1		Current mask value for flame effect
 FLAMCNT	rmb	1		Current count of frames until next flicker
 
 LFSRDAT	rmb	2
+
+PLTBASE	rmb	2		Current base address for drawing platform
+PLTDATA	rmb	1		Mask representing platform configuration
+PLTCNTR	rmb	1		Countdown until next platform movement
 
 	org	LOAD
 
@@ -113,6 +124,12 @@ INCSCLP	stb	a,x
 	ldd	TIMVAL		Seed the LFSR data
 	std	LFSRDAT
 
+	ldd	#PLTBSIN	Initialize platform movement variables
+	std	PLTBASE
+	clr	PLTDATA
+	lda	#PLTFCIN
+	sta	PLTCNTR
+
 * Main game loop is from here to VLOOP
 VSYNC	lda	$ff03		Wait for Vsync
 	bpl	VSYNC
@@ -124,11 +141,11 @@ VSYNC	lda	$ff03		Wait for Vsync
 
 	* Erase the player
 
-	* Erase the platforms(?)
+	jsr	>PLTERAS	Erase the platforms
 
 	jsr	>SCRLPNT	Paint the bg-scrolls
 
-	* Draw the platforms
+	jsr	>PLTDRAW	Draw the platforms
 
 	* Draw the player
 
@@ -165,7 +182,7 @@ VSYNC	lda	$ff03		Wait for Vsync
 	jsr	LFSRADV		Advance the LFSR
 
 	dec	FLAMCNT		Countdown until next flame flicker
-	bne	CHKUART
+	bne	PLTADV
 
 	lda	#FLMMSKI	Cycle the flame effect data
 	eora	FLAMMSK
@@ -176,6 +193,23 @@ VSYNC	lda	$ff03		Wait for Vsync
 	adda	#FLMCTMN	Enforce a minimum value
 	sta	FLAMCNT
 
+PLTADV	dec	PLTCNTR		Countdown until next platform movement
+	bne	CHKUART
+
+	lda	#PLTFCIN	Reset platform movement counter
+	sta	PLTCNTR
+
+	ldd	PLTBASE		Decrement platform base
+	subd	#SCNWIDT
+	cmpd	#PLTFTOP	Check for top of platform movement
+	bge	PLTBSTO
+
+	lda	LFSRDAT+1	Apply LFSR to platform data
+	sta	PLTDATA
+	ldd	#PLTBSIN	Reset platform base pointer
+
+PLTBSTO	std	PLTBASE
+
 * Check for user break (development only)
 CHKUART	lda	$ff69		Check for serial port activity
 	bita	#$08
@@ -185,6 +219,75 @@ CHKUART	lda	$ff69		Check for serial port activity
 
 * End of main game loop
 VLOOP	jmp	VSYNC
+
+*
+* Draw the platforms
+*	X,A,B get clobbered
+*
+PLTDRAW	ldx	PLTBASE
+	ldd	#WYELOW
+	std	,x
+	std	$02,x
+	std	$04,x
+	std	$06,x
+	std	$08,x
+	std	$0a,x
+	std	$0c,x
+	std	$0e,x
+	std	$10,x
+	std	$12,x
+	std	$14,x
+	std	$16,x
+	std	$18,x
+	std	$1a,x
+	std	$1c,x
+	std	$1e,x
+	std	$20,x
+	std	$22,x
+	std	$24,x
+	std	$26,x
+	std	$28,x
+	std	$2a,x
+	std	$2c,x
+	std	$2e,x
+	std	$30,x
+	std	$32,x
+	std	$34,x
+	std	$36,x
+	std	$38,x
+	std	$3a,x
+	std	$3c,x
+	std	$3e,x
+	rts
+
+*
+* Erase the platforms
+*	X,A,B get clobbered
+*
+PLTERAS	lda	#PLTFCIN	Check for platform movement
+	cmpa	PLTCNTR
+	bne	PLTERX		Skip erase if no movement
+
+	ldx	PLTBASE		Erase the platforms
+	leax	(2*SCNWIDT),x
+	ldd	#WBLACK
+	std	,x
+	std	$02,x
+	std	$04,x
+	std	$06,x
+	std	$08,x
+	std	$0a,x
+	std	$0c,x
+	std	$0e,x
+	std	$10,x
+	std	$12,x
+	std	$14,x
+	std	$16,x
+	std	$18,x
+	std	$1a,x
+	std	$1c,x
+	std	$1e,x
+PLTERX	rts
 
 *
 * Paint the bg-scroll effects
