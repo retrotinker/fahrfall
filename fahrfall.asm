@@ -6,6 +6,7 @@ LOAD	equ	$1c00		Actual load address for binary
 
 SCNBASE	equ	$0400		Base address for screen memory
 SCNSIZE	equ	$0c00		Size of screen memory
+SCNEND	equ	SCNBASE+SCNSIZE	End of screen memory
 SCNWIDT	equ	32		Width of screen in bytes
 SCNLINS	equ	96		Height of screen in lines
 SCNQRTR	equ	SCNWIDT*SCNLINS/4
@@ -47,8 +48,8 @@ BSCLRIN	equ	$b5		Initial value for bg-scroll effect
 
 FRMCTRG	equ	$0f		Range mask of frame count values
 
-PLTFTOP	equ	SCNBASE-SCNWIDT		Top of the platform animation section
-PLTBSIN	equ	SCNBASE+SCNSIZE-SCNWIDT	Bottom of platform animation section
+PLTFTOP	equ	SCNBASE		Top of the platform animation section
+PLTBSIN	equ	SCNEND-SCNWIDT	Bottom of platform animation section
 PLTFRNG	equ	SCNLINS		Height in lines of platform animation section
 PLTFCIN	equ	$05		Default count value for platform movement
 
@@ -89,7 +90,7 @@ INIT	lda	#(DATA/256)	Set direct page register
 	ldd	#WBLACK
 
 CLSLOOP	std	,x++
-	cmpx	#(SCNBASE+SCNSIZE)
+	cmpx	#SCNEND
 	bne	CLSLOOP
 
 	ldx	#HISCORE	Initialize high score
@@ -315,7 +316,7 @@ SCROUT1	lda	SCRCCOT		Retrieve last outer scroll current color data
 	orb     #$80
 	eorb    #$0f
 	ldx	#(SCNBASE+SCNHALF)
-	ldy	#(SCNBASE+SCNSIZE)
+	ldy	#SCNEND
 	pshs	y
 
 SCROTLP	sta	0,x
@@ -361,7 +362,7 @@ SCRMO2	ldx	#(SCNBASE+SCNHALF)	Paint 3rd qtr...
 	bra	SCRMOCM
 
 SCRMO3	ldx	#(SCNBASE+SCN3QTR)	Paint 4th qtr...
-	ldy	#(SCNBASE+SCNSIZE)
+	ldy	#SCNEND
 
 SCRMOCM	ldb	SCRCCMO
 	tfr     b,a		Recreate A half of the color data
@@ -432,7 +433,7 @@ SCRMI6	ldx	#(SCNBASE+SCN3QTR)	Paint 7th 8th...
 	bra	SCRMICM
 
 SCRMI7	ldx	#(SCNBASE+SCN7EGT)	Paint 8th 8th...
-	ldy	#(SCNBASE+SCNSIZE)
+	ldy	#SCNEND
 
 SCRMICM	lda	SCRCCMI
 	tfr     a,b		Recreate B half of the color data
@@ -553,7 +554,7 @@ SCRINE	ldx	#(SCNBASE+SCN7EGT)	Paint 15th 16th...
 	bra	SCRINCM
 
 SCRINF	ldx	#(SCNBASE+SCNFSXT)	Paint 16th 16th...
-	ldy	#(SCNBASE+SCNSIZE)
+	ldy	#SCNEND
 
 SCRINCM	lda	SCRCCIN
 	tfr     a,b		Recreate B half of the color data
