@@ -261,6 +261,7 @@ PLTADV	dec	PLTMCNT		Countdown until next platform movement
 	lda	PLTFRMS+PLTDATA
 	sta	PLTFRMS+PLTSTSZ+PLTDATA
 	lda	LFSRDAT+1			Apply LFSR to platform data
+	eora	PLTFRMS+PLTDATA			XOR previous -- no "sweepers"
 	sta	PLTFRMS+PLTDATA
 	ldd	PLTFRMS+PLTSTSZ+PLTCOLR		Shift the color values too
 	std	PLTFRMS+2*PLTSTSZ+PLTCOLR
