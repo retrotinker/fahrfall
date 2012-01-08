@@ -4,6 +4,8 @@
 DATA	equ	$0300		Base address for random storage
 LOAD	equ	$1c00		Actual load address for binary
 
+STRUCT	equ	0		Dummy origin for declaring structures
+
 SCNBASE	equ	$0400		Base address for screen memory
 SCNSIZE	equ	$0c00		Size of screen memory
 SCNEND	equ	SCNBASE+SCNSIZE	End of screen memory
@@ -42,16 +44,27 @@ BBLACK	equ	$80		Single byte color code for black
 WBLACK	equ	$8080		Double byte color code for black
 
 BYELOW	equ	$9f		Color code for two yellow pixels
-WYELOW	equ	$9f9f		Color code for four yellow pixels
 
 BSCLRIN	equ	$b5		Initial value for bg-scroll effect
 
 FRMCTRG	equ	$0f		Range mask of frame count values
 
-PLTFTOP	equ	SCNBASE		Top of the platform animation section
-PLTBSIN	equ	SCNEND-SCNWIDT	Bottom of platform animation section
-PLTFRNG	equ	SCNLINS		Height in lines of platform animation section
-PLTFCIN	equ	$05		Default count value for platform movement
+NUMPLTF	set	3
+
+PLTFTOP	equ	SCNBASE-SCNWIDT	Top of highest platform animation section
+PLTFRNG	equ	SCNSIZE/NUMPLTF	Size of each platform animation section
+
+PLTBSIN	equ	SCNEND-SCNWIDT	Initial value for base of bottom platform
+PLTFMCI	equ	$05		Default count value for platform movement
+
+PLTFCTI	equ	$cfcf		Initial top row color pattern for platforms
+PLTFCBI	equ	$cfcf		Initial bottom row color pattern for platforms
+
+	org	STRUCT		Platform info structure declarations
+PLTBASE	rmb	2		Current base addresses for drawing platform
+PLTDATA	rmb	1		Mask representing platform configuration
+PLTCOLR	rmb	4		Color data for drawing platform
+PLTSTSZ	equ	*
 
 	org	DATA
 
@@ -74,16 +87,15 @@ FLAMCNT	rmb	1		Current count of frames until next flicker
 
 LFSRDAT	rmb	2
 
-PLTBASE	rmb	2		Current base address for drawing platform
-PLTDATA	rmb	1		Mask representing platform configuration
-PLTCNTR	rmb	1		Countdown until next platform movement
-PLTCOLR	rmb	4		Color data for drawing platform
+PLTMCNT	rmb	1		Countdown until next platform movement
+PLTNCLR	rmb	4		Color patterns for next platform
+PLTFRMS	rmb	3*PLTSTSZ	Platform info data structures
 
 	org	LOAD
 
 INIT	lda	#(DATA/256)	Set direct page register
 	tfr	a,dp
-	setdp	DATA/256
+	setdp	DATA/256	Tell the assembler about the direct page value
 
 	clr	$ffc5		Select SG12 mode
 
@@ -126,18 +138,31 @@ INCSCLP	stb	a,x
 	ldd	TIMVAL		Seed the LFSR data
 	std	LFSRDAT
 
-	ldd	#PLTBSIN	Initialize platform movement variables
-	std	PLTBASE
-	lda	#PLTFCIN
-	sta	PLTCNTR
+	ldd	#PLTBSIN	Initialize platform section base values
+	std	PLTFRMS+PLTBASE
+	subd	#PLTFRNG
+	std	PLTFRMS+PLTSTSZ+PLTBASE
+	subd	#PLTFRNG
+	std	PLTFRMS+2*PLTSTSZ+PLTBASE
 
-	ldd	#WYELOW		Initialize platform color values
-	std	PLTCOLR
-	ldd	#WYELOW
-	std	PLTCOLR+2
+	lda	#PLTFMCI	Initialize platform movement counter
+	sta	PLTMCNT
+
+	ldd	#PLTFCTI	Initialize platform color values
+	std	PLTFRMS+PLTCOLR
+	std	PLTFRMS+PLTSTSZ+PLTCOLR
+	std	PLTFRMS+2*PLTSTSZ+PLTCOLR
+	std	PLTNCLR
+	ldd	#PLTFCBI
+	std	PLTFRMS+PLTCOLR+2
+	std	PLTFRMS+PLTSTSZ+PLTCOLR+2
+	std	PLTFRMS+2*PLTSTSZ+PLTCOLR+2
+	std	PLTNCLR+2
 
 	lda	LFSRDAT+1	Apply LFSR to platform data
-	sta	PLTDATA
+	sta	PLTFRMS+PLTDATA
+	clr	PLTFRMS+PLTSTSZ+PLTDATA
+	clr	PLTFRMS+2*PLTSTSZ+PLTDATA
 
 * Main game loop is from here to VLOOP
 VSYNC	lda	$ff03		Wait for Vsync
@@ -150,11 +175,21 @@ VSYNC	lda	$ff03		Wait for Vsync
 
 	* Erase the player
 
-	jsr	>PLTERAS	Erase the platforms
+	ldx	#(PLTFRMS+PLTBASE)
+	jsr	>PLTERAS	Erase the first platform
+	ldx	#(PLTFRMS+PLTSTSZ+PLTBASE)
+	jsr	>PLTERAS	Erase the second platform
+	ldx	#(PLTFRMS+2*PLTSTSZ+PLTBASE)
+	jsr	>PLTERAS	Erase the third platform
 
 	jsr	>SCRLPNT	Paint the bg-scrolls
 
-	jsr	>PLTDRAW	Draw the platforms
+	ldx	#(PLTFRMS+PLTBASE)
+	jsr	>PLTDRAW	Draw the first platform
+	ldx	#(PLTFRMS+PLTSTSZ+PLTBASE)
+	jsr	>PLTDRAW	Draw the second platform
+	ldx	#(PLTFRMS+2*PLTSTSZ+PLTBASE)
+	jsr	>PLTDRAW	Draw the third platform
 
 	* Draw the player
 
@@ -202,22 +237,47 @@ VSYNC	lda	$ff03		Wait for Vsync
 	adda	#FLMCTMN	Enforce a minimum value
 	sta	FLAMCNT
 
-PLTADV	dec	PLTCNTR		Countdown until next platform movement
+PLTADV	dec	PLTMCNT		Countdown until next platform movement
 	bne	CHKUART
 
-	lda	#PLTFCIN	Reset platform movement counter
-	sta	PLTCNTR
+	lda	#PLTFMCI	Reset platform movement counter
+	sta	PLTMCNT
 
-	ldd	PLTBASE		Decrement platform base
+	ldd	PLTFRMS+PLTBASE	Decrement platform base values
 	subd	#SCNWIDT
+	std	PLTFRMS+PLTBASE
+	subd	#PLTFRNG
+	std	PLTFRMS+PLTSTSZ+PLTBASE
+	subd	#PLTFRNG
+
 	cmpd	#PLTFTOP	Check for top of platform movement
 	bge	PLTBSTO
 
-	lda	LFSRDAT+1	Apply LFSR to platform data
-	sta	PLTDATA
-	ldd	#PLTBSIN	Reset platform base pointer
+	lda	PLTFRMS+PLTSTSZ+PLTDATA		Shift platform data values
+	sta	PLTFRMS+2*PLTSTSZ+PLTDATA
+	lda	PLTFRMS+PLTDATA
+	sta	PLTFRMS+PLTSTSZ+PLTDATA
+	lda	LFSRDAT+1			Apply LFSR to platform data
+	sta	PLTFRMS+PLTDATA
+	ldd	PLTFRMS+PLTSTSZ+PLTCOLR		Shift the color values too
+	std	PLTFRMS+2*PLTSTSZ+PLTCOLR
+	ldd	PLTFRMS+PLTSTSZ+PLTCOLR+2
+	std	PLTFRMS+2*PLTSTSZ+PLTCOLR+2
+	ldd	PLTFRMS+PLTCOLR
+	std	PLTFRMS+PLTSTSZ+PLTCOLR
+	ldd	PLTFRMS+PLTCOLR+2
+	std	PLTFRMS+PLTSTSZ+PLTCOLR+2
+	ldd	PLTNCLR
+	std	PLTFRMS+PLTCOLR
+	ldd	PLTNCLR+2
+	std	PLTFRMS+PLTCOLR+2
+	ldd	#(PLTBSIN-SCNWIDT)		Reset first platform base pointer
+	std	PLTFRMS+PLTBASE
+	ldd	#(PLTBSIN-PLTFRNG-SCNWIDT)	Reset second platform base pointer
+	std	PLTFRMS+PLTSTSZ+PLTBASE
+	ldd	#(PLTBSIN-2*PLTFRNG-SCNWIDT)	Reset third platform base pointer
 
-PLTBSTO	std	PLTBASE
+PLTBSTO	std	PLTFRMS+2*PLTSTSZ+PLTBASE
 
 * Check for user break (development only)
 CHKUART	lda	$ff69		Check for serial port activity
@@ -231,13 +291,14 @@ VLOOP	jmp	VSYNC
 
 *
 * Draw the platforms
+*	X points to the platform structure
 *	X,Y,A,B get clobbered
 *
-PLTDRAW	ldx	PLTBASE
-	lda	PLTDATA
+PLTDRAW	lda	PLTDATA,x
 	pshs	a
-	ldd	PLTCOLR
-	ldy	PLTCOLR+2
+	ldd	PLTCOLR,x
+	ldy	PLTCOLR+2,x
+	leax	[PLTBASE,x]
 
 PLTDRW0	lsr	,s
 	bcc	PLTDRW1
@@ -293,16 +354,17 @@ PLTDRW8	leas	1,s
 
 *
 * Erase the platforms
+*	X points to the platform structure
 *	X,Y,A,B get clobbered
 *
-PLTERAS	lda	#PLTFCIN	Check for platform movement
-	cmpa	PLTCNTR
+PLTERAS	lda	#PLTFMCI	Check for platform movement
+	cmpa	PLTMCNT
 	bne	PLTERAX		Skip erase if no movement
 
-	ldx	PLTBASE		Erase the platforms
-	leax	(2*SCNWIDT),x
-	lda	PLTDATA
+	lda	PLTDATA,x
 	pshs	a
+	leax	[PLTBASE,x]
+	leax	(2*SCNWIDT),x
 	ldd	#WBLACK
 
 PLTERA0	lsr	,s
