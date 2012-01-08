@@ -45,7 +45,7 @@ BYELOW	equ	$9f		Color code for two yellow pixels
 
 BSCLRIN	equ	$b5		Initial value for bg-scroll effect
 
-FRMCTRG	equ	$07		Range mask of frame count values
+FRMCTIN	equ	$08		Initial value for frame count values
 
 NUMPLTF	set	3
 
@@ -125,7 +125,8 @@ INCSCLP	stb	a,x
 	lda	#SCR6CIN	Initialize middle-inner scroll counter
 	sta	SCR6CNT
 
-	clr	FRAMCNT		Initialize frame sequence counter
+	lda	#FRMCTIN	Initialize frame sequence counter
+	sta	FRAMCNT
 
 	lda	#BSCLRIN	Seed the bg-scroll color data
 	sta	SCRTCOT
@@ -221,12 +222,12 @@ VSYNC	lda	$ff03		Wait for Vsync
 
 	* Compute score
 
-	lda	FRAMCNT		Bump the frame counter
-	inca
-	anda	#FRMCTRG
+	dec	FRAMCNT		Bump the frame counter
+	bne	LFSRBMP
+	lda	#FRMCTIN
 	sta	FRAMCNT
 
-	jsr	LFSRADV		Advance the LFSR
+LFSRBMP	jsr	LFSRADV		Advance the LFSR
 
 	dec	FLAMCNT		Countdown until next flame flicker
 	bne	PLTADV
@@ -454,10 +455,10 @@ SCROTLP	sta	0,x
 	ldy	#SCRMOBT
 	jmp	a,y
 
-SCRMOBT	bra	SCRMO0
-	bra	SCRMO1
-	bra	SCRMO2
+SCRMOBT	bra	SCRMO0		Odd jump ordering due to init of down counter 
 	bra	SCRMO3
+	bra	SCRMO2
+	bra	SCRMO1
 
 SCRMO0	lda	SCRTCMO		Retrieve last outer-mid scroll top color data
 	tfr     a,b
@@ -574,14 +575,14 @@ SCRMILP	std	9,x
 	ldy	#SCRINBT
 	jmp	a,y
 
-SCRINBT	bra	SCRIN0
-	bra	SCRIN1
-	bra	SCRIN2
-	bra	SCRIN3
-	bra	SCRIN4
-	bra	SCRIN5
-	bra	SCRIN6
+SCRINBT	bra	SCRIN0		Odd jump ordering due to init of down counter 
 	bra	SCRIN7
+	bra	SCRIN6
+	bra	SCRIN5
+	bra	SCRIN4
+	bra	SCRIN3
+	bra	SCRIN2
+	bra	SCRIN1
 
 SCRIN0	lda	SCRTCIN		Retrieve last inner scroll top color data
 	tfr     a,b
