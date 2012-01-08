@@ -18,18 +18,16 @@ SCNEIGT	equ	SCNWIDT*SCNLINS/8
 SCN3EGT	equ	SCNQRTR+SCNEIGT
 SCN5EGT	equ	SCNHALF+SCNEIGT
 SCN7EGT	equ	SCN3QTR+SCNEIGT
-SCNSIXT	equ	SCNWIDT*SCNLINS/16
-SCN3SXT	equ	SCNEIGT+SCNSIXT
-SCN5SXT	equ	SCNQRTR+SCNSIXT
-SCN7SXT	equ	SCN3EGT+SCNSIXT
-SCN9SXT	equ	SCNHALF+SCNSIXT
-SCNBSXT	equ	SCN5EGT+SCNSIXT
-SCNDSXT	equ	SCN3QTR+SCNSIXT
-SCNFSXT	equ	SCN7EGT+SCNSIXT
+SCNSIXH	equ	SCNWIDT*SCNLINS/6
+SCN2SXH	equ	SCNSIXH*2
+SCN4SXH	equ	SCNHALF+SCNSIXH
+SCN5SXH	equ	SCNHALF+SCNSIXH*2
 
 TIMVAL	equ	$0112		Extended BASIC's free-running time counter
 
 SCORLEN	equ	6		Number of digits in score display
+
+SCR6CIN	equ	6+1		Initial value for middle-inner scroll counter
 
 FLAMLEN	equ	SCNWIDT-SCORLEN*2	Width of flames in bytes
 FLAMHGT	equ	6			Height of flames in lines
@@ -47,7 +45,7 @@ BYELOW	equ	$9f		Color code for two yellow pixels
 
 BSCLRIN	equ	$b5		Initial value for bg-scroll effect
 
-FRMCTRG	equ	$0f		Range mask of frame count values
+FRMCTRG	equ	$07		Range mask of frame count values
 
 NUMPLTF	set	3
 
@@ -78,6 +76,8 @@ SCRCCOT	rmb	1			"
 SCRCCMO	rmb	1			"
 SCRCCMI	rmb	1			"
 SCRCCIN	rmb	1			"
+
+SCR6CNT	rmb	1		Frame counter for "every 6th frame" scroll
 
 CURSCOR	rmb	SCORLEN		Display storage for current score
 HISCORE	rmb	SCORLEN		Display storage for high score
@@ -121,6 +121,9 @@ INCSCLP	stb	a,x
 	deca
 	bne	INCSCLP
 	stb	a,x
+
+	lda	#SCR6CIN	Initialize middle-inner scroll counter
+	sta	SCR6CNT
 
 	clr	FRAMCNT		Initialize frame sequence counter
 
@@ -495,20 +498,24 @@ SCRMOLP	std	3,x
 	leas	2,s
 	stb	SCRCCMO
 
-	lda	FRAMCNT		Compute the branch
-	anda	#$07
-	lsla
-	ldy	#SCRMIBT
+	lda	SCR6CNT		Bump this scroll's counter...
+	deca
+	bne	SCRMICB
+	lda	#SCR6CIN	Reinit the counter
+	sta	SCR6CNT
+	deca
+
+SCRMICB	sta	SCR6CNT
+	lsla			Compute the branch
+	ldy	#(SCRMIBT-2)	Offset for 1-based count values
 	jmp	a,y
 
-SCRMIBT	bra	SCRMI0
-	bra	SCRMI1
-	bra	SCRMI2
-	bra	SCRMI3
+SCRMIBT	bra	SCRMI5
 	bra	SCRMI4
-	bra	SCRMI5
-	bra	SCRMI6
-	bra	SCRMI7
+	bra	SCRMI3
+	bra	SCRMI2
+	bra	SCRMI1
+	bra	SCRMI0
 
 SCRMI0	lda	SCRTCMI		Retrieve last inner-mid scroll top color data
 	tfr     a,b
@@ -517,36 +524,28 @@ SCRMI0	lda	SCRTCMI		Retrieve last inner-mid scroll top color data
 	eora    #$0f
 	sta	SCRTCMI		Store current inner-mid scroll top color data
 
-	ldx	#SCNBASE		Paint 1st 8th...
-	ldy	#(SCNBASE+SCNEIGT)
+	ldx	#SCNBASE		Paint 1st 6th...
+	ldy	#(SCNBASE+SCNSIXH)
 	pshs	y
 	bra	SCRMILP
 
-SCRMI1	ldx	#(SCNBASE+SCNEIGT)	Paint 2nd 8th...
-	ldy	#(SCNBASE+SCNQRTR)
+SCRMI1	ldx	#(SCNBASE+SCNSIXH)	Paint 2nd 6th...
+	ldy	#(SCNBASE+SCN2SXH)
 	bra	SCRMICM
 
-SCRMI2	ldx	#(SCNBASE+SCNQRTR)	Paint 3rd 8th...
-	ldy	#(SCNBASE+SCN3EGT)
-	bra	SCRMICM
-
-SCRMI3	ldx	#(SCNBASE+SCN3EGT)	Paint 4th 8th...
+SCRMI2	ldx	#(SCNBASE+SCN2SXH)	Paint 3rd 6th...
 	ldy	#(SCNBASE+SCNHALF)
 	bra	SCRMICM
 
-SCRMI4	ldx	#(SCNBASE+SCNHALF)	Paint 5th 8th...
-	ldy	#(SCNBASE+SCN5EGT)
+SCRMI3	ldx	#(SCNBASE+SCNHALF)	Paint 4th 6th...
+	ldy	#(SCNBASE+SCN4SXH)
 	bra	SCRMICM
 
-SCRMI5	ldx	#(SCNBASE+SCN5EGT)	Paint 6th 8th...
-	ldy	#(SCNBASE+SCN3QTR)
+SCRMI4	ldx	#(SCNBASE+SCN4SXH)	Paint 5th 6th...
+	ldy	#(SCNBASE+SCN5SXH)
 	bra	SCRMICM
 
-SCRMI6	ldx	#(SCNBASE+SCN3QTR)	Paint 7th 8th...
-	ldy	#(SCNBASE+SCN7EGT)
-	bra	SCRMICM
-
-SCRMI7	ldx	#(SCNBASE+SCN7EGT)	Paint 8th 8th...
+SCRMI5	ldx	#(SCNBASE+SCN5SXH)	Paint 6th 6th...
 	ldy	#SCNEND
 
 SCRMICM	lda	SCRCCMI
@@ -569,9 +568,7 @@ SCRMILP	std	9,x
 	sta	SCRCCMI
 
 	lda	FRAMCNT		Compute the branch
-	anda	#$0f
-	cmpa	#$08
-	bge	SCRIBR2
+	anda	#$07
 	lsla
 	ldy	#SCRINBT
 	jmp	a,y
@@ -592,82 +589,36 @@ SCRIN0	lda	SCRTCIN		Retrieve last inner scroll top color data
 	eora    #$0f
 	sta	SCRTCIN		Store current inner scroll top color data
 
-	ldx	#SCNBASE		Paint 1st 16th...
-	ldy	#(SCNBASE+SCNSIXT)
-	pshs	y
-	lbra	SCRINLP
-
-SCRIN1	ldx	#(SCNBASE+SCNSIXT)	Paint 2nd 16th...
+	ldx	#SCNBASE		Paint 1st 8th...
 	ldy	#(SCNBASE+SCNEIGT)
-	lbra	SCRINCM
+	pshs	y
+	bra	SCRINLP
 
-SCRIN2	ldx	#(SCNBASE+SCNEIGT)	Paint 3rd 16th...
-	ldy	#(SCNBASE+SCN3SXT)
-	lbra	SCRINCM
-
-SCRIN3	ldx	#(SCNBASE+SCN3SXT)	Paint 4th 16th...
+SCRIN1	ldx	#(SCNBASE+SCNEIGT)	Paint 2nd 8th...
 	ldy	#(SCNBASE+SCNQRTR)
-	lbra	SCRINCM
-
-SCRIN4	ldx	#(SCNBASE+SCNQRTR)	Paint 5th 16th...
-	ldy	#(SCNBASE+SCN5SXT)
 	bra	SCRINCM
 
-SCRIN5	ldx	#(SCNBASE+SCN5SXT)	Paint 6th 16th...
+SCRIN2	ldx	#(SCNBASE+SCNQRTR)	Paint 3rd 8th...
 	ldy	#(SCNBASE+SCN3EGT)
 	bra	SCRINCM
 
-SCRIN6	ldx	#(SCNBASE+SCN3EGT)	Paint 7th 16th...
-	ldy	#(SCNBASE+SCN7SXT)
-	bra	SCRINCM
-
-SCRIN7	ldx	#(SCNBASE+SCN7SXT)	Paint 8th 16th...
+SCRIN3	ldx	#(SCNBASE+SCN3EGT)	Paint 4th 8th...
 	ldy	#(SCNBASE+SCNHALF)
 	bra	SCRINCM
 
-SCRIBR2	ldy	#SCRIBT2
-	anda	#$07
-	lsla
-	jmp	a,y
-
-SCRIBT2	bra	SCRIN8
-	bra	SCRIN9
-	bra	SCRINA
-	bra	SCRINB
-	bra	SCRINC
-	bra	SCRIND
-	bra	SCRINE
-	bra	SCRINF
-
-SCRIN8	ldx	#(SCNBASE+SCNHALF)	Paint 9th 16th...
-	ldy	#(SCNBASE+SCN9SXT)
-	bra	SCRINCM
-
-SCRIN9	ldx	#(SCNBASE+SCN9SXT)	Paint 10th 16th...
+SCRIN4	ldx	#(SCNBASE+SCNHALF)	Paint 5th 8th...
 	ldy	#(SCNBASE+SCN5EGT)
 	bra	SCRINCM
 
-SCRINA	ldx	#(SCNBASE+SCN5EGT)	Paint 11th 16th...
-	ldy	#(SCNBASE+SCNBSXT)
-	bra	SCRINCM
-
-SCRINB	ldx	#(SCNBASE+SCNBSXT)	Paint 12th 16th...
+SCRIN5	ldx	#(SCNBASE+SCN5EGT)	Paint 6th 8th...
 	ldy	#(SCNBASE+SCN3QTR)
 	bra	SCRINCM
 
-SCRINC	ldx	#(SCNBASE+SCN3QTR)	Paint 13th 16th...
-	ldy	#(SCNBASE+SCNDSXT)
-	bra	SCRINCM
-
-SCRIND	ldx	#(SCNBASE+SCNDSXT)	Paint 14th 16th...
+SCRIN6	ldx	#(SCNBASE+SCN3QTR)	Paint 7th 8th...
 	ldy	#(SCNBASE+SCN7EGT)
 	bra	SCRINCM
 
-SCRINE	ldx	#(SCNBASE+SCN7EGT)	Paint 15th 16th...
-	ldy	#(SCNBASE+SCNFSXT)
-	bra	SCRINCM
-
-SCRINF	ldx	#(SCNBASE+SCNFSXT)	Paint 16th 16th...
+SCRIN7	ldx	#(SCNBASE+SCN7EGT)	Paint 8th 8th...
 	ldy	#SCNEND
 
 SCRINCM	lda	SCRCCIN
