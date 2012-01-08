@@ -58,6 +58,8 @@ PLTFMCI	equ	$05		Default count value for platform movement
 PLTFCTI	equ	$cfcf		Initial top row color pattern for platforms
 PLTFCBI	equ	$cfcf		Initial bottom row color pattern for platforms
 
+PLTDFLT	equ	$3c		Default substitue for "sweeper" platforms
+
 	org	STRUCT		Platform info structure declarations
 PLTBASE	rmb	2		Current base addresses for drawing platform
 PLTDATA	rmb	1		Mask representing platform configuration
@@ -164,7 +166,10 @@ INCSCLP	stb	a,x
 	std	PLTNCLR+2
 
 	lda	LFSRDAT+1	Apply LFSR to platform data
-	sta	PLTFRMS+PLTDATA
+	cmpa	#$ff		Check for "sweepers"
+	bne	PLTDINI
+	lda	#PLTDFLT	Substitute default platform data
+PLTDINI	sta	PLTFRMS+PLTDATA
 	clr	PLTFRMS+PLTSTSZ+PLTDATA
 	clr	PLTFRMS+2*PLTSTSZ+PLTDATA
 
@@ -262,8 +267,10 @@ PLTADV	dec	PLTMCNT		Countdown until next platform movement
 	lda	PLTFRMS+PLTDATA
 	sta	PLTFRMS+PLTSTSZ+PLTDATA
 	lda	LFSRDAT+1			Apply LFSR to platform data
-	eora	PLTFRMS+PLTDATA			XOR previous -- no "sweepers"
-	sta	PLTFRMS+PLTDATA
+	cmpa	#$ff				Check for "sweepers"
+	bne	PLTDSTO
+	lda	#PLTDFLT			Substitute default platform data
+PLTDSTO	sta	PLTFRMS+PLTDATA
 	ldd	PLTFRMS+PLTSTSZ+PLTCOLR		Shift the color values too
 	std	PLTFRMS+2*PLTSTSZ+PLTCOLR
 	ldd	PLTFRMS+PLTSTSZ+PLTCOLR+2
