@@ -165,10 +165,12 @@ INCSCLP	stb	a,x
 	std	PLTFRMS+2*PLTSTSZ+PLTCOLR+2
 	std	PLTNCLR+2
 
-	lda	LFSRDAT+1	Apply LFSR to platform data
+	lda	LFSRDAT		Apply LFSR to platform data
+	eora	LFSRDAT+1
+	beq	PLTDFLI		Use default if zero
 	cmpa	#$ff		Check for "sweepers"
 	bne	PLTDINI
-	lda	#PLTDFLT	Substitute default platform data
+PLTDFLI	lda	#PLTDFLT	Substitute default platform data
 PLTDINI	sta	PLTFRMS+PLTDATA
 	clr	PLTFRMS+PLTSTSZ+PLTDATA
 	clr	PLTFRMS+2*PLTSTSZ+PLTDATA
@@ -266,10 +268,12 @@ PLTADV	dec	PLTMCNT		Countdown until next platform movement
 	sta	PLTFRMS+2*PLTSTSZ+PLTDATA
 	lda	PLTFRMS+PLTDATA
 	sta	PLTFRMS+PLTSTSZ+PLTDATA
-	lda	LFSRDAT+1			Apply LFSR to platform data
+	lda	LFSRDAT				Apply LFSR to platform data
+	eora	LFSRDAT+1
+	beq	PLTDFLS				Use default if zero
 	cmpa	#$ff				Check for "sweepers"
 	bne	PLTDSTO
-	lda	#PLTDFLT			Substitute default platform data
+PLTDFLS	lda	#PLTDFLT			Substitute default platform data
 PLTDSTO	sta	PLTFRMS+PLTDATA
 	ldd	PLTFRMS+PLTSTSZ+PLTCOLR		Shift the color values too
 	std	PLTFRMS+2*PLTSTSZ+PLTCOLR
