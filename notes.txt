@@ -6,6 +6,9 @@ cycles per frame w/ hi-speed during vsync	~18834
 cycles during vblank				~3920
 cycles during vblank w/ hi-speed		~7840
 
+Note that the ^FS starts at the end of visible data, not on the actual
+vsync signal (hooray!)
+
 estimated costs:
 
 	sprite + score draw	~3000
