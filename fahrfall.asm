@@ -566,10 +566,10 @@ SCRMICM	lda	SCRCCMI
 	eorb    #$0f
 	pshs	y
 
-SCRMILP	std	9,x
-	sta	8,x
-	std	(SCNWIDT-11),x
-	stb	(SCNWIDT-9),x
+SCRMILP	std	8,x
+	sta	10,x
+	stb	(SCNWIDT-11),x
+	std	(SCNWIDT-10),x
 	adda    #$30		Advance the color data
 	ora     #$80
 	tfr     a,b
