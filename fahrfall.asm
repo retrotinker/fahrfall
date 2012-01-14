@@ -226,6 +226,11 @@ VSYNC	lda	$ff03		Wait for Vsync
 * Must get here before end of Vblank (~7840 cycles from VSYNC)
 	clr	$ffd8		Lo-speed during display
 
+	lda	$ff22		Turn-on CG3 mode
+	anda	#$3f
+	ora	#$c0
+	sta	$ff22
+
 * "Display active" work goes here
 
 	ldx	#HISCORE	Draw the high score
@@ -322,7 +327,10 @@ CHKUART	lda	$ff69		Check for serial port activity
 	jmp	[$fffe]		Re-enter monitor
 
 * End of main game loop
-VLOOP	jmp	VSYNC
+VLOOP	lda	#$7f		Turn-off CG3 mode
+	anda	$ff22
+	sta	$ff22
+	jmp	VSYNC
 
 *
 * Draw the player
