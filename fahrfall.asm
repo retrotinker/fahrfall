@@ -42,6 +42,18 @@ BBLACK	equ	$80		Single byte color code for black
 WBLACK	equ	$8080		Double byte color code for black
 
 BYELOW	equ	$9f		Color code for two yellow pixels
+BBLUE	equ	$af		Color code for two blue pixels
+BRED	equ	$bf		Color code for two red pixels
+BMGNTA	equ	$ef		Color code for two magenta pixels
+
+BFLESH	equ	BYELOW		Color code for two "flesh"-colored pixels
+BSHIRT	equ	BRED		Color code for two shirt-colored pixels
+BPANTS	equ	BBLUE		Color code for two pants-colored pixels
+BSHOES	equ	BMGNTA		Color code for two shoe-colored pixels
+
+PXMSK01	equ	$f5		Mask for "01" pixel pattern
+PXMSK10	equ	$fa		Mask for "10" pixel pattern
+PXMSKXO	equ	$0f		XOR mask to reverse single-pixel patterns
 
 BSCLRIN	equ	$b5		Initial value for bg-scroll effect
 
@@ -92,6 +104,9 @@ LFSRDAT	rmb	2
 PLTMCNT	rmb	1		Countdown until next platform movement
 PLTNCLR	rmb	4		Color patterns for next platform
 PLTFRMS	rmb	3*PLTSTSZ	Platform info data structures
+
+PLREPOS	rmb	2		Player screen erase position
+PLRDPOS	rmb	2		Player screen draw position
 
 	org	LOAD
 
@@ -175,6 +190,10 @@ PLTDINI	sta	PLTFRMS+PLTDATA
 	clr	PLTFRMS+PLTSTSZ+PLTDATA
 	clr	PLTFRMS+2*PLTSTSZ+PLTDATA
 
+	ldx	#$090e		Dummy player location initialization
+	stx	PLREPOS
+	stx	PLRDPOS
+
 * Main game loop is from here to VLOOP
 VSYNC	lda	$ff03		Wait for Vsync
 	bpl	VSYNC
@@ -184,7 +203,7 @@ VSYNC	lda	$ff03		Wait for Vsync
 
 * Vblank work goes here
 
-	* Erase the player
+	jsr	>PLYERAS	Erase the player
 
 	ldx	#(PLTFRMS+PLTBASE)
 	jsr	>PLTERAS	Erase the first platform
@@ -202,7 +221,7 @@ VSYNC	lda	$ff03		Wait for Vsync
 	ldx	#(PLTFRMS+2*PLTSTSZ+PLTBASE)
 	jsr	>PLTDRAW	Draw the third platform
 
-	* Draw the player
+	jsr	>PLYDRAW	Draw the player
 
 * Must get here before end of Vblank (~7840 cycles from VSYNC)
 	clr	$ffd8		Lo-speed during display
@@ -304,6 +323,88 @@ CHKUART	lda	$ff69		Check for serial port activity
 
 * End of main game loop
 VLOOP	jmp	VSYNC
+
+*
+* Draw the player
+*	X,A,B get clobbered
+*
+PLYDRAW	ldx	PLRDPOS
+	leax	3*SCNWIDT,x
+
+	lda	#BFLESH
+	anda	#PXMSK10
+	sta	-3*SCNWIDT+1,x
+	sta	-2*SCNWIDT+1,x
+	sta	2*SCNWIDT,x
+	sta	2*SCNWIDT+2,x
+
+	lda	#BSHIRT
+	tfr	a,b
+	sta	-SCNWIDT+1,x
+	std	,x
+	anda	#PXMSK01
+	sta	-SCNWIDT,x
+	eora	#PXMSKXO
+	tfr	a,b
+	sta	2,x
+	std	SCNWIDT,x
+	sta	SCNWIDT+2,x
+	sta	2*SCNWIDT+1,x
+
+	leax	6*SCNWIDT,x
+
+	lda	#BPANTS
+	sta	-2*SCNWIDT+1,x
+	anda	#PXMSK10
+	sta	-3*SCNWIDT+1,x
+	eora	#PXMSKXO
+	tfr	a,b
+	sta	-2*SCNWIDT,x
+	std	-SCNWIDT,x
+	std	,x
+	std	SCNWIDT,x
+
+	lda	#BSHOES
+	sta	2*SCNWIDT,x
+	anda	#PXMSK01
+	sta	2*SCNWIDT+1,x
+	eora	#PXMSKXO
+	sta	2*SCNWIDT+2,x
+
+	rts
+
+*
+* Erase the player
+*	X,A,B get clobbered
+*
+PLYERAS	ldx	PLREPOS
+	beq	PLYERSX
+
+	leax	3*SCNWIDT,x
+	ldd	#WBLACK
+	sta	-3*SCNWIDT+1,x
+	sta	-2*SCNWIDT+1,x
+	std	-SCNWIDT,x
+	std	,x
+	sta	2,x
+	std	SCNWIDT,x
+	sta	SCNWIDT+2,x
+	std	2*SCNWIDT,x
+	sta	2*SCNWIDT+2,x
+	sta	3*SCNWIDT+1,x
+
+	leax	6*SCNWIDT,x
+	std	-2*SCNWIDT,x
+	std	-SCNWIDT,x
+	std	,x
+	std	SCNWIDT,x
+	std	2*SCNWIDT,x
+	sta	2*SCNWIDT+2,x
+
+	clr	PLREPOS		Don't erase again until next move!
+	clr	PLREPOS+1
+
+PLYERSX	rts
 
 *
 * Draw the platforms
