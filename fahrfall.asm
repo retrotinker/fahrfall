@@ -128,6 +128,10 @@ INIT	lda	#(DATA/256)	Set direct page register
 
 	clr	$ffc5		Select SG12 mode
 
+	lda	#$08		Select orange text color set
+	ora	$ff22
+	sta	$ff22
+
 	ldx	#SCNBASE	Clear screen
 	ldd	#WBLACK
 
