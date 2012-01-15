@@ -383,7 +383,50 @@ MOVFIN	stx	PLRDPOS		Update player position
 
 MOVSKIP	equ	*
 
-	* Detect collisions
+	ldd	PLRDPOS		Check for player/platform collisions
+	addd	#PLYRHGT
+	andb	#$e0
+	ldx	#PLTCMSK
+
+	cmpd	PLTFRMS+PLTBASE
+	bne	COLCHK1
+	ldb	PLRDPOS+1
+	andb	#$1f
+	ldb	b,x
+	bitb	PLTFRMS+PLTDATA
+	beq	COLCHK1
+
+	bra	COLCGRN
+
+COLCHK1	cmpd	PLTFRMS+PLTSTSZ+PLTBASE
+	bne	COLCHK2
+	ldb	PLRDPOS+1
+	andb	#$1f
+	ldb	b,x
+	bitb	PLTFRMS+PLTSTSZ+PLTDATA
+	beq	COLCHK2
+
+	bra	COLCGRN
+
+COLCHK2	cmpd	PLTFRMS+2*PLTSTSZ+PLTBASE
+	bne	COLCORG
+	ldb	PLRDPOS+1
+	andb	#$1f
+	ldb	b,x
+	bitb	PLTFRMS+2*PLTSTSZ+PLTDATA
+	beq	COLCORG
+
+COLCGRN	lda	#$f7		Select green text color set
+	anda	$ff22
+	sta	$ff22
+
+	bra	COLCDON
+
+COLCORG	lda	#$08		Select orange text color set
+	ora	$ff22
+	sta	$ff22
+
+COLCDON	equ	*
 
 	* Compute score
 
@@ -630,49 +673,49 @@ PLTDRAW	lda	PLTDATA,x
 	ldy	PLTCOLR+2,x
 	leax	[PLTBASE,x]
 
-PLTDRW0	lsr	,s
+PLTDRW0	lsl	,s
 	bcc	PLTDRW1
 	std	,x
 	std	$02,x
 	sty	$20,x
 	sty	$22,x
-PLTDRW1	lsr	,s
+PLTDRW1	lsl	,s
 	bcc	PLTDRW2
 	std	$04,x
 	std	$06,x
 	sty	$24,x
 	sty	$26,x
-PLTDRW2	lsr	,s
+PLTDRW2	lsl	,s
 	bcc	PLTDRW3
 	std	$08,x
 	std	$0a,x
 	sty	$28,x
 	sty	$2a,x
-PLTDRW3	lsr	,s
+PLTDRW3	lsl	,s
 	bcc	PLTDRW4
 	std	$0c,x
 	std	$0e,x
 	sty	$2c,x
 	sty	$2e,x
-PLTDRW4	lsr	,s
+PLTDRW4	lsl	,s
 	bcc	PLTDRW5
 	std	$10,x
 	std	$12,x
 	sty	$30,x
 	sty	$32,x
-PLTDRW5	lsr	,s
+PLTDRW5	lsl	,s
 	bcc	PLTDRW6
 	std	$14,x
 	std	$16,x
 	sty	$34,x
 	sty	$36,x
-PLTDRW6	lsr	,s
+PLTDRW6	lsl	,s
 	bcc	PLTDRW7
 	std	$18,x
 	std	$1a,x
 	sty	$38,x
 	sty	$3a,x
-PLTDRW7	lsr	,s
+PLTDRW7	lsl	,s
 	bcc	PLTDRW8
 	std	$1c,x
 	std	$1e,x
@@ -697,35 +740,35 @@ PLTERAS	lda	#PLTFMCI	Check for platform movement
 	leax	(2*SCNWIDT),x
 	ldd	#WBLACK
 
-PLTERA0	lsr	,s
+PLTERA0	lsl	,s
 	bcc	PLTERA1
 	std	,x
 	std	$02,x
-PLTERA1	lsr	,s
+PLTERA1	lsl	,s
 	bcc	PLTERA2
 	std	$04,x
 	std	$06,x
-PLTERA2	lsr	,s
+PLTERA2	lsl	,s
 	bcc	PLTERA3
 	std	$08,x
 	std	$0a,x
-PLTERA3	lsr	,s
+PLTERA3	lsl	,s
 	bcc	PLTERA4
 	std	$0c,x
 	std	$0e,x
-PLTERA4	lsr	,s
+PLTERA4	lsl	,s
 	bcc	PLTERA5
 	std	$10,x
 	std	$12,x
-PLTERA5	lsr	,s
+PLTERA5	lsl	,s
 	bcc	PLTERA6
 	std	$14,x
 	std	$16,x
-PLTERA6	lsr	,s
+PLTERA6	lsl	,s
 	bcc	PLTERA7
 	std	$18,x
 	std	$1a,x
-PLTERA7	lsr	,s
+PLTERA7	lsl	,s
 	bcc	PLTERA8
 	std	$1c,x
 	std	$1e,x
@@ -1062,5 +1105,10 @@ FLAMES	fcb	$bf,$ff,$9f,$ff,$ff,$ff,$9f,$9f,$ff,$ff
 	fcb	$ba,$b0,$ba,$b5,$ba,$b0,$ba,$b5,$ba,$b0
 	fcb	$b0,$b5,$b0,$b5,$b0,$b5,$b0,$b5,$b0,$b0
 	fcb	$ba,$b0,$ba,$b0,$ba,$b0,$ba,$b0,$ba,$b0
+
+PLTCMSK fcb	$80,$80,$c0,$c0,$40,$40,$60,$60
+	fcb	$20,$20,$30,$30,$10,$10,$18,$18
+	fcb	$08,$08,$0c,$0c,$04,$04,$06,$06
+	fcb	$02,$02,$03,$03,$01,$01,$01,$01
 
 	end	INIT
