@@ -118,7 +118,10 @@ PLTFRMS	rmb	3*PLTSTSZ	Platform info data structures
 PLREPOS	rmb	2		Player screen erase position
 PLRDPOS	rmb	2		Player screen draw position
 
-JOYFLGS	rmb	1
+PLEFLGS	rmb	1		Flags for erasing player object
+PLDFLGS	rmb	1		Flags for drawing player object
+
+JOYFLGS	rmb	1		Flags representing joystick info
 
 	org	LOAD
 
@@ -205,6 +208,9 @@ PLTDFLI	lda	#PLTDFLT	Substitute default platform data
 PLTDINI	sta	PLTFRMS+PLTDATA
 	clr	PLTFRMS+PLTSTSZ+PLTDATA
 	clr	PLTFRMS+2*PLTSTSZ+PLTDATA
+
+	clr	PLEFLGS		Clear player erase flags
+	clr	PLDFLGS		Clear player draw flags
 
 	ldx	#$090e		Dummy player location initialization
 	stx	PLREPOS
@@ -308,29 +314,52 @@ JOYDONE	stb	JOYFLGS
 
 	ldx	PLRDPOS		Schedule a player erase at current position
 	stx	PLREPOS
+	ldb	PLDFLGS		Make sure correct erase routine is used
+	stb	PLEFLGS
 
 	bita	#JOYLT
 	beq	MOVRT
 
-	tfr	x,d		Enforce limits on player horizontal position
+	eorb	#$80		Switch odd/even draw flag status
+	stb	PLDFLGS
+	bmi	MOVLADJ		Always can move left from odd
+
+	bra	MOVUP
+
+MOVLADJ	tfr	x,d		Enforce limits on player horizontal position
 	lda	JOYFLGS
 	bitb	#$1f
-	beq	MOVUP
+	beq	MOVLSTP
 
 	leax	-1,x
+	bra	MOVUP
 
+MOVLSTP	ldb	#$7f		Set even drawing status on left edge of screen
+	andb	PLDFLGS
+	stb	PLDFLGS
 	bra	MOVUP
 
 MOVRT	bita	#JOYRT
 	beq	MOVUP
 
-	tfr	x,d		Enforce limits on player horizontal position
+	eorb	#$80		Switch odd/even draw flag status
+	stb	PLDFLGS
+	bpl	MOVRADJ		Always can move right from even
+
+	bra	MOVUP
+
+MOVRADJ	tfr	x,d		Enforce limits on player horizontal position
 	lda	JOYFLGS
 	andb	#$1f
 	cmpb	#$1d
-	beq	MOVUP
+	beq	MOVRSTP
 
 	leax	1,x
+	bra	MOVUP
+
+MOVRSTP	ldb	#$80		Set odd drawing status on right edge of screen
+	orb	PLDFLGS
+	stb	PLDFLGS
 
 MOVUP	bita	#JOYUP
 	beq	MOVDN
@@ -350,7 +379,7 @@ MOVDN	bita	#JOYDN
 
 	leax	SCNWIDT,x
 
-MOVFIN	stx	PLRDPOS
+MOVFIN	stx	PLRDPOS		Update player position
 
 MOVSKIP	equ	*
 
@@ -441,7 +470,10 @@ VLOOP	jmp	VSYNC
 PLYDRAW	ldx	PLRDPOS
 	leax	3*SCNWIDT,x
 
-	lda	#BFLESH
+	tst	PLDFLGS
+	bmi	PDRWODD
+
+PDRWEVN	lda	#BFLESH		Draw player on even pixel start
 	anda	#PXMSK10
 	sta	-3*SCNWIDT+1,x
 	sta	-2*SCNWIDT+1,x
@@ -483,6 +515,48 @@ PLYDRAW	ldx	PLRDPOS
 
 	rts
 
+PDRWODD	lda	#BFLESH		Draw player on odd pixel start
+	anda	#PXMSK01
+	sta	-3*SCNWIDT+1,x
+	sta	-2*SCNWIDT+1,x
+	sta	2*SCNWIDT,x
+	sta	2*SCNWIDT+2,x
+
+	lda	#BSHIRT
+	tfr	a,b
+	sta	-SCNWIDT+1,x
+	std	1,x
+	anda	#PXMSK10
+	sta	-SCNWIDT+2,x
+	eora	#PXMSKXO
+	tfr	a,b
+	sta	,x
+	std	SCNWIDT,x
+	sta	SCNWIDT+2,x
+	sta	2*SCNWIDT+1,x
+
+	leax	6*SCNWIDT,x
+
+	lda	#BPANTS
+	sta	-2*SCNWIDT+1,x
+	anda	#PXMSK01
+	sta	-3*SCNWIDT+1,x
+	eora	#PXMSKXO
+	tfr	a,b
+	sta	-2*SCNWIDT+2,x
+	std	-SCNWIDT+1,x
+	std	1,x
+	std	SCNWIDT+1,x
+
+	lda	#BSHOES
+	sta	2*SCNWIDT+2,x
+	anda	#PXMSK01
+	sta	2*SCNWIDT,x
+	eora	#PXMSKXO
+	sta	2*SCNWIDT+1,x
+
+	rts
+
 *
 * Erase the player
 *	X,A,B get clobbered
@@ -491,7 +565,11 @@ PLYERAS	ldx	PLREPOS
 	beq	PLYERSX
 
 	leax	3*SCNWIDT,x
-	ldd	#WBLACK
+
+	tst	PLEFLGS
+	bmi	PERAODD
+
+PERAEVN	ldd	#WBLACK		Erase player from even pixel start
 	sta	-3*SCNWIDT+1,x
 	sta	-2*SCNWIDT+1,x
 	std	-SCNWIDT,x
@@ -508,6 +586,31 @@ PLYERAS	ldx	PLREPOS
 	std	-SCNWIDT,x
 	std	,x
 	std	SCNWIDT,x
+	std	2*SCNWIDT,x
+	sta	2*SCNWIDT+2,x
+
+	clr	PLREPOS		Don't erase again until next move!
+	clr	PLREPOS+1
+
+	rts
+
+PERAODD	ldd	#WBLACK		Erase player from odd pixel start
+	sta	-3*SCNWIDT+1,x
+	sta	-2*SCNWIDT+1,x
+	std	-SCNWIDT+1,x
+	std	,x
+	sta	2,x
+	std	SCNWIDT,x
+	sta	SCNWIDT+2,x
+	std	2*SCNWIDT,x
+	sta	2*SCNWIDT+2,x
+	sta	3*SCNWIDT+1,x
+
+	leax	6*SCNWIDT,x
+	std	-2*SCNWIDT+1,x
+	std	-SCNWIDT+1,x
+	std	1,x
+	std	SCNWIDT+1,x
 	std	2*SCNWIDT,x
 	sta	2*SCNWIDT+2,x
 
