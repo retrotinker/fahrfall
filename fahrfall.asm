@@ -72,11 +72,21 @@ PLTFCBI	equ	$cfcf		Initial bottom row color pattern for platforms
 
 PLTDFLT	equ	$3c		Default substitue for "sweeper" platforms
 
+PLYRHGT	equ	12*SCNWIDT	Player object height in terms of screen size
+
 	org	STRUCT		Platform info structure declarations
 PLTBASE	rmb	2		Current base addresses for drawing platform
 PLTDATA	rmb	1		Mask representing platform configuration
 PLTCOLR	rmb	4		Color data for drawing platform
 PLTSTSZ	equ	*
+
+JOYLT	equ	$01
+JOYRT	equ	$02
+JOYUP	equ	$04
+JOYDN	equ	$08
+JOYBTN	equ	$10
+
+JOYMOV	equ	JOYLT+JOYRT+JOYUP+JOYDN
 
 	org	DATA
 
@@ -107,6 +117,8 @@ PLTFRMS	rmb	3*PLTSTSZ	Platform info data structures
 
 PLREPOS	rmb	2		Player screen erase position
 PLRDPOS	rmb	2		Player screen draw position
+
+JOYFLGS	rmb	1
 
 	org	LOAD
 
@@ -240,9 +252,103 @@ VSYNC	lda	$ff03		Wait for Vsync
 
 	jsr	>DRWFLMS	Draw the flames at the top center of the screen
 
-	* Read the controls
+	clr	JOYFLGS		Clear the old joystick flag values
+	clrb
+	lda	$ff00		Read from the PIA connected to the joystick buttons
+	bita	#$02		Test for left joystick button press
+	bne	JOYRDRL
+	ldb	#JOYBTN
 
-	* Compute movement
+JOYRDRL	lda	#$34		Read the right/left axis of the left joystick
+	sta	$ff01
+	lda	#$3c
+	sta	$ff03
+
+	lda	#$65		Test for low value on axis
+	sta	$ff20
+	lda	$ff00
+	bpl	JOYRDLT
+	lda	#$98		Test for high value on axis
+	sta	$ff20
+	lda	$ff00
+	bpl	JOYRDUD
+
+JOYRDRT	orb	#JOYRT		Joystick points right
+	bra	JOYRDUD
+
+JOYRDLT	orb	#JOYLT		Joystick points left
+
+JOYRDUD	lda	#$3c		Read the up/down axis of the left joystick
+	sta	$ff01
+
+	lda	#$65		Test for low value on axis
+	sta	$ff20
+	lda	$ff00
+	bpl	JOYRDUP
+	lda	#$98		Test for high value on axis
+	sta	$ff20
+	lda	$ff00
+	bpl	JOYDONE
+
+JOYRDDN	orb	#JOYDN		Joystick points down
+	bra	JOYDONE
+
+JOYRDUP	orb	#JOYUP		Joystick points up
+
+JOYDONE	stb	JOYFLGS
+	jsr	KEYBDRD		Read the keyboard (?)
+
+	lda	JOYFLGS		Compute movement
+	bita	#JOYMOV
+	beq	MOVSKIP
+
+	ldx	PLRDPOS		Schedule a player erase at current position
+	stx	PLREPOS
+
+	bita	#JOYLT
+	beq	MOVRT
+
+	tfr	x,d		Enforce limits on player horizontal position
+	lda	JOYFLGS
+	bitb	#$1f
+	beq	MOVUP
+
+	leax	-1,x
+
+	bra	MOVUP
+
+MOVRT	bita	#JOYRT
+	beq	MOVUP
+
+	tfr	x,d		Enforce limits on player horizontal position
+	lda	JOYFLGS
+	andb	#$1f
+	cmpb	#$1d
+	beq	MOVUP
+
+	leax	1,x
+
+MOVUP	bita	#JOYUP
+	beq	MOVDN
+
+	cmpx	#(SCNBASE+7*SCNWIDT)	Enforce limits on player vert. pos.
+	blt	MOVFIN
+
+	leax	-SCNWIDT,x
+
+	bra	MOVFIN
+
+MOVDN	bita	#JOYDN
+	beq	MOVFIN
+
+	cmpx	#(SCNEND-PLYRHGT)	Enforce limits on player vert. pos.
+	bge	MOVFIN
+
+	leax	SCNWIDT,x
+
+MOVFIN	stx	PLRDPOS
+
+MOVSKIP	equ	*
 
 	* Detect collisions
 
@@ -780,6 +886,13 @@ LFSRADV	lda	LFSRDAT		Get MSB of LFSR data
 	rola
 	std	LFSRDAT		Store the result
 	rts
+
+*
+* Implement a keyboard read routine here
+*	-- Use JOYFLGS to record keyboard results
+*	-- Be smart enough to handle the Dragon keyboard too?
+*
+KEYBDRD	rts
 
 *
 * Draw a normal text string on the SG12 display
