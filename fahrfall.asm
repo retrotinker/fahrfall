@@ -74,6 +74,10 @@ PLTDFLT	equ	$3c		Default substitue for "sweeper" platforms
 
 PLYRHGT	equ	12*SCNWIDT	Player object height in terms of screen size
 
+PLODDBT	equ	$80		Bit for switching even/odd player drawing
+
+GMCOLBT	equ	$80		Bit for collision detection in game flags
+
 	org	STRUCT		Platform info structure declarations
 PLTBASE	rmb	2		Current base addresses for drawing platform
 PLTDATA	rmb	1		Mask representing platform configuration
@@ -122,6 +126,8 @@ PLEFLGS	rmb	1		Flags for erasing player object
 PLDFLGS	rmb	1		Flags for drawing player object
 
 JOYFLGS	rmb	1		Flags representing joystick info
+
+GAMFLGS	rmb	1		Flags representing game status
 
 	org	LOAD
 
@@ -212,7 +218,9 @@ PLTDINI	sta	PLTFRMS+PLTDATA
 	clr	PLEFLGS		Clear player erase flags
 	clr	PLDFLGS		Clear player draw flags
 
-	ldx	#$090e		Dummy player location initialization
+	clr	GAMFLGS		Clear game status info
+
+	ldx	#$04cf		Dummy player location initialization
 	stx	PLREPOS
 	stx	PLRDPOS
 
@@ -308,81 +316,6 @@ JOYRDUP	orb	#JOYUP		Joystick points up
 JOYDONE	stb	JOYFLGS
 	jsr	KEYBDRD		Read the keyboard (?)
 
-	lda	JOYFLGS		Compute movement
-	bita	#JOYMOV
-	beq	MOVSKIP
-
-	ldx	PLRDPOS		Schedule a player erase at current position
-	stx	PLREPOS
-	ldb	PLDFLGS		Make sure correct erase routine is used
-	stb	PLEFLGS
-
-	bita	#JOYLT
-	beq	MOVRT
-
-	eorb	#$80		Switch odd/even draw flag status
-	stb	PLDFLGS
-	bmi	MOVLADJ		Always can move left from odd
-
-	bra	MOVUP
-
-MOVLADJ	tfr	x,d		Enforce limits on player horizontal position
-	lda	JOYFLGS
-	bitb	#$1f
-	beq	MOVLSTP
-
-	leax	-1,x
-	bra	MOVUP
-
-MOVLSTP	ldb	#$7f		Set even drawing status on left edge of screen
-	andb	PLDFLGS
-	stb	PLDFLGS
-	bra	MOVUP
-
-MOVRT	bita	#JOYRT
-	beq	MOVUP
-
-	eorb	#$80		Switch odd/even draw flag status
-	stb	PLDFLGS
-	bpl	MOVRADJ		Always can move right from even
-
-	bra	MOVUP
-
-MOVRADJ	tfr	x,d		Enforce limits on player horizontal position
-	lda	JOYFLGS
-	andb	#$1f
-	cmpb	#$1d
-	beq	MOVRSTP
-
-	leax	1,x
-	bra	MOVUP
-
-MOVRSTP	ldb	#$80		Set odd drawing status on right edge of screen
-	orb	PLDFLGS
-	stb	PLDFLGS
-
-MOVUP	bita	#JOYUP
-	beq	MOVDN
-
-	cmpx	#(SCNBASE+7*SCNWIDT)	Enforce limits on player vert. pos.
-	blt	MOVFIN
-
-	leax	-SCNWIDT,x
-
-	bra	MOVFIN
-
-MOVDN	bita	#JOYDN
-	beq	MOVFIN
-
-	cmpx	#(SCNEND-PLYRHGT)	Enforce limits on player vert. pos.
-	bge	MOVFIN
-
-	leax	SCNWIDT,x
-
-MOVFIN	stx	PLRDPOS		Update player position
-
-MOVSKIP	equ	*
-
 	ldd	PLRDPOS		Check for player/platform collisions
 	addd	#PLYRHGT
 	andb	#$e0
@@ -396,7 +329,7 @@ MOVSKIP	equ	*
 	bitb	PLTFRMS+PLTDATA
 	beq	COLCHK1
 
-	bra	COLCGRN
+	bra	COLCPOS
 
 COLCHK1	cmpd	PLTFRMS+PLTSTSZ+PLTBASE
 	bne	COLCHK2
@@ -406,34 +339,29 @@ COLCHK1	cmpd	PLTFRMS+PLTSTSZ+PLTBASE
 	bitb	PLTFRMS+PLTSTSZ+PLTDATA
 	beq	COLCHK2
 
-	bra	COLCGRN
+	bra	COLCPOS
 
 COLCHK2	cmpd	PLTFRMS+2*PLTSTSZ+PLTBASE
-	bne	COLCORG
+	bne	COLCNEG
 	ldb	PLRDPOS+1
 	andb	#$1f
 	ldb	b,x
 	bitb	PLTFRMS+2*PLTSTSZ+PLTDATA
-	beq	COLCORG
+	beq	COLCNEG
 
-COLCGRN	lda	#$f7		Select green text color set
-	anda	$ff22
-	sta	$ff22
+COLCPOS	lda	#GMCOLBT	Set collision flag
+	ora	GAMFLGS
+	sta	GAMFLGS
 
 	bra	COLCDON
 
-COLCORG	lda	#$08		Select orange text color set
-	ora	$ff22
-	sta	$ff22
+COLCNEG	lda	#$7f		Clear collision flag
+	anda	GAMFLGS
+	sta	GAMFLGS
 
 COLCDON	equ	*
 
 	* Compute score
-
-	dec	FRAMCNT		Bump the frame counter
-	bne	LFSRBMP
-	lda	#FRMCTIN
-	sta	FRAMCNT
 
 LFSRBMP	jsr	LFSRADV		Advance the LFSR
 
@@ -450,7 +378,7 @@ LFSRBMP	jsr	LFSRADV		Advance the LFSR
 	sta	FLAMCNT
 
 PLTADV	dec	PLTMCNT		Countdown until next platform movement
-	bne	CHKUART
+	lbne	MOVCOMP
 
 	lda	#PLTFMCI	Reset platform movement counter
 	sta	PLTMCNT
@@ -463,7 +391,7 @@ PLTADV	dec	PLTMCNT		Countdown until next platform movement
 	subd	#PLTFRNG
 
 	cmpd	#PLTFTOP	Check for top of platform movement
-	bge	PLTBSTO
+	bgt	PLTBSTO
 
 	lda	PLTFRMS+PLTSTSZ+PLTDATA		Shift platform data values
 	sta	PLTFRMS+2*PLTSTSZ+PLTDATA
@@ -474,9 +402,27 @@ PLTADV	dec	PLTMCNT		Countdown until next platform movement
 	beq	PLTDFLS				Use default if zero
 	cmpa	#$ff				Check for "sweepers"
 	bne	PLTDSTO
-PLTDFLS	lda	#PLTDFLT			Substitute default platform data
+PLTDFLS	lda	#PLTDFLT	Substitute default platform data
 PLTDSTO	sta	PLTFRMS+PLTDATA
-	ldd	PLTFRMS+PLTSTSZ+PLTCOLR		Shift the color values too
+
+PLTCCHK	ldd	PLRDPOS		Special check for new player/platform collision
+	addd	#PLYRHGT
+	andb	#$e0
+	ldx	#PLTCMSK
+
+	cmpd	#SCNEND
+	bne	PLTSHFT
+	ldb	PLRDPOS+1
+	andb	#$1f
+	ldb	b,x
+	bitb	PLTFRMS+PLTDATA
+	beq	PLTSHFT
+
+	lda	#GMCOLBT	Set collision flag
+	ora	GAMFLGS
+	sta	GAMFLGS
+
+PLTSHFT	ldd	PLTFRMS+PLTSTSZ+PLTCOLR		Shift the color values too
 	std	PLTFRMS+2*PLTSTSZ+PLTCOLR
 	ldd	PLTFRMS+PLTSTSZ+PLTCOLR+2
 	std	PLTFRMS+2*PLTSTSZ+PLTCOLR+2
@@ -488,13 +434,107 @@ PLTDSTO	sta	PLTFRMS+PLTDATA
 	std	PLTFRMS+PLTCOLR
 	ldd	PLTNCLR+2
 	std	PLTFRMS+PLTCOLR+2
-	ldd	#(PLTBSIN-SCNWIDT)		Reset first platform base pointer
+	ldd	#PLTBSIN		Reset first platform base pointer
 	std	PLTFRMS+PLTBASE
-	ldd	#(PLTBSIN-PLTFRNG-SCNWIDT)	Reset second platform base pointer
+	ldd	#(PLTBSIN-PLTFRNG)	Reset second platform base pointer
 	std	PLTFRMS+PLTSTSZ+PLTBASE
-	ldd	#(PLTBSIN-2*PLTFRNG-SCNWIDT)	Reset third platform base pointer
+	ldd	#(PLTBSIN-2*PLTFRNG)	Reset third platform base pointer
 
 PLTBSTO	std	PLTFRMS+2*PLTSTSZ+PLTBASE
+
+	tst	GAMFLGS		Check for player collision
+	bpl	MOVCOMP
+	lda	#JOYUP		Advance the player with the platform
+	ora	JOYFLGS
+	sta	JOYFLGS
+
+MOVCOMP	lda	JOYFLGS		Compute movement
+	bita	#JOYMOV
+	beq	MOVSKIP
+
+	tst	GAMFLGS		If on a platform, disable down movement
+	bpl	MOVCMP1
+
+	lda	#($ff-JOYDN)
+	anda	JOYFLGS
+	sta	JOYFLGS
+
+MOVCMP1	ldx	PLRDPOS		Schedule a player erase at current position
+	stx	PLREPOS
+	ldb	PLDFLGS		Make sure correct erase routine is used
+	stb	PLEFLGS
+
+	bita	#JOYLT
+	beq	MOVRT
+
+	eorb	#PLODDBT	Switch odd/even draw flag status
+	stb	PLDFLGS
+	bmi	MOVLADJ		Always can move left from odd
+
+	bra	MOVUP
+
+MOVLADJ	tfr	x,d		Enforce limits on player horizontal position
+	lda	JOYFLGS
+	bitb	#$1f
+	beq	MOVLSTP
+
+	leax	-1,x
+	bra	MOVUP
+
+MOVLSTP	ldb	#($ff-PLODDBT)	Set even drawing status on left edge of screen
+	andb	PLDFLGS
+	stb	PLDFLGS
+	bra	MOVUP
+
+MOVRT	bita	#JOYRT
+	beq	MOVUP
+
+	eorb	#PLODDBT	Switch odd/even draw flag status
+	stb	PLDFLGS
+	bpl	MOVRADJ		Always can move right from even
+
+	bra	MOVUP
+
+MOVRADJ	tfr	x,d		Enforce limits on player horizontal position
+	lda	JOYFLGS
+	andb	#$1f
+	cmpb	#$1d
+	beq	MOVRSTP
+
+	leax	1,x
+	bra	MOVUP
+
+MOVRSTP	ldb	#PLODDBT	Set odd drawing status on right edge of screen
+	orb	PLDFLGS
+	stb	PLDFLGS
+
+MOVUP	bita	#JOYUP
+	beq	MOVDN
+
+	cmpx	#(SCNBASE+7*SCNWIDT)	Enforce limits on player vert. pos.
+	lblt	GAMEOVR
+
+	leax	-SCNWIDT,x
+
+	bra	MOVFIN
+
+MOVDN	bita	#JOYDN
+	beq	MOVFIN
+
+	cmpx	#(SCNEND-PLYRHGT)	Enforce limits on player vert. pos.
+	lbge	GAMEOVR
+
+	leax	SCNWIDT,x
+
+MOVFIN	stx	PLRDPOS		Update player position
+
+MOVSKIP	equ	*
+
+FRMCBMP	dec	FRAMCNT		Bump the frame counter
+	bne	FRMCBDN
+	lda	#FRMCTIN
+	sta	FRAMCNT
+FRMCBDN	equ	*
 
 * Check for user break (development only)
 CHKUART	lda	$ff69		Check for serial port activity
@@ -1092,6 +1132,11 @@ DRWSKOR	stb	a,y
 	bra	DRWFMLP
 DRWFLMX	leas	1,s
 	rts
+
+*
+* Game Over
+*
+GAMEOVR	jmp	INIT
 
 FLAMES	fcb	$bf,$ff,$9f,$ff,$ff,$ff,$9f,$9f,$ff,$ff
 	fcb	$ff,$ff,$9f,$9f,$ff,$ff,$ff,$9f,$ff,$bf
