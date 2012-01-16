@@ -65,7 +65,7 @@ PLTFTOP	equ	SCNBASE-SCNWIDT	Top of highest platform animation section
 PLTFRNG	equ	SCNSIZE/NUMPLTF	Size of each platform animation section
 
 PLTBSIN	equ	SCNEND-SCNWIDT	Initial value for base of bottom platform
-PLTFMCI	equ	$05		Default count value for platform movement
+PLTFMCI	equ	$03		Default count value for platform movement
 
 PLTFCTI	equ	$cfcf		Initial top row color pattern for platforms
 PLTFCBI	equ	$cfcf		Initial bottom row color pattern for platforms
@@ -90,7 +90,12 @@ JOYUP	equ	$04
 JOYDN	equ	$08
 JOYBTN	equ	$10
 
-JOYMOV	equ	JOYLT+JOYRT+JOYUP+JOYDN
+JOYMSK	equ	JOYLT+JOYRT	Only allow these movements from the joystick
+
+MOVLT	equ	JOYLT
+MOVRT	equ	JOYRT
+MOVUP	equ	JOYUP
+MOVDN	equ	JOYDN
 
 	org	DATA
 
@@ -126,12 +131,15 @@ PLEFLGS	rmb	1		Flags for erasing player object
 PLDFLGS	rmb	1		Flags for drawing player object
 
 JOYFLGS	rmb	1		Flags representing joystick info
+MOVFLGS	rmb	1		Flags representing movement info
 
 GAMFLGS	rmb	1		Flags representing game status
 
 	org	LOAD
 
-INIT	lda	#(DATA/256)	Set direct page register
+INIT	equ	*		Basic one-time setup goes here!
+
+	lda	#(DATA/256)	Set direct page register
 	tfr	a,dp
 	setdp	DATA/256	Tell the assembler about the direct page value
 
@@ -141,13 +149,6 @@ INIT	lda	#(DATA/256)	Set direct page register
 	ora	$ff22
 	sta	$ff22
 
-	ldx	#SCNBASE	Clear screen
-	ldd	#WBLACK
-
-CLSLOOP	std	,x++
-	cmpx	#SCNEND
-	bne	CLSLOOP
-
 	ldx	#HISCORE	Initialize high score
 	lda	#(SCORLEN-1)
 	ldb	#$30
@@ -156,6 +157,11 @@ INHSCLP	stb	a,x
 	bne	INHSCLP
 	stb	a,x
 
+	ldd	TIMVAL		Seed the LFSR data
+	std	LFSRDAT
+
+RESTART	equ	*		New game starts here!
+
 	ldx	#CURSCOR	Initialize current score
 	lda	#(SCORLEN-1)
 	ldb	#$70
@@ -163,6 +169,13 @@ INCSCLP	stb	a,x
 	deca
 	bne	INCSCLP
 	stb	a,x
+
+	ldx	#SCNBASE	Clear screen
+	ldd	#WBLACK
+
+CLSLOOP	std	,x++
+	cmpx	#SCNEND
+	bne	CLSLOOP
 
 	lda	#SCR6CIN	Initialize middle-inner scroll counter
 	sta	SCR6CNT
@@ -180,9 +193,6 @@ INCSCLP	stb	a,x
 	sta	FLAMMSK
 	lda	#FLMCNTI
 	sta	FLAMCNT
-
-	ldd	TIMVAL		Seed the LFSR data
-	std	LFSRDAT
 
 	ldd	#PLTBSIN	Initialize platform section base values
 	std	PLTFRMS+PLTBASE
@@ -314,6 +324,10 @@ JOYRDDN	orb	#JOYDN		Joystick points down
 JOYRDUP	orb	#JOYUP		Joystick points up
 
 JOYDONE	stb	JOYFLGS
+
+JOYMASK	andb	#JOYMSK		Mask-off disallowed joystick movements
+	stb	MOVFLGS		Store movement flags for later
+
 	jsr	KEYBDRD		Read the keyboard (?)
 
 	* Compute score
@@ -376,74 +390,73 @@ PLTBSTO	std	PLTFRMS+2*PLTSTSZ+PLTBASE
 
 PLTADVF	tst	GAMFLGS		Player/platform collision?
 	bpl	PLADVDN
-	lda	#JOYUP		Advance the player with the platform
-	ora	JOYFLGS
-	sta	JOYFLGS
+	lda	#MOVUP		Advance the player with the platform
+	ora	MOVFLGS
+	sta	MOVFLGS
 
 PLADVDN	jsr	COLDTCT		Platform moved, check for new collisions
 
-MOVCOMP	lda	JOYFLGS		Compute movement
-	bita	#JOYMOV
+MOVCOMP	tst	GAMFLGS		Check for player/platform collision
+	bmi	MOVCMP1
+
+	lda	#MOVDN		Force downward move if not on platform
+	ora	MOVFLGS
+	sta	MOVFLGS
+
+MOVCMP1	lda	MOVFLGS		Compute movement
 	beq	MOVSKIP
 
-	tst	GAMFLGS		If on a platform, disable down movement
-	bpl	MOVCMP1
-
-	lda	#($ff-JOYDN)
-	anda	JOYFLGS
-	sta	JOYFLGS
-
-MOVCMP1	ldx	PLRDPOS		Schedule a player erase at current position
+	ldx	PLRDPOS		Schedule a player erase at current position
 	stx	PLREPOS
 	ldb	PLDFLGS		Make sure correct erase routine is used
 	stb	PLEFLGS
 
-	bita	#JOYLT
-	beq	MOVRT
+	bita	#MOVLT
+	beq	MOVRGHT
 
 	eorb	#PLODDBT	Switch odd/even draw flag status
 	stb	PLDFLGS
 	bmi	MOVLADJ		Always can move left from odd
 
-	bra	MOVUP
+	bra	MOVEUP
 
 MOVLADJ	tfr	x,d		Enforce limits on player horizontal position
-	lda	JOYFLGS
+	lda	MOVFLGS
 	bitb	#$1f
 	beq	MOVLSTP
 
 	leax	-1,x
-	bra	MOVUP
+	bra	MOVEUP
 
 MOVLSTP	ldb	#($ff-PLODDBT)	Set even drawing status on left edge of screen
 	andb	PLDFLGS
 	stb	PLDFLGS
-	bra	MOVUP
+	bra	MOVEUP
 
-MOVRT	bita	#JOYRT
-	beq	MOVUP
+MOVRGHT	bita	#MOVRT
+	beq	MOVEUP
 
 	eorb	#PLODDBT	Switch odd/even draw flag status
 	stb	PLDFLGS
 	bpl	MOVRADJ		Always can move right from even
 
-	bra	MOVUP
+	bra	MOVEUP
 
 MOVRADJ	tfr	x,d		Enforce limits on player horizontal position
-	lda	JOYFLGS
+	lda	MOVFLGS
 	andb	#$1f
 	cmpb	#$1d
 	beq	MOVRSTP
 
 	leax	1,x
-	bra	MOVUP
+	bra	MOVEUP
 
 MOVRSTP	ldb	#PLODDBT	Set odd drawing status on right edge of screen
 	orb	PLDFLGS
 	stb	PLDFLGS
 
-MOVUP	bita	#JOYUP
-	beq	MOVDN
+MOVEUP	bita	#MOVUP
+	beq	MOVDOWN
 
 	cmpx	#(SCNBASE+7*SCNWIDT)	Enforce limits on player vert. pos.
 	lblt	GAMEOVR
@@ -452,7 +465,7 @@ MOVUP	bita	#JOYUP
 
 	bra	MOVFIN
 
-MOVDN	bita	#JOYDN
+MOVDOWN	bita	#MOVDN
 	beq	MOVFIN
 
 	cmpx	#(SCNEND-PLYRHGT)	Enforce limits on player vert. pos.
@@ -1148,7 +1161,7 @@ COLDNEG	lda	#$7f		Clear collision flag
 *
 * Game Over
 *
-GAMEOVR	jmp	INIT
+GAMEOVR	jmp	RESTART
 
 FLAMES	fcb	$bf,$ff,$9f,$ff,$ff,$ff,$9f,$9f,$ff,$ff
 	fcb	$ff,$ff,$9f,$9f,$ff,$ff,$ff,$9f,$ff,$bf
