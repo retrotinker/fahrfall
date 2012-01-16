@@ -65,7 +65,7 @@ PLTFTOP	equ	SCNBASE-SCNWIDT	Top of highest platform animation section
 PLTFRNG	equ	SCNSIZE/NUMPLTF	Size of each platform animation section
 
 PLTBSIN	equ	SCNEND-SCNWIDT	Initial value for base of bottom platform
-PLTFMCI	equ	$05		Default count value for platform movement
+PLTFMCI	equ	$03		Default count value for platform movement
 
 PLTFCTI	equ	$cfcf		Initial top row color pattern for platforms
 PLTFCBI	equ	$cfcf		Initial bottom row color pattern for platforms
@@ -181,8 +181,8 @@ INCSCLP	stb	a,x
 	lda	#FLMCNTI
 	sta	FLAMCNT
 
-	ldd	TIMVAL		Seed the LFSR data
-	std	LFSRDAT
+*	ldd	TIMVAL		Seed the LFSR data
+*	std	LFSRDAT
 
 	ldd	#PLTBSIN	Initialize platform section base values
 	std	PLTFRMS+PLTBASE
@@ -311,7 +311,8 @@ JOYRDUD	lda	#$3c		Read the up/down axis of the left joystick
 JOYRDDN	orb	#JOYDN		Joystick points down
 	bra	JOYDONE
 
-JOYRDUP	orb	#JOYUP		Joystick points up
+JOYRDUP	
+*	orb	#JOYUP		Joystick points up
 
 JOYDONE	stb	JOYFLGS
 	jsr	KEYBDRD		Read the keyboard (?)
@@ -382,7 +383,16 @@ PLTADVF	tst	GAMFLGS		Player/platform collision?
 
 PLADVDN	jsr	COLDTCT		Platform moved, check for new collisions
 
-MOVCOMP	lda	JOYFLGS		Compute movement
+MOVCOMP	
+	tst	GAMFLGS
+	bmi	MOVCMP2
+
+	lda	#JOYDN
+	ora	JOYFLGS
+	sta	JOYFLGS
+MOVCMP2
+
+	lda	JOYFLGS		Compute movement
 	bita	#JOYMOV
 	beq	MOVSKIP
 
