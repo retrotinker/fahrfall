@@ -316,69 +316,12 @@ JOYRDUP	orb	#JOYUP		Joystick points up
 JOYDONE	stb	JOYFLGS
 	jsr	KEYBDRD		Read the keyboard (?)
 
-	ldd	PLRDPOS		Check for player/platform collisions
-	addd	#PLYRHGT
-	andb	#$e0
-	ldx	#PLTCMSK
-
-	cmpd	PLTFRMS+PLTBASE
-	bne	COLCHK1
-	ldb	PLRDPOS+1
-	andb	#$1f
-	ldb	b,x
-	bitb	PLTFRMS+PLTDATA
-	beq	COLCHK1
-
-	bra	COLCPOS
-
-COLCHK1	cmpd	PLTFRMS+PLTSTSZ+PLTBASE
-	bne	COLCHK2
-	ldb	PLRDPOS+1
-	andb	#$1f
-	ldb	b,x
-	bitb	PLTFRMS+PLTSTSZ+PLTDATA
-	beq	COLCHK2
-
-	bra	COLCPOS
-
-COLCHK2	cmpd	PLTFRMS+2*PLTSTSZ+PLTBASE
-	bne	COLCNEG
-	ldb	PLRDPOS+1
-	andb	#$1f
-	ldb	b,x
-	bitb	PLTFRMS+2*PLTSTSZ+PLTDATA
-	beq	COLCNEG
-
-COLCPOS	lda	#GMCOLBT	Set collision flag
-	ora	GAMFLGS
-	sta	GAMFLGS
-
-	bra	COLCDON
-
-COLCNEG	lda	#$7f		Clear collision flag
-	anda	GAMFLGS
-	sta	GAMFLGS
-
-COLCDON	equ	*
-
 	* Compute score
 
-LFSRBMP	jsr	LFSRADV		Advance the LFSR
-
-	dec	FLAMCNT		Countdown until next flame flicker
-	bne	PLTADV
-
-	lda	#FLMMSKI	Cycle the flame effect data
-	eora	FLAMMSK
-	sta	FLAMMSK
-
-	lda	LFSRDAT		Grab part of the LFSR value
-	anda	#FLMCTRG	Limit the range of the values
-	adda	#FLMCTMN	Enforce a minimum value
-	sta	FLAMCNT
+CHKCOLS	jsr	COLDTCT		Check for player/platform collisions
 
 PLTADV	dec	PLTMCNT		Countdown until next platform movement
-	lbne	MOVCOMP
+	bne	MOVCOMP
 
 	lda	#PLTFMCI	Reset platform movement counter
 	sta	PLTMCNT
@@ -405,24 +348,7 @@ PLTADV	dec	PLTMCNT		Countdown until next platform movement
 PLTDFLS	lda	#PLTDFLT	Substitute default platform data
 PLTDSTO	sta	PLTFRMS+PLTDATA
 
-PLTCCHK	ldd	PLRDPOS		Special check for new player/platform collision
-	addd	#PLYRHGT
-	andb	#$e0
-	ldx	#PLTCMSK
-
-	cmpd	#SCNEND
-	bne	PLTSHFT
-	ldb	PLRDPOS+1
-	andb	#$1f
-	ldb	b,x
-	bitb	PLTFRMS+PLTDATA
-	beq	PLTSHFT
-
-	lda	#GMCOLBT	Set collision flag
-	ora	GAMFLGS
-	sta	GAMFLGS
-
-PLTSHFT	ldd	PLTFRMS+PLTSTSZ+PLTCOLR		Shift the color values too
+	ldd	PLTFRMS+PLTSTSZ+PLTCOLR		Shift the color values too
 	std	PLTFRMS+2*PLTSTSZ+PLTCOLR
 	ldd	PLTFRMS+PLTSTSZ+PLTCOLR+2
 	std	PLTFRMS+2*PLTSTSZ+PLTCOLR+2
@@ -440,13 +366,21 @@ PLTSHFT	ldd	PLTFRMS+PLTSTSZ+PLTCOLR		Shift the color values too
 	std	PLTFRMS+PLTSTSZ+PLTBASE
 	ldd	#(PLTBSIN-2*PLTFRNG)	Reset third platform base pointer
 
+	tst	GAMFLGS		Player/platform collision already?
+	bmi	PLTBSTO		No need to check for a new one
+	std	PLTFRMS+2*PLTSTSZ+PLTBASE	Replicate PLTBSTO action here...
+	jsr	COLDTBP		Special check for new player/platform collision
+	bra	PLTADVF				Jump over PLTBSTO here...
+
 PLTBSTO	std	PLTFRMS+2*PLTSTSZ+PLTBASE
 
-	tst	GAMFLGS		Check for player collision
-	bpl	MOVCOMP
+PLTADVF	tst	GAMFLGS		Player/platform collision?
+	bpl	PLADVDN
 	lda	#JOYUP		Advance the player with the platform
 	ora	JOYFLGS
 	sta	JOYFLGS
+
+PLADVDN	jsr	COLDTCT		Platform moved, check for new collisions
 
 MOVCOMP	lda	JOYFLGS		Compute movement
 	bita	#JOYMOV
@@ -529,6 +463,20 @@ MOVDN	bita	#JOYDN
 MOVFIN	stx	PLRDPOS		Update player position
 
 MOVSKIP	equ	*
+
+LFSRBMP	jsr	LFSRADV		Advance the LFSR
+
+	dec	FLAMCNT		Countdown until next flame flicker
+	bne	FRMCBMP
+
+	lda	#FLMMSKI	Cycle the flame effect data
+	eora	FLAMMSK
+	sta	FLAMMSK
+
+	lda	LFSRDAT		Grab part of the LFSR value
+	anda	#FLMCTRG	Limit the range of the values
+	adda	#FLMCTMN	Enforce a minimum value
+	sta	FLAMCNT
 
 FRMCBMP	dec	FRAMCNT		Bump the frame counter
 	bne	FRMCBDN
@@ -1131,6 +1079,70 @@ DRWSKOR	stb	a,y
 	lda	#FLAMLEN
 	bra	DRWFMLP
 DRWFLMX	leas	1,s
+	rts
+
+*
+* Collision detection for new bottom platform
+*	X,A,B get clobbered
+*
+*	This is a special collision detection entry point for the
+*	case of a new bottom platform.
+*
+COLDTBP	ldd	PLRDPOS
+	addd	#(PLYRHGT-SCNWIDT)
+	andb	#$e0
+	ldx	#PLTCMSK
+	bra	COLDTP0
+
+*
+* Collision detection -- check for player/platform collisions
+*	X,A,B get clobbered
+*
+*	Both COLDPOS and COLDNEG have rts instructions
+*
+*	Note: platform movement uses special entry point COLDTBP
+*
+COLDTCT	ldd	PLRDPOS
+	addd	#PLYRHGT
+	andb	#$e0
+	ldx	#PLTCMSK
+
+COLDTP2	cmpd	PLTFRMS+2*PLTSTSZ+PLTBASE
+	bne	COLDTP1
+	ldb	PLRDPOS+1
+	andb	#$1f
+	ldb	b,x
+	bitb	PLTFRMS+2*PLTSTSZ+PLTDATA
+	beq	COLDNEG
+
+	bra	COLDPOS
+
+COLDTP1	cmpd	PLTFRMS+PLTSTSZ+PLTBASE
+	bne	COLDTP0
+	ldb	PLRDPOS+1
+	andb	#$1f
+	ldb	b,x
+	bitb	PLTFRMS+PLTSTSZ+PLTDATA
+	beq	COLDNEG
+
+	bra	COLDPOS
+
+COLDTP0	cmpd	PLTFRMS+PLTBASE
+	bne	COLDNEG
+	ldb	PLRDPOS+1
+	andb	#$1f
+	ldb	b,x
+	bitb	PLTFRMS+PLTDATA
+	beq	COLDNEG
+
+COLDPOS	lda	#GMCOLBT	Set collision flag
+	ora	GAMFLGS
+	sta	GAMFLGS
+	rts
+
+COLDNEG	lda	#$7f		Clear collision flag
+	anda	GAMFLGS
+	sta	GAMFLGS
 	rts
 
 *
