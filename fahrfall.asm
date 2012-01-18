@@ -78,6 +78,8 @@ PLODDBT	equ	$80		Bit for switching even/odd player drawing
 
 GMCOLBT	equ	$80		Bit for collision detection in game flags
 
+SCORDLI	equ	$0f		Counter value for scoring delay
+
 	org	STRUCT		Platform info structure declarations
 PLTBASE	rmb	2		Current base addresses for drawing platform
 PLTDATA	rmb	1		Mask representing platform configuration
@@ -134,6 +136,8 @@ JOYFLGS	rmb	1		Flags representing joystick info
 MOVFLGS	rmb	1		Flags representing movement info
 
 GAMFLGS	rmb	1		Flags representing game status
+
+SCORDLY	rmb	1		Delay counter for scoring
 
 	org	LOAD
 
@@ -229,6 +233,9 @@ PLTDINI	sta	PLTFRMS+PLTDATA
 	clr	PLDFLGS		Clear player draw flags
 
 	clr	GAMFLGS		Clear game status info
+
+	lda	#SCORDLI	Initialize scoring delay counter
+	sta	SCORDLY
 
 	ldx	#$04cf		Dummy player location initialization
 	stx	PLREPOS
@@ -330,7 +337,7 @@ JOYMASK	andb	#JOYMSK		Mask-off disallowed joystick movements
 
 	jsr	KEYBDRD		Read the keyboard (?)
 
-	* Compute score
+	jsr	CMPSCOR		Compute score
 
 CHKCOLS	jsr	COLDTCT		Check for player/platform collisions
 
@@ -1157,6 +1164,48 @@ COLDNEG	lda	#$7f		Clear collision flag
 	anda	GAMFLGS
 	sta	GAMFLGS
 	rts
+
+*
+* Compute the score
+*
+CMPSCOR	dec	SCORDLY		Decrement score delay counter
+	bne	CMPSCRX		Not expired, so exit
+	lda	#SCORDLI
+	sta	SCORDLY		Restore delay counter
+
+	lda	#SCORLEN	Start from LSB end
+	ldx	#(CURSCOR-1)	Point X at current score
+CMPSLP1	ldb	a,x		Increment current digit
+	incb
+	cmpb	#$7a
+	blt	CMPSCR1		Value less than encoding for "9", we are done
+	ldb	#$70		Otherwise, reset to encoding for "0"
+	stb	a,x
+	deca
+	bne	CMPSLP1		Then increment the next digit
+CMPSCR1	stb	a,x		Store 
+
+	clra			Start from MSB end
+	ldy	#(HISCORE-1)	Point Y at high score
+CMPSLP2	inca
+	ldb	a,x		Load digit from current score
+	andb	#$bf		Convert to format for high score
+	cmpb	a,y		Compare this digit to same one in high score
+
+	blt	CMPSCRX		If lesser, no high score update
+	bgt	CMPSCR2		If higher, record new high score
+
+	cmpa	#SCORLEN	Out of digits?
+	blt	CMPSLP2		No, compare next set of digits
+
+CMPSCR2	lda	#SCORLEN
+CMPSLP3	ldb	a,x		Load current score digit
+	andb	#$bf		Convert to format for high score
+	stb	a,y		Store high score digit
+	deca
+	bne	CMPSLP3
+
+CMPSCRX	rts
 
 *
 * Game Over
