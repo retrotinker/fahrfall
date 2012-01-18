@@ -6,6 +6,8 @@ LOAD	equ	$1c00		Actual load address for binary
 
 STRUCT	equ	0		Dummy origin for declaring structures
 
+TIMVAL	equ	$0112		Extended BASIC's free-running time counter
+
 SCNBASE	equ	$0400		Base address for screen memory
 SCNSIZE	equ	$0c00		Size of screen memory
 SCNEND	equ	SCNBASE+SCNSIZE	End of screen memory
@@ -22,8 +24,6 @@ SCNSIXH	equ	SCNWIDT*SCNLINS/6
 SCN2SXH	equ	SCNSIXH*2
 SCN4SXH	equ	SCNHALF+SCNSIXH
 SCN5SXH	equ	SCNHALF+SCNSIXH*2
-
-TIMVAL	equ	$0112		Extended BASIC's free-running time counter
 
 SCORLEN	equ	6		Number of digits in score display
 
@@ -57,36 +57,26 @@ PXMSKXO	equ	$0f		XOR mask to reverse single-pixel patterns
 
 BSCLRIN	equ	$b5		Initial value for bg-scroll effect
 
-FRMCTIN	equ	$08		Initial value for frame count values
+FRMCTIN	equ	$08		Initial value for frame counter
 
 NUMPLTF	set	3
 
 PLTFTOP	equ	SCNBASE-SCNWIDT	Top of highest platform animation section
 PLTFRNG	equ	SCNSIZE/NUMPLTF	Size of each platform animation section
-
 PLTBSIN	equ	SCNEND-SCNWIDT	Initial value for base of bottom platform
 PLTFMCI	equ	$03		Default count value for platform movement
-
 PLTFCTI	equ	$cfcf		Initial top row color pattern for platforms
 PLTFCBI	equ	$cfcf		Initial bottom row color pattern for platforms
-
 PLTDFLT	equ	$3c		Default substitue for "sweeper" platforms
 
 PLYRHGT	equ	12*SCNWIDT	Player object height in terms of screen size
-
 PLODDBT	equ	$80		Bit for switching even/odd player drawing
 
-GMCOLBT	equ	$80		Bit for collision detection in game flags
+GMCOLFL	equ	$80		Bit for collision detection in game flags
 
 SCORDLI	equ	$0f		Counter value for scoring delay
 
-	org	STRUCT		Platform info structure declarations
-PLTBASE	rmb	2		Current base addresses for drawing platform
-PLTDATA	rmb	1		Mask representing platform configuration
-PLTCOLR	rmb	4		Color data for drawing platform
-PLTSTSZ	equ	*
-
-JOYLT	equ	$01
+JOYLT	equ	$01		Joystick flag definitions
 JOYRT	equ	$02
 JOYUP	equ	$04
 JOYDN	equ	$08
@@ -94,10 +84,16 @@ JOYBTN	equ	$10
 
 JOYMSK	equ	JOYLT+JOYRT	Only allow these movements from the joystick
 
-MOVLT	equ	JOYLT
+MOVLT	equ	JOYLT		Movement flag definitions
 MOVRT	equ	JOYRT
 MOVUP	equ	JOYUP
 MOVDN	equ	JOYDN
+
+	org	STRUCT		Platform info structure declarations
+PLTBASE	rmb	2		Current base addresses for drawing platform
+PLTDATA	rmb	1		Mask representing platform configuration
+PLTCOLR	rmb	4		Color data for drawing platform
+PLTSTSZ	equ	*
 
 	org	DATA
 
@@ -174,18 +170,13 @@ INCSCLP	stb	a,x
 	bne	INCSCLP
 	stb	a,x
 
-	ldx	#SCNBASE	Clear screen
-	ldd	#WBLACK
+	lda	#FRMCTIN	Initialize frame sequence counter
+	sta	FRAMCNT
 
-CLSLOOP	std	,x++
-	cmpx	#SCNEND
-	bne	CLSLOOP
+	jsr	CLRSCRN		Clear the screen to black
 
 	lda	#SCR6CIN	Initialize middle-inner scroll counter
 	sta	SCR6CNT
-
-	lda	#FRMCTIN	Initialize frame sequence counter
-	sta	FRAMCNT
 
 	lda	#BSCLRIN	Seed the bg-scroll color data
 	sta	SCRTCOT
@@ -204,9 +195,6 @@ CLSLOOP	std	,x++
 	std	PLTFRMS+PLTSTSZ+PLTBASE
 	subd	#PLTFRNG
 	std	PLTFRMS+2*PLTSTSZ+PLTBASE
-
-	lda	#PLTFMCI	Initialize platform movement counter
-	sta	PLTMCNT
 
 	ldd	#PLTFCTI	Initialize platform color values
 	std	PLTFRMS+PLTCOLR
@@ -229,17 +217,20 @@ PLTDINI	sta	PLTFRMS+PLTDATA
 	clr	PLTFRMS+PLTSTSZ+PLTDATA
 	clr	PLTFRMS+2*PLTSTSZ+PLTDATA
 
+	lda	#PLTFMCI	Initialize platform movement counter
+	sta	PLTMCNT
+
 	clr	PLEFLGS		Clear player erase flags
 	clr	PLDFLGS		Clear player draw flags
 
 	clr	GAMFLGS		Clear game status info
 
-	lda	#SCORDLI	Initialize scoring delay counter
-	sta	SCORDLY
-
-	ldx	#$04cf		Dummy player location initialization
+	ldx	#$04cf		Initialize starting player location
 	stx	PLREPOS
 	stx	PLRDPOS
+
+	lda	#SCORDLI	Initialize scoring delay counter
+	sta	SCORDLY
 
 * Main game loop is from here to VLOOP
 VSYNC	lda	$ff03		Wait for Vsync
@@ -250,25 +241,25 @@ VSYNC	lda	$ff03		Wait for Vsync
 
 * Vblank work goes here
 
-	jsr	>PLYERAS	Erase the player
+	jsr	PLYERAS		Erase the player
 
 	ldx	#(PLTFRMS+PLTBASE)
-	jsr	>PLTERAS	Erase the first platform
+	jsr	PLTERAS		Erase the first platform
 	ldx	#(PLTFRMS+PLTSTSZ+PLTBASE)
-	jsr	>PLTERAS	Erase the second platform
+	jsr	PLTERAS		Erase the second platform
 	ldx	#(PLTFRMS+2*PLTSTSZ+PLTBASE)
-	jsr	>PLTERAS	Erase the third platform
+	jsr	PLTERAS		Erase the third platform
 
-	jsr	>SCRLPNT	Paint the bg-scrolls
+	jsr	SCRLPNT		Paint the bg-scrolls
 
 	ldx	#(PLTFRMS+PLTBASE)
-	jsr	>PLTDRAW	Draw the first platform
+	jsr	PLTDRAW		Draw the first platform
 	ldx	#(PLTFRMS+PLTSTSZ+PLTBASE)
-	jsr	>PLTDRAW	Draw the second platform
+	jsr	PLTDRAW		Draw the second platform
 	ldx	#(PLTFRMS+2*PLTSTSZ+PLTBASE)
-	jsr	>PLTDRAW	Draw the third platform
+	jsr	PLTDRAW		Draw the third platform
 
-	jsr	>PLYDRAW	Draw the player
+	jsr	PLYDRAW		Draw the player
 
 * Must get here before end of Vblank (~7840 cycles from VSYNC)
 	clr	$ffd8		Lo-speed during display
@@ -278,231 +269,44 @@ VSYNC	lda	$ff03		Wait for Vsync
 	ldx	#HISCORE	Draw the high score
 	ldy	#SCNBASE
 	lda	#SCORLEN
-	jsr	>DRWSTR
+	jsr	DRWSTR
 
 	ldx	#CURSCOR	Draw the current score
 	ldy	#(SCNBASE+SCNWIDT-SCORLEN)
 	lda	#SCORLEN
-	jsr	>DRWSTR
+	jsr	DRWSTR
 
-	jsr	>DRWFLMS	Draw the flames at the top center of the screen
+	jsr	DRWFLMS		Draw the flames at the top center of the screen
 
-	clr	JOYFLGS		Clear the old joystick flag values
-	clrb
-	lda	$ff00		Read from the PIA connected to the joystick buttons
-	bita	#$02		Test for left joystick button press
-	bne	JOYRDRL
-	ldb	#JOYBTN
+	jsr	JOYREAD		Read joystick, flags returned in B
+	stb	JOYFLGS
 
-JOYRDRL	lda	#$34		Read the right/left axis of the left joystick
-	sta	$ff01
-	lda	#$3c
-	sta	$ff03
-
-	lda	#$65		Test for low value on axis
-	sta	$ff20
-	lda	$ff00
-	bpl	JOYRDLT
-	lda	#$98		Test for high value on axis
-	sta	$ff20
-	lda	$ff00
-	bpl	JOYRDUD
-
-JOYRDRT	orb	#JOYRT		Joystick points right
-	bra	JOYRDUD
-
-JOYRDLT	orb	#JOYLT		Joystick points left
-
-JOYRDUD	lda	#$3c		Read the up/down axis of the left joystick
-	sta	$ff01
-
-	lda	#$65		Test for low value on axis
-	sta	$ff20
-	lda	$ff00
-	bpl	JOYRDUP
-	lda	#$98		Test for high value on axis
-	sta	$ff20
-	lda	$ff00
-	bpl	JOYDONE
-
-JOYRDDN	orb	#JOYDN		Joystick points down
-	bra	JOYDONE
-
-JOYRDUP	orb	#JOYUP		Joystick points up
-
-JOYDONE	stb	JOYFLGS
-
-JOYMASK	andb	#JOYMSK		Mask-off disallowed joystick movements
+	andb	#JOYMSK		Mask-off disallowed joystick movements
 	stb	MOVFLGS		Store movement flags for later
 
 	jsr	KEYBDRD		Read the keyboard (?)
 
 	jsr	CMPSCOR		Compute score
 
-CHKCOLS	jsr	COLDTCT		Check for player/platform collisions
+	jsr	COLDTCT		Check for player/platform collisions
 
-PLTADV	dec	PLTMCNT		Countdown until next platform movement
-	bne	MOVCOMP
+	jsr	PLTADV		Advance the platforms
 
-	lda	#PLTFMCI	Reset platform movement counter
-	sta	PLTMCNT
+	jsr	MOVCOMP		Compute new player position, returned in X
 
-	ldd	PLTFRMS+PLTBASE	Decrement platform base values
-	subd	#SCNWIDT
-	std	PLTFRMS+PLTBASE
-	subd	#PLTFRNG
-	std	PLTFRMS+PLTSTSZ+PLTBASE
-	subd	#PLTFRNG
-
-	cmpd	#PLTFTOP	Check for top of platform movement
-	bgt	PLTBSTO
-
-	lda	PLTFRMS+PLTSTSZ+PLTDATA		Shift platform data values
-	sta	PLTFRMS+2*PLTSTSZ+PLTDATA
-	lda	PLTFRMS+PLTDATA
-	sta	PLTFRMS+PLTSTSZ+PLTDATA
-	lda	LFSRDAT				Apply LFSR to platform data
-	eora	LFSRDAT+1
-	beq	PLTDFLS				Use default if zero
-	cmpa	#$ff				Check for "sweepers"
-	bne	PLTDSTO
-PLTDFLS	lda	#PLTDFLT	Substitute default platform data
-PLTDSTO	sta	PLTFRMS+PLTDATA
-
-	ldd	PLTFRMS+PLTSTSZ+PLTCOLR		Shift the color values too
-	std	PLTFRMS+2*PLTSTSZ+PLTCOLR
-	ldd	PLTFRMS+PLTSTSZ+PLTCOLR+2
-	std	PLTFRMS+2*PLTSTSZ+PLTCOLR+2
-	ldd	PLTFRMS+PLTCOLR
-	std	PLTFRMS+PLTSTSZ+PLTCOLR
-	ldd	PLTFRMS+PLTCOLR+2
-	std	PLTFRMS+PLTSTSZ+PLTCOLR+2
-	ldd	PLTNCLR
-	std	PLTFRMS+PLTCOLR
-	ldd	PLTNCLR+2
-	std	PLTFRMS+PLTCOLR+2
-	ldd	#PLTBSIN		Reset first platform base pointer
-	std	PLTFRMS+PLTBASE
-	ldd	#(PLTBSIN-PLTFRNG)	Reset second platform base pointer
-	std	PLTFRMS+PLTSTSZ+PLTBASE
-	ldd	#(PLTBSIN-2*PLTFRNG)	Reset third platform base pointer
-
-	tst	GAMFLGS		Player/platform collision already?
-	bmi	PLTBSTO		No need to check for a new one
-	std	PLTFRMS+2*PLTSTSZ+PLTBASE	Replicate PLTBSTO action here...
-	jsr	COLDTBP		Special check for new player/platform collision
-	bra	PLTADVF				Jump over PLTBSTO here...
-
-PLTBSTO	std	PLTFRMS+2*PLTSTSZ+PLTBASE
-
-PLTADVF	tst	GAMFLGS		Player/platform collision?
-	bpl	PLADVDN
-	lda	#MOVUP		Advance the player with the platform
-	ora	MOVFLGS
-	sta	MOVFLGS
-
-PLADVDN	jsr	COLDTCT		Platform moved, check for new collisions
-
-MOVCOMP	tst	GAMFLGS		Check for player/platform collision
-	bmi	MOVCMP1
-
-	lda	#MOVDN		Force downward move if not on platform
-	ora	MOVFLGS
-	sta	MOVFLGS
-
-MOVCMP1	lda	MOVFLGS		Compute movement
-	beq	MOVSKIP
-
-	ldx	PLRDPOS		Schedule a player erase at current position
-	stx	PLREPOS
-	ldb	PLDFLGS		Make sure correct erase routine is used
-	stb	PLEFLGS
-
-	bita	#MOVLT
-	beq	MOVRGHT
-
-	eorb	#PLODDBT	Switch odd/even draw flag status
-	stb	PLDFLGS
-	bmi	MOVLADJ		Always can move left from odd
-
-	bra	MOVEUP
-
-MOVLADJ	tfr	x,d		Enforce limits on player horizontal position
-	lda	MOVFLGS
-	bitb	#$1f
-	beq	MOVLSTP
-
-	leax	-1,x
-	bra	MOVEUP
-
-MOVLSTP	ldb	#($ff-PLODDBT)	Set even drawing status on left edge of screen
-	andb	PLDFLGS
-	stb	PLDFLGS
-	bra	MOVEUP
-
-MOVRGHT	bita	#MOVRT
-	beq	MOVEUP
-
-	eorb	#PLODDBT	Switch odd/even draw flag status
-	stb	PLDFLGS
-	bpl	MOVRADJ		Always can move right from even
-
-	bra	MOVEUP
-
-MOVRADJ	tfr	x,d		Enforce limits on player horizontal position
-	lda	MOVFLGS
-	andb	#$1f
-	cmpb	#$1d
-	beq	MOVRSTP
-
-	leax	1,x
-	bra	MOVEUP
-
-MOVRSTP	ldb	#PLODDBT	Set odd drawing status on right edge of screen
-	orb	PLDFLGS
-	stb	PLDFLGS
-
-MOVEUP	bita	#MOVUP
-	beq	MOVDOWN
-
-	cmpx	#(SCNBASE+7*SCNWIDT)	Enforce limits on player vert. pos.
+	cmpx	#(SCNBASE+6*SCNWIDT)	Enforce limits on player vert. pos.
 	lblt	GAMEOVR
-
-	leax	-SCNWIDT,x
-
-	bra	MOVFIN
-
-MOVDOWN	bita	#MOVDN
-	beq	MOVFIN
-
-	cmpx	#(SCNEND-PLYRHGT)	Enforce limits on player vert. pos.
+	cmpx	#(SCNEND+SCNWIDT-PLYRHGT)
 	lbge	GAMEOVR
 
-	leax	SCNWIDT,x
+	jsr	LFSRADV		Advance the LFSR
 
-MOVFIN	stx	PLRDPOS		Update player position
+	jsr	FLMFLKR		Bump the flame flicker effect
 
-MOVSKIP	equ	*
-
-LFSRBMP	jsr	LFSRADV		Advance the LFSR
-
-	dec	FLAMCNT		Countdown until next flame flicker
-	bne	FRMCBMP
-
-	lda	#FLMMSKI	Cycle the flame effect data
-	eora	FLAMMSK
-	sta	FLAMMSK
-
-	lda	LFSRDAT		Grab part of the LFSR value
-	anda	#FLMCTRG	Limit the range of the values
-	adda	#FLMCTMN	Enforce a minimum value
-	sta	FLAMCNT
-
-FRMCBMP	dec	FRAMCNT		Bump the frame counter
-	bne	FRMCBDN
+	dec	FRAMCNT		Bump the frame counter
+	bne	CHKUART
 	lda	#FRMCTIN
 	sta	FRAMCNT
-FRMCBDN	equ	*
 
 * Check for user break (development only)
 CHKUART	lda	$ff69		Check for serial port activity
@@ -1019,6 +823,284 @@ SCRINLP	std	14,x
 	rts
 
 *
+* Advance the platforms
+*	A,B get clobbered
+*
+PLTADV	dec	PLTMCNT		Countdown until next platform movement
+	bne	PLTADVX
+
+	lda	#PLTFMCI	Reset platform movement counter
+	sta	PLTMCNT
+
+	ldd	PLTFRMS+PLTBASE	Decrement platform base values
+	subd	#SCNWIDT
+	std	PLTFRMS+PLTBASE
+	subd	#PLTFRNG
+	std	PLTFRMS+PLTSTSZ+PLTBASE
+	subd	#PLTFRNG
+
+	cmpd	#PLTFTOP	Check for top of platform movement
+	bgt	PLTBSTO
+
+	lda	PLTFRMS+PLTSTSZ+PLTDATA		Shift platform data values
+	sta	PLTFRMS+2*PLTSTSZ+PLTDATA
+	lda	PLTFRMS+PLTDATA
+	sta	PLTFRMS+PLTSTSZ+PLTDATA
+	lda	LFSRDAT				Apply LFSR to platform data
+	eora	LFSRDAT+1
+	beq	PLTDFLS				Use default if zero
+	cmpa	#$ff				Check for "sweepers"
+	bne	PLTDSTO
+PLTDFLS	lda	#PLTDFLT	Substitute default platform data
+PLTDSTO	sta	PLTFRMS+PLTDATA
+
+	ldd	PLTFRMS+PLTSTSZ+PLTCOLR		Shift the color values too
+	std	PLTFRMS+2*PLTSTSZ+PLTCOLR
+	ldd	PLTFRMS+PLTSTSZ+PLTCOLR+2
+	std	PLTFRMS+2*PLTSTSZ+PLTCOLR+2
+	ldd	PLTFRMS+PLTCOLR
+	std	PLTFRMS+PLTSTSZ+PLTCOLR
+	ldd	PLTFRMS+PLTCOLR+2
+	std	PLTFRMS+PLTSTSZ+PLTCOLR+2
+	ldd	PLTNCLR
+	std	PLTFRMS+PLTCOLR
+	ldd	PLTNCLR+2
+	std	PLTFRMS+PLTCOLR+2
+	ldd	#PLTBSIN		Reset first platform base pointer
+	std	PLTFRMS+PLTBASE
+	ldd	#(PLTBSIN-PLTFRNG)	Reset second platform base pointer
+	std	PLTFRMS+PLTSTSZ+PLTBASE
+	ldd	#(PLTBSIN-2*PLTFRNG)	Reset third platform base pointer
+
+	tst	GAMFLGS		Player/platform collision already?
+	bmi	PLTBSTO		No need to check for a new one
+	std	PLTFRMS+2*PLTSTSZ+PLTBASE	Replicate PLTBSTO action here...
+	jsr	COLDTBP		Special check for new player/platform collision
+	bra	PLTFNSH				Jump over PLTBSTO here...
+
+PLTBSTO	std	PLTFRMS+2*PLTSTSZ+PLTBASE
+
+PLTFNSH	tst	GAMFLGS		Player/platform collision?
+	bpl	PLTCLCK
+	lda	#MOVUP		Advance the player with the platform
+	ora	MOVFLGS
+	sta	MOVFLGS
+
+PLTCLCK	jsr	COLDTCT		Platform moved, check for new collisions
+
+PLTADVX	rts
+
+*
+* Compute new player position
+*	A,B get clobbered
+*	X returns new player position
+*
+MOVCOMP	tst	GAMFLGS		Check for player/platform collision
+	bmi	MOVCMP1
+
+	lda	#MOVDN		Force downward move if not on platform
+	ora	MOVFLGS
+	sta	MOVFLGS
+
+MOVCMP1	lda	MOVFLGS		Check for movement
+	beq	MOVSKIP		Skip if movement flags are not set
+
+MOVCMP2	ldx	PLRDPOS		Schedule a player erase at current position
+	stx	PLREPOS
+	ldb	PLDFLGS		Make sure correct erase routine is used
+	stb	PLEFLGS
+
+	bita	#MOVLT
+	beq	MOVRGHT
+
+	eorb	#PLODDBT	Switch odd/even draw flag status
+	stb	PLDFLGS
+	bmi	MOVLADJ		Always can move left from odd
+
+	bra	MOVEUP
+
+MOVLADJ	tfr	x,d		Enforce limits on player horizontal position
+	lda	MOVFLGS
+	bitb	#$1f
+	beq	MOVLSTP
+
+	leax	-1,x
+	bra	MOVEUP
+
+MOVLSTP	ldb	#($ff-PLODDBT)	Set even drawing status on left edge of screen
+	andb	PLDFLGS
+	stb	PLDFLGS
+	bra	MOVEUP
+
+MOVRGHT	bita	#MOVRT
+	beq	MOVEUP
+
+	eorb	#PLODDBT	Switch odd/even draw flag status
+	stb	PLDFLGS
+	bpl	MOVRADJ		Always can move right from even
+
+	bra	MOVEUP
+
+MOVRADJ	tfr	x,d		Enforce limits on player horizontal position
+	lda	MOVFLGS
+	andb	#$1f
+	cmpb	#$1d
+	beq	MOVRSTP
+
+	leax	1,x
+	bra	MOVEUP
+
+MOVRSTP	ldb	#PLODDBT	Set odd drawing status on right edge of screen
+	orb	PLDFLGS
+	stb	PLDFLGS
+
+MOVEUP	bita	#MOVUP
+	beq	MOVDOWN
+
+	leax	-SCNWIDT,x
+	bra	MOVCMPX
+
+MOVDOWN	bita	#MOVDN
+	beq	MOVCMPX
+
+	leax	SCNWIDT,x
+
+MOVCMPX	stx	PLRDPOS		Update player position
+	rts
+
+MOVSKIP	ldx	PLRDPOS		Reload current player draw position
+	rts
+
+*
+* Compute the score
+*
+CMPSCOR	dec	SCORDLY		Decrement score delay counter
+	bne	CMPSCRX		Not expired, so exit
+	lda	#SCORDLI
+	sta	SCORDLY		Restore delay counter
+
+	lda	#SCORLEN	Start from LSB end
+	ldx	#(CURSCOR-1)	Point X at current score
+CMPSLP1	ldb	a,x		Increment current digit
+	incb
+	cmpb	#$7a
+	blt	CMPSCR1		Value less than encoding for "9", we are done
+	ldb	#$70		Otherwise, reset to encoding for "0"
+	stb	a,x
+	deca
+	bne	CMPSLP1		Then increment the next digit
+CMPSCR1	stb	a,x		Store 
+
+	clra			Start from MSB end
+	ldy	#(HISCORE-1)	Point Y at high score
+CMPSLP2	inca
+	ldb	a,x		Load digit from current score
+	andb	#$bf		Convert to format for high score
+	cmpb	a,y		Compare this digit to same one in high score
+
+	blt	CMPSCRX		If lesser, no high score update
+	bgt	CMPSCR2		If higher, record new high score
+
+	cmpa	#SCORLEN	Out of digits?
+	blt	CMPSLP2		No, compare next set of digits
+
+CMPSCR2	lda	#SCORLEN
+CMPSLP3	ldb	a,x		Load current score digit
+	andb	#$bf		Convert to format for high score
+	stb	a,y		Store high score digit
+	deca
+	bne	CMPSLP3
+
+CMPSCRX	rts
+
+*
+* Game Over
+*
+GAMEOVR	jmp	RESTART
+
+*
+* Collision detection for new bottom platform
+*	X,A,B get clobbered
+*
+*	This is a special collision detection entry point for the
+*	case of a new bottom platform.
+*
+COLDTBP	ldd	PLRDPOS
+	addd	#(PLYRHGT-SCNWIDT)
+	andb	#$e0
+	ldx	#PLTCMSK
+	bra	COLDTP0
+
+*
+* Collision detection -- check for player/platform collisions
+*	X,A,B get clobbered
+*
+*	Both COLDPOS and COLDNEG have rts instructions
+*
+*	Note: platform movement uses special entry point COLDTBP
+*
+COLDTCT	ldd	PLRDPOS
+	addd	#PLYRHGT
+	andb	#$e0
+	ldx	#PLTCMSK
+
+COLDTP2	cmpd	PLTFRMS+2*PLTSTSZ+PLTBASE
+	bne	COLDTP1
+	ldb	PLRDPOS+1
+	andb	#$1f
+	ldb	b,x
+	bitb	PLTFRMS+2*PLTSTSZ+PLTDATA
+	beq	COLDNEG
+
+	bra	COLDPOS
+
+COLDTP1	cmpd	PLTFRMS+PLTSTSZ+PLTBASE
+	bne	COLDTP0
+	ldb	PLRDPOS+1
+	andb	#$1f
+	ldb	b,x
+	bitb	PLTFRMS+PLTSTSZ+PLTDATA
+	beq	COLDNEG
+
+	bra	COLDPOS
+
+COLDTP0	cmpd	PLTFRMS+PLTBASE
+	bne	COLDNEG
+	ldb	PLRDPOS+1
+	andb	#$1f
+	ldb	b,x
+	bitb	PLTFRMS+PLTDATA
+	beq	COLDNEG
+
+COLDPOS	lda	#GMCOLFL	Set collision flag
+	ora	GAMFLGS
+	sta	GAMFLGS
+	rts
+
+COLDNEG	lda	#($ff-GMCOLFL)	Clear collision flag
+	anda	GAMFLGS
+	sta	GAMFLGS
+	rts
+
+*
+* Advance the flame flicker effect
+*	A gets clobbered
+*
+FLMFLKR	dec	FLAMCNT		Countdown until next flame flicker
+	bne	FLMFLKX
+
+	lda	#FLMMSKI	Cycle the flame effect data
+	eora	FLAMMSK
+	sta	FLAMMSK
+
+	lda	LFSRDAT		Grab part of the LFSR value
+	anda	#FLMCTRG	Limit the range of the values
+	adda	#FLMCTMN	Enforce a minimum value
+	sta	FLAMCNT
+
+FLMFLKX	rts
+
+*
 * Advance the LFSR value
 *	A,B get clobbered
 *
@@ -1044,6 +1126,56 @@ LFSRADV	lda	LFSRDAT		Get MSB of LFSR data
 	rola
 	std	LFSRDAT		Store the result
 	rts
+
+*
+* Read the joystick
+*	A gets clobbered
+*	B returns flags representing joystick state
+*
+JOYREAD	clr	JOYFLGS		Clear the old joystick flag values
+	clrb
+	lda	$ff00		Read from the PIA connected to the joystick buttons
+	bita	#$02		Test for left joystick button press
+	bne	JOYRDRL
+	ldb	#JOYBTN
+
+JOYRDRL	lda	#$34		Read the right/left axis of the left joystick
+	sta	$ff01
+	lda	#$3c
+	sta	$ff03
+
+	lda	#$65		Test for low value on axis
+	sta	$ff20
+	lda	$ff00
+	bpl	JOYRDLT
+	lda	#$98		Test for high value on axis
+	sta	$ff20
+	lda	$ff00
+	bpl	JOYRDUD
+
+JOYRDRT	orb	#JOYRT		Joystick points right
+	bra	JOYRDUD
+
+JOYRDLT	orb	#JOYLT		Joystick points left
+
+JOYRDUD	lda	#$3c		Read the up/down axis of the left joystick
+	sta	$ff01
+
+	lda	#$65		Test for low value on axis
+	sta	$ff20
+	lda	$ff00
+	bpl	JOYRDUP
+	lda	#$98		Test for high value on axis
+	sta	$ff20
+	lda	$ff00
+	bpl	JYREADX
+
+JOYRDDN	orb	#JOYDN		Joystick points down
+	bra	JYREADX
+
+JOYRDUP	orb	#JOYUP		Joystick points up
+
+JYREADX	rts
 
 *
 * Implement a keyboard read routine here
@@ -1102,115 +1234,17 @@ DRWFLMX	leas	1,s
 	rts
 
 *
-* Collision detection for new bottom platform
+* Clear the screen
 *	X,A,B get clobbered
 *
-*	This is a special collision detection entry point for the
-*	case of a new bottom platform.
-*
-COLDTBP	ldd	PLRDPOS
-	addd	#(PLYRHGT-SCNWIDT)
-	andb	#$e0
-	ldx	#PLTCMSK
-	bra	COLDTP0
+CLRSCRN	ldx	#SCNBASE	Clear screen
+	ldd	#WBLACK
 
-*
-* Collision detection -- check for player/platform collisions
-*	X,A,B get clobbered
-*
-*	Both COLDPOS and COLDNEG have rts instructions
-*
-*	Note: platform movement uses special entry point COLDTBP
-*
-COLDTCT	ldd	PLRDPOS
-	addd	#PLYRHGT
-	andb	#$e0
-	ldx	#PLTCMSK
+CLSLOOP	std	,x++
+	cmpx	#SCNEND
+	bne	CLSLOOP
 
-COLDTP2	cmpd	PLTFRMS+2*PLTSTSZ+PLTBASE
-	bne	COLDTP1
-	ldb	PLRDPOS+1
-	andb	#$1f
-	ldb	b,x
-	bitb	PLTFRMS+2*PLTSTSZ+PLTDATA
-	beq	COLDNEG
-
-	bra	COLDPOS
-
-COLDTP1	cmpd	PLTFRMS+PLTSTSZ+PLTBASE
-	bne	COLDTP0
-	ldb	PLRDPOS+1
-	andb	#$1f
-	ldb	b,x
-	bitb	PLTFRMS+PLTSTSZ+PLTDATA
-	beq	COLDNEG
-
-	bra	COLDPOS
-
-COLDTP0	cmpd	PLTFRMS+PLTBASE
-	bne	COLDNEG
-	ldb	PLRDPOS+1
-	andb	#$1f
-	ldb	b,x
-	bitb	PLTFRMS+PLTDATA
-	beq	COLDNEG
-
-COLDPOS	lda	#GMCOLBT	Set collision flag
-	ora	GAMFLGS
-	sta	GAMFLGS
 	rts
-
-COLDNEG	lda	#$7f		Clear collision flag
-	anda	GAMFLGS
-	sta	GAMFLGS
-	rts
-
-*
-* Compute the score
-*
-CMPSCOR	dec	SCORDLY		Decrement score delay counter
-	bne	CMPSCRX		Not expired, so exit
-	lda	#SCORDLI
-	sta	SCORDLY		Restore delay counter
-
-	lda	#SCORLEN	Start from LSB end
-	ldx	#(CURSCOR-1)	Point X at current score
-CMPSLP1	ldb	a,x		Increment current digit
-	incb
-	cmpb	#$7a
-	blt	CMPSCR1		Value less than encoding for "9", we are done
-	ldb	#$70		Otherwise, reset to encoding for "0"
-	stb	a,x
-	deca
-	bne	CMPSLP1		Then increment the next digit
-CMPSCR1	stb	a,x		Store 
-
-	clra			Start from MSB end
-	ldy	#(HISCORE-1)	Point Y at high score
-CMPSLP2	inca
-	ldb	a,x		Load digit from current score
-	andb	#$bf		Convert to format for high score
-	cmpb	a,y		Compare this digit to same one in high score
-
-	blt	CMPSCRX		If lesser, no high score update
-	bgt	CMPSCR2		If higher, record new high score
-
-	cmpa	#SCORLEN	Out of digits?
-	blt	CMPSLP2		No, compare next set of digits
-
-CMPSCR2	lda	#SCORLEN
-CMPSLP3	ldb	a,x		Load current score digit
-	andb	#$bf		Convert to format for high score
-	stb	a,y		Store high score digit
-	deca
-	bne	CMPSLP3
-
-CMPSCRX	rts
-
-*
-* Game Over
-*
-GAMEOVR	jmp	RESTART
 
 FLAMES	fcb	$bf,$ff,$9f,$ff,$ff,$ff,$9f,$9f,$ff,$ff
 	fcb	$ff,$ff,$9f,$9f,$ff,$ff,$ff,$9f,$ff,$bf
