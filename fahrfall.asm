@@ -89,6 +89,8 @@ MOVRT	equ	JOYRT
 MOVUP	equ	JOYUP
 MOVDN	equ	JOYDN
 
+PBTCNTI	equ	64
+
 	org	STRUCT		Platform info structure declarations
 PLTBASE	rmb	2		Current base addresses for drawing platform
 PLTDATA	rmb	1		Mask representing platform configuration
@@ -135,6 +137,8 @@ GAMFLGS	rmb	1		Flags representing game status
 
 SCORDLY	rmb	1		Delay counter for scoring
 
+PBUTCNT	rmb	1		Counter for flashing "press button"
+
 	org	LOAD
 
 INIT	equ	*		Basic one-time setup goes here!
@@ -160,8 +164,6 @@ INHSCLP	stb	a,x
 	ldd	TIMVAL		Seed the LFSR data
 	std	LFSRDAT
 
-RESTART	equ	*		New game starts here!
-
 	ldx	#CURSCOR	Initialize current score
 	lda	#(SCORLEN-1)
 	ldb	#$70
@@ -170,10 +172,10 @@ INCSCLP	stb	a,x
 	bne	INCSCLP
 	stb	a,x
 
+RESTART	equ	*		New game starts here!
+
 	lda	#FRMCTIN	Initialize frame sequence counter
 	sta	FRAMCNT
-
-	jsr	CLRSCRN		Clear the screen to black
 
 	lda	#SCR6CIN	Initialize middle-inner scroll counter
 	sta	SCR6CNT
@@ -188,6 +190,18 @@ INCSCLP	stb	a,x
 	sta	FLAMMSK
 	lda	#FLMCNTI
 	sta	FLAMCNT
+
+	jsr	INTRO		Show intro/title screen
+
+	jsr	CLRSCRN		Clear the screen to black
+
+	ldx	#CURSCOR	Re-initialize current score
+	lda	#(SCORLEN-1)
+	ldb	#$70
+RINSCLP	stb	a,x
+	deca
+	bne	RINSCLP
+	stb	a,x
 
 	ldd	#PLTBSIN	Initialize platform section base values
 	std	PLTFRMS+PLTBASE
@@ -1083,6 +1097,747 @@ COLDNEG	lda	#($ff-GMCOLFL)	Clear collision flag
 	rts
 
 *
+* Intro screen loop is from here to ILOOP
+*
+INTRO	jsr	CLRSCRN		Clear the screen to black
+
+	lda	#PBTCNTI	Initialize counter for "press button" message
+	sta	PBUTCNT
+
+ISYNC	lda	$ff03		Wait for Vsync
+	bpl	ISYNC
+	lda	$ff02
+
+*	clr	$ffd9		Hi-speed during Vblank
+
+* Vblank work goes here
+	jsr	INTRPNT
+
+* Must get here before end of Vblank (~7840 cycles from VSYNC)
+*	clr	$ffd8		Lo-speed during display
+
+	ldx	#HISCORE	Draw the high score
+	ldy	#SCNBASE
+	lda	#SCORLEN
+	jsr	DRWSTR
+
+	ldx	#CURSCOR	Draw the current score
+	ldy	#(SCNBASE+SCNWIDT-SCORLEN)
+	lda	#SCORLEN
+	jsr	DRWSTR
+
+	jsr	DRWFLMS		Draw the flames at the top center of the screen
+
+	ldx	#CPYSTR1	Display the copyright info
+	ldy	#(SCNBASE+60*SCNWIDT+5)
+	lda	#(CPYS1LN-CPYSTR1)
+	jsr	DRWSTR
+
+	ldx	#CPYSTR2
+	ldy	#(SCNBASE+66*SCNWIDT+9)
+	lda	#(CPYS2LN-CPYSTR2)
+	jsr	DRWSTR
+
+	jsr	LFSRADV		Advance the LFSR
+
+	lda	#(PBTCNTI/2)	Display "press button" message
+	bita	PBUTCNT
+	beq	PBUTINV
+
+	ldx	#PBTSTR1
+	ldy	#(SCNBASE+90*SCNWIDT+9)
+	lda	#(PBTS1LN-PBTSTR1)
+	jsr	DRWSTR
+
+	bra	PBCTDEC
+
+PBUTINV	ldx	#PBTSTR2
+	ldy	#(SCNBASE+90*SCNWIDT+9)
+	lda	#(PBTS2LN-PBTSTR2)
+	jsr	DRWSTR
+
+PBCTDEC	dec	PBUTCNT
+	bne	PBJOYCK
+
+	lda	#PBTCNTI	Initialize counter for "press button" message
+	sta	PBUTCNT
+
+PBJOYCK	jsr	JOYREAD		Read joystick, flags returned in B
+	andb	#JOYBTN		Only check for button press
+	bne	INTREXT		Exit intro on button press
+
+	jsr	FLMFLKR		Bump the flame flicker effect
+
+	dec	FRAMCNT		Bump the frame counter
+	bne	CHKURT2
+	lda	#FRMCTIN
+	sta	FRAMCNT
+
+* Check for user break (development only)
+CHKURT2	lda	$ff69		Check for serial port activity
+	bita	#$08
+	beq	ILOOP
+	lda	$ff68
+	jmp	[$fffe]		Re-enter monitor
+
+ILOOP	lbra	ISYNC
+
+INTREXT	rts
+
+*
+* Paint the intro-scroll effects
+*	X,Y,A,B get clobbered
+*
+INTRPNT	lda	FRAMCNT
+	bita	#$01
+	bne	INTOUT1
+
+	lda	SCRTCOT		Retrieve last outer scroll top color data
+	adda    #$30
+	ora     #$80
+	eora	#$0f
+	sta	SCRTCOT		Store current outer scroll top color data
+	ldx	#(SCNBASE+16*SCNWIDT)
+	ldy	#(SCNBASE+32*SCNWIDT)
+	pshs	y
+	ldy	#INOTDAT
+
+	bra	INTOTWK
+
+INTOUT1	lda	SCRCCOT		Retrieve last outer scroll current color data
+	ldx	#(SCNBASE+32*SCNWIDT)
+	ldy	#(SCNBASE+48*SCNWIDT)
+	pshs	y
+	ldy	#(INOTDAT+16)
+
+INTOTWK	leas	-3,s		Allocate extra stack space
+	tfr	a,b
+	orb	#$f0
+	stb	2,s
+
+INTOTLP	ldb	#$0f		XOR pixel data mask
+	eorb	2,s
+	stb	2,s
+
+	ldb	,y+		Operate on data for first letter
+	stb	1,s
+
+	anda	#$f0		Separate color info
+	ldb	#$0c		Translate pixel mask info
+	andb	1,s
+	stb	,s
+	ora	,s
+	lsrb
+	lsrb
+	stb	,s
+	ora	,s
+	anda	2,s
+	sta	2,x		Store first byte
+
+	anda	#$f0		Separate color info
+	ldb	#$03		Translate pixel mask info
+	andb	1,s
+	stb	,s
+	ora	,s
+	lslb
+	lslb
+	stb	,s
+	ora	,s
+	anda	2,s
+	sta	3,x		Store second byte
+
+	ldb	31,y		Operate on data for last letter
+	stb	1,s
+
+	anda	#$f0		Separate color info
+	ldb	#$0c		Translate pixel mask info
+	andb	1,s
+	stb	,s
+	ora	,s
+	lsrb
+	lsrb
+	stb	,s
+	ora	,s
+	anda	2,s
+	sta	(SCNWIDT-4),x	Store first byte
+
+	anda	#$f0		Separate color info
+	ldb	#$03		Translate pixel mask info
+	andb	1,s
+	stb	,s
+	ora	,s
+	lslb
+	lslb
+	stb	,s
+	ora	,s
+	anda	2,s
+	sta	(SCNWIDT-3),x	Store second byte
+
+	adda    #$30		Advance the color data
+	ora     #$80
+	leax	SCNWIDT,x
+	cmpx	3,s
+	blt	INTOTLP
+	ldb	SCRTCOT
+	andb	#$0f
+	stb	2,s
+	ora	2,s
+	sta	SCRCCOT
+	leas	5,s		Release all stack space
+
+	lda	FRAMCNT		Compute the branch
+	anda	#$03
+	lsla
+	ldy	#INTMOBT
+	jmp	a,y
+
+INTMOBT	bra	INTMO0		Odd jump ordering due to init of down counter 
+	bra	INTMO3
+	bra	INTMO2
+	bra	INTMO1
+
+INTMO0	lda	SCRTCMO		Retrieve last outer-mid scroll top color data
+	adda    #$30
+	ora     #$80
+	eora	#$0f
+	sta	SCRTCMO		Store current outer-mid scroll top color data
+
+	ldx	#(SCNBASE+16*SCNWIDT)	Paint 1st qtr...
+	ldy	#(SCNBASE+24*SCNWIDT)
+	pshs	y
+	ldy	#INMODAT
+
+	bra	INTMOWK
+
+INTMO1	ldx	#(SCNBASE+24*SCNWIDT)	Paint 2nd qtr...
+	ldy	#(SCNBASE+32*SCNWIDT)
+	pshs	y
+	ldy	#(INMODAT+8)
+	bra	INTMOCM
+
+INTMO2	ldx	#(SCNBASE+32*SCNWIDT)	Paint 3rd qtr...
+	ldy	#(SCNBASE+40*SCNWIDT)
+	pshs	y
+	ldy	#(INMODAT+16)
+	bra	INTMOCM
+
+INTMO3	ldx	#(SCNBASE+40*SCNWIDT)	Paint 4th qtr...
+	ldy	#(SCNBASE+48*SCNWIDT)
+	pshs	y
+	ldy	#(INMODAT+24)
+
+INTMOCM	lda	SCRCCMO
+
+INTMOWK	leas	-3,s		Allocate extra stack space
+	tfr	a,b
+	orb	#$f0
+	stb	2,s
+
+INTMOLP	ldb	#$0f		XOR pixel data mask
+	eorb	2,s
+	stb	2,s
+
+	ldb	,y+		Operate on data for second letter
+	stb	1,s
+
+	anda	#$f0		Separate color info
+	ldb	#$30		Translate pixel mask info
+	andb	1,s
+	lsrb
+	lsrb
+	stb	,s
+	ora	,s
+	lsrb
+	lsrb
+	stb	,s
+	ora	,s
+	anda	2,s
+	sta	4,x		Store first byte
+
+	anda	#$f0		Separate color info
+	ldb	#$0c		Translate pixel mask info
+	andb	1,s
+	stb	,s
+	ora	,s
+	lsrb
+	lsrb
+	stb	,s
+	ora	,s
+	anda	2,s
+	sta	5,x		Store second byte
+
+	anda	#$f0		Separate color info
+	ldb	#$03		Translate pixel mask info
+	andb	1,s
+	stb	,s
+	ora	,s
+	lslb
+	lslb
+	stb	,s
+	ora	,s
+	anda	2,s
+	sta	6,x		Store third byte
+
+	ldb	31,y		Operate on data for seventh letter
+	stb	1,s
+
+	anda	#$f0		Separate color info
+	ldb	#$30		Translate pixel mask info
+	andb	1,s
+	lsrb
+	lsrb
+	stb	,s
+	ora	,s
+	lsrb
+	lsrb
+	stb	,s
+	ora	,s
+	anda	2,s
+	sta	(SCNWIDT-7),x	Store first byte
+
+	anda	#$f0		Separate color info
+	ldb	#$0c		Translate pixel mask info
+	andb	1,s
+	stb	,s
+	ora	,s
+	lsrb
+	lsrb
+	stb	,s
+	ora	,s
+	anda	2,s
+	sta	(SCNWIDT-6),x	Store second byte
+
+	anda	#$f0		Separate color info
+	ldb	#$03		Translate pixel mask info
+	andb	1,s
+	stb	,s
+	ora	,s
+	lslb
+	lslb
+	stb	,s
+	ora	,s
+	anda	2,s
+	sta	(SCNWIDT-5),x	Store third byte
+
+	adda    #$30		Advance the color data
+	ora     #$80
+	leax	SCNWIDT,x
+	cmpx	3,s
+	lblt	INTMOLP
+	ldb	SCRTCMO
+	andb	#$0f
+	stb	2,s
+	ora	2,s
+	sta	SCRCCMO
+	leas	5,s		Release all stack space
+
+	lda	SCR6CNT		Bump this scroll's counter...
+	deca
+	bne	INTMICB
+	lda	#SCR6CIN	Reinit the counter
+	sta	SCR6CNT
+	deca
+
+INTMICB	sta	SCR6CNT
+	lsla			Compute the branch
+	ldy	#(INTMIBT-2)	Offset for 1-based count values
+	jmp	a,y
+
+INTMIBT	bra	INTMI5
+	bra	INTMI4
+	bra	INTMI3
+	bra	INTMI2
+	bra	INTMI1
+	bra	INTMI0
+
+INTMI0	lda	SCRTCMI		Retrieve last inner-mid scroll top color data
+	adda    #$30
+	ora     #$80
+	eora	#$0f
+	sta	SCRTCMI		Store current inner-mid scroll top color data
+
+	ldx	#(SCNBASE+16*SCNWIDT)	Paint 1st 6th...
+	ldy	#(SCNBASE+20*SCNWIDT)
+	pshs	y
+	ldy	#INMIDAT
+
+	bra	INTMIWK
+
+INTMI1	ldx	#(SCNBASE+20*SCNWIDT)	Paint 2nd 6th...
+	ldy	#(SCNBASE+26*SCNWIDT)
+	pshs	y
+	ldy	#(INMIDAT+4)
+	bra	INTMICM
+
+INTMI2	ldx	#(SCNBASE+26*SCNWIDT)	Paint 3rd 6th...
+	ldy	#(SCNBASE+32*SCNWIDT)
+	pshs	y
+	ldy	#(INMIDAT+10)
+	bra	INTMICM
+
+INTMI3	ldx	#(SCNBASE+32*SCNWIDT)	Paint 4th 6th...
+	ldy	#(SCNBASE+38*SCNWIDT)
+	pshs	y
+	ldy	#(INMIDAT+16)
+	bra	INTMICM
+
+INTMI4	ldx	#(SCNBASE+38*SCNWIDT)	Paint 5th 6th...
+	ldy	#(SCNBASE+44*SCNWIDT)
+	pshs	y
+	ldy	#(INMIDAT+22)
+	bra	INTMICM
+
+INTMI5	ldx	#(SCNBASE+44*SCNWIDT)	Paint 6th 6th...
+	ldy	#(SCNBASE+48*SCNWIDT)
+	pshs	y
+	ldy	#(INMIDAT+28)
+
+INTMICM	lda	SCRCCMI
+
+INTMIWK	leas	-3,s		Allocate extra stack space
+	tfr	a,b
+	orb	#$f0
+	stb	2,s
+
+INTMILP	ldb	#$0f		XOR pixel data mask
+	eorb	2,s
+	stb	2,s
+
+	ldb	,y+		Operate on data for third letter
+	stb	1,s
+
+	anda	#$f0		Separate color info
+	ldb	#$c0		Translate pixel mask info
+	andb	1,s
+	lsrb
+	lsrb
+	lsrb
+	lsrb
+	stb	,s
+	ora	,s
+	lsrb
+	lsrb
+	stb	,s
+	ora	,s
+	anda	2,s
+	sta	7,x		Store first byte
+
+	anda	#$f0		Separate color info
+	ldb	#$30		Translate pixel mask info
+	andb	1,s
+	lsrb
+	lsrb
+	stb	,s
+	ora	,s
+	lsrb
+	lsrb
+	stb	,s
+	ora	,s
+	anda	2,s
+	sta	8,x		Store second byte
+
+	anda	#$f0		Separate color info
+	ldb	#$0c		Translate pixel mask info
+	andb	1,s
+	stb	,s
+	ora	,s
+	lsrb
+	lsrb
+	stb	,s
+	ora	,s
+	anda	2,s
+	sta	9,x		Store third byte
+
+	anda	#$f0		Separate color info
+	ldb	#$03		Translate pixel mask info
+	andb	1,s
+	stb	,s
+	ora	,s
+	lslb
+	lslb
+	stb	,s
+	ora	,s
+	anda	2,s
+	sta	10,x		Store fourth byte
+
+	ldb	31,y		Operate on data for sixth letter
+	stb	1,s
+
+	anda	#$f0		Separate color info
+	ldb	#$c0		Translate pixel mask info
+	andb	1,s
+	lsrb
+	lsrb
+	lsrb
+	lsrb
+	stb	,s
+	ora	,s
+	lsrb
+	lsrb
+	stb	,s
+	ora	,s
+	anda	2,s
+	sta	(SCNWIDT-11),x	Store first byte
+
+	anda	#$f0		Separate color info
+	ldb	#$30		Translate pixel mask info
+	andb	1,s
+	lsrb
+	lsrb
+	stb	,s
+	ora	,s
+	lsrb
+	lsrb
+	stb	,s
+	ora	,s
+	anda	2,s
+	sta	(SCNWIDT-10),x	Store second byte
+
+	anda	#$f0		Separate color info
+	ldb	#$0c		Translate pixel mask info
+	andb	1,s
+	stb	,s
+	ora	,s
+	lsrb
+	lsrb
+	stb	,s
+	ora	,s
+	anda	2,s
+	sta	(SCNWIDT-9),x	Store third byte
+
+	anda	#$f0		Separate color info
+	ldb	#$03		Translate pixel mask info
+	andb	1,s
+	stb	,s
+	ora	,s
+	lslb
+	lslb
+	stb	,s
+	ora	,s
+	anda	2,s
+	sta	(SCNWIDT-8),x	Store fourth byte
+
+	adda    #$30		Advance the color data
+	ora     #$80
+	leax	SCNWIDT,x
+	cmpx	3,s
+	lblt	INTMILP
+	ldb	SCRTCMI
+	andb	#$0f
+	stb	2,s
+	ora	2,s
+	sta	SCRCCMI
+	leas	5,s		Release all stack space
+
+	lda	FRAMCNT		Compute the branch
+	anda	#$07
+	lsla
+	ldy	#INTINBT
+	jmp	a,y
+
+INTINBT	bra	INTIN0		Odd jump ordering due to init of down counter 
+	bra	INTIN7
+	bra	INTIN6
+	bra	INTIN5
+	bra	INTIN4
+	bra	INTIN3
+	bra	INTIN2
+	bra	INTIN1
+
+INTIN0	lda	SCRTCIN		Retrieve last inner scroll top color data
+	adda    #$30
+	ora     #$80
+	eora    #$0f
+	sta	SCRTCIN		Store current inner scroll top color data
+
+	ldx	#(SCNBASE+16*SCNWIDT)	Paint 1st 8th...
+	ldy	#(SCNBASE+20*SCNWIDT)
+	pshs	y
+	ldy	#ININDAT
+
+	bra	INTINWK
+
+INTIN1	ldx	#(SCNBASE+20*SCNWIDT)	Paint 2nd 8th...
+	ldy	#(SCNBASE+24*SCNWIDT)
+	pshs	y
+	ldy	#(ININDAT+4)
+	bra	INTINCM
+
+INTIN2	ldx	#(SCNBASE+24*SCNWIDT)	Paint 3rd 8th...
+	ldy	#(SCNBASE+28*SCNWIDT)
+	pshs	y
+	ldy	#(ININDAT+8)
+	bra	INTINCM
+
+INTIN3	ldx	#(SCNBASE+28*SCNWIDT)	Paint 4th 8th...
+	ldy	#(SCNBASE+32*SCNWIDT)
+	pshs	y
+	ldy	#(ININDAT+12)
+	bra	INTINCM
+
+INTIN4	ldx	#(SCNBASE+32*SCNWIDT)	Paint 5th 8th...
+	ldy	#(SCNBASE+36*SCNWIDT)
+	pshs	y
+	ldy	#(ININDAT+16)
+	bra	INTINCM
+
+INTIN5	ldx	#(SCNBASE+36*SCNWIDT)	Paint 6th 8th...
+	ldy	#(SCNBASE+40*SCNWIDT)
+	pshs	y
+	ldy	#(ININDAT+20)
+	bra	INTINCM
+
+INTIN6	ldx	#(SCNBASE+40*SCNWIDT)	Paint 7th 8th...
+	ldy	#(SCNBASE+44*SCNWIDT)
+	pshs	y
+	ldy	#(ININDAT+24)
+	bra	INTINCM
+
+INTIN7	ldx	#(SCNBASE+44*SCNWIDT)	Paint 8th 8th...
+	ldy	#(SCNBASE+48*SCNWIDT)
+	pshs	y
+	ldy	#(ININDAT+28)
+
+INTINCM	lda	SCRCCIN
+
+INTINWK	leas	-3,s		Allocate extra stack space
+	tfr	a,b
+	orb	#$f0
+	stb	2,s
+
+INTINLP	ldb	#$0f		XOR pixel data mask
+	eorb	2,s
+	stb	2,s
+
+	ldb	,y+		Operate on data for fourth letter
+	stb	1,s
+
+	anda	#$f0		Separate color info
+	ldb	#$c0		Translate pixel mask info
+	andb	1,s
+	lsrb
+	lsrb
+	lsrb
+	lsrb
+	stb	,s
+	ora	,s
+	lsrb
+	lsrb
+	stb	,s
+	ora	,s
+	anda	2,s
+	sta	12,x		Store first byte
+
+	anda	#$f0		Separate color info
+	ldb	#$30		Translate pixel mask info
+	andb	1,s
+	lsrb
+	lsrb
+	stb	,s
+	ora	,s
+	lsrb
+	lsrb
+	stb	,s
+	ora	,s
+	anda	2,s
+	sta	13,x		Store second byte
+
+	anda	#$f0		Separate color info
+	ldb	#$0c		Translate pixel mask info
+	andb	1,s
+	stb	,s
+	ora	,s
+	lsrb
+	lsrb
+	stb	,s
+	ora	,s
+	anda	2,s
+	sta	14,x		Store third byte
+
+	anda	#$f0		Separate color info
+	ldb	#$03		Translate pixel mask info
+	andb	1,s
+	stb	,s
+	ora	,s
+	lslb
+	lslb
+	stb	,s
+	ora	,s
+	anda	2,s
+	sta	15,x		Store fourth byte
+
+	ldb	31,y		Operate on data for fifth letter
+	stb	1,s
+
+	anda	#$f0		Separate color info
+	ldb	#$c0		Translate pixel mask info
+	andb	1,s
+	lsrb
+	lsrb
+	lsrb
+	lsrb
+	stb	,s
+	ora	,s
+	lsrb
+	lsrb
+	stb	,s
+	ora	,s
+	anda	2,s
+	sta	(SCNWIDT-15),x	Store first byte
+
+	anda	#$f0		Separate color info
+	ldb	#$30		Translate pixel mask info
+	andb	1,s
+	lsrb
+	lsrb
+	stb	,s
+	ora	,s
+	lsrb
+	lsrb
+	stb	,s
+	ora	,s
+	anda	2,s
+	sta	(SCNWIDT-14),x	Store second byte
+
+	anda	#$f0		Separate color info
+	ldb	#$0c		Translate pixel mask info
+	andb	1,s
+	stb	,s
+	ora	,s
+	lsrb
+	lsrb
+	stb	,s
+	ora	,s
+	anda	2,s
+	sta	(SCNWIDT-13),x	Store third byte
+
+	anda	#$f0		Separate color info
+	ldb	#$03		Translate pixel mask info
+	andb	1,s
+	stb	,s
+	ora	,s
+	lslb
+	lslb
+	stb	,s
+	ora	,s
+	anda	2,s
+	sta	(SCNWIDT-12),x	Store fourth byte
+
+	adda    #$30		Advance the color data
+	ora     #$80
+	leax	SCNWIDT,x
+	cmpx	3,s
+	lblt	INTINLP
+	ldb	SCRTCIN
+	andb	#$0f
+	stb	2,s
+	ora	2,s
+	sta	SCRCCIN
+	leas	5,s		Release all stack space
+
+	rts
+
+*
 * Advance the flame flicker effect
 *	A gets clobbered
 *
@@ -1263,5 +2018,69 @@ PLTCMSK fcb	$80,$80,$c0,$c0,$40,$40,$60,$60
 	fcb	$20,$20,$30,$30,$10,$10,$18,$18
 	fcb	$08,$08,$0c,$0c,$04,$04,$06,$06
 	fcb	$02,$02,$03,$03,$01,$01,$01,$01
+
+*
+* Data used for "FAHRFALL" on title screen
+*
+INOTDAT	fcb	$ff,$ff,$ff,$ff,$f8,$f8,$f8,$f8
+	fcb	$f8,$f8,$f8,$f8,$fe,$fe,$fe,$fe
+	fcb	$f8,$f8,$f8,$f8,$f8,$f8,$f8,$f8
+	fcb	$f8,$f8,$f8,$f8,$f8,$f8,$f8,$f8
+	fcb	$f8,$f8,$f8,$f8,$f8,$f8,$f8,$f8
+	fcb	$f8,$f8,$f8,$f8,$f8,$f8,$f8,$f8
+	fcb	$f8,$f8,$f8,$f8,$f8,$f8,$f8,$f8
+	fcb	$f8,$f8,$f8,$f8,$ff,$ff,$ff,$ff
+
+INMODAT	fcb	$c4,$c4,$ce,$ce,$ca,$ca,$d1,$d1
+	fcb	$d1,$d1,$d1,$d1,$df,$df,$df,$df
+	fcb	$d1,$d1,$d1,$d1,$d1,$d1,$d1,$d1
+	fcb	$d1,$d1,$d1,$d1,$d1,$d1,$d1,$d1
+	fcb	$e0,$e0,$e0,$e0,$e0,$e0,$e0,$e0
+	fcb	$e0,$e0,$e0,$e0,$e0,$e0,$e0,$e0
+	fcb	$e0,$e0,$e0,$e0,$e0,$e0,$e0,$e0
+	fcb	$e0,$e0,$e0,$e0,$fe,$fe,$fe,$fe
+
+INMIDAT	fcb	$41,$41,$41,$41,$41,$41,$41,$41
+	fcb	$41,$41,$41,$41,$7f,$7f,$7f,$7f
+	fcb	$41,$41,$41,$41,$41,$41,$41,$41
+	fcb	$41,$41,$41,$41,$41,$41,$41,$41
+	fcb	$10,$10,$38,$7c,$7c,$44,$44,$c6
+	fcb	$c6,$82,$82,$82,$fe,$fe,$fe,$fe
+	fcb	$82,$82,$82,$82,$82,$82,$82,$82
+	fcb	$82,$82,$82,$82,$82,$82,$82,$82
+
+ININDAT	fcb	$fc,$fe,$ff,$83,$81,$81,$81,$81
+	fcb	$81,$81,$81,$81,$83,$ff,$fe,$fc
+	fcb	$88,$88,$88,$8c,$8c,$84,$84,$86
+	fcb	$86,$82,$82,$83,$83,$81,$81,$81
+	fcb	$fe,$fe,$fe,$fe,$80,$80,$80,$80
+	fcb	$80,$80,$80,$80,$fc,$fc,$fc,$fc
+	fcb	$80,$80,$80,$80,$80,$80,$80,$80
+	fcb	$80,$80,$80,$80,$80,$80,$80,$80
+
+*
+* Data for "COPYRIGHT 2012"
+*
+CPYSTR1	fcb	$60,$43,$4f,$50,$59,$52,$49,$47
+	fcb	$48,$54,$60,$72,$70,$71,$72,$60
+CPYS1LN	equ	*
+
+*
+* Data for "JOHN W. LINVILLE"
+*
+CPYSTR2	fcb	$60,$4a,$4f,$48,$4e,$60,$57,$6e
+	fcb	$60,$4c,$49,$4e,$56,$49,$4c,$4c
+	fcb	$45,$60
+CPYS2LN	equ	*
+
+*
+* Data for "PRESS BUTTON"
+*
+PBTSTR1	fcb	$60,$50,$52,$45,$53,$53,$60,$42
+	fcb	$55,$54,$54,$4f,$4e,$60
+PBTS1LN	equ	*
+PBTSTR2	fcb	$20,$10,$12,$05,$13,$13,$20,$02
+	fcb	$15,$14,$14,$0f,$0e,$20
+PBTS2LN	equ	*
 
 	end	INIT
