@@ -2022,41 +2022,41 @@ PLTCMSK fcb	$80,$80,$c0,$c0,$40,$40,$60,$60
 *
 * Data used for "FAHRFALL" on title screen
 *
-INOTDAT	fcb	$ff,$ff,$ff,$ff,$f8,$f8,$f8,$f8
-	fcb	$f8,$f8,$f8,$f8,$fe,$fe,$fe,$fe
-	fcb	$f8,$f8,$f8,$f8,$f8,$f8,$f8,$f8
-	fcb	$f8,$f8,$f8,$f8,$f8,$f8,$f8,$f8
-	fcb	$f8,$f8,$f8,$f8,$f8,$f8,$f8,$f8
-	fcb	$f8,$f8,$f8,$f8,$f8,$f8,$f8,$f8
-	fcb	$f8,$f8,$f8,$f8,$f8,$f8,$f8,$f8
-	fcb	$f8,$f8,$f8,$f8,$ff,$ff,$ff,$ff
+INOTDAT	fcb	$ff,$ff,$ff,$ff,$fc,$fc,$fc,$fc
+	fcb	$fc,$fc,$fc,$fc,$fe,$fe,$fe,$fe
+	fcb	$fc,$fc,$fc,$fc,$fc,$fc,$fc,$fc
+	fcb	$fc,$fc,$fc,$fc,$fc,$fc,$fc,$fc
+	fcb	$fc,$fc,$fc,$fc,$fc,$fc,$fc,$fc
+	fcb	$fc,$fc,$fc,$fc,$fc,$fc,$fc,$fc
+	fcb	$fc,$fc,$fc,$fc,$fc,$fc,$fc,$fc
+	fcb	$fc,$fc,$fc,$fc,$ff,$ff,$ff,$ff
 
-INMODAT	fcb	$c4,$c4,$ce,$ce,$ca,$ca,$d1,$d1
-	fcb	$d1,$d1,$d1,$d1,$df,$df,$df,$df
-	fcb	$d1,$d1,$d1,$d1,$d1,$d1,$d1,$d1
-	fcb	$d1,$d1,$d1,$d1,$d1,$d1,$d1,$d1
-	fcb	$e0,$e0,$e0,$e0,$e0,$e0,$e0,$e0
-	fcb	$e0,$e0,$e0,$e0,$e0,$e0,$e0,$e0
-	fcb	$e0,$e0,$e0,$e0,$e0,$e0,$e0,$e0
-	fcb	$e0,$e0,$e0,$e0,$fe,$fe,$fe,$fe
+INMODAT	fcb	$c4,$ce,$df,$df,$db,$d1,$d1,$d1
+	fcb	$d1,$d1,$d1,$db,$df,$df,$df,$df
+	fcb	$db,$db,$db,$db,$db,$db,$db,$db
+	fcb	$db,$db,$db,$db,$db,$db,$db,$db
+	fcb	$f0,$f0,$f0,$f0,$f0,$f0,$f0,$f0
+	fcb	$f0,$f0,$f0,$f0,$f0,$f0,$f0,$f0
+	fcb	$f0,$f0,$f0,$f0,$f0,$f0,$f0,$f0
+	fcb	$f0,$f0,$f0,$f0,$fe,$fe,$fe,$fe
 
-INMIDAT	fcb	$41,$41,$41,$41,$41,$41,$41,$41
-	fcb	$41,$41,$41,$41,$7f,$7f,$7f,$7f
-	fcb	$41,$41,$41,$41,$41,$41,$41,$41
-	fcb	$41,$41,$41,$41,$41,$41,$41,$41
-	fcb	$10,$10,$38,$7c,$7c,$44,$44,$c6
-	fcb	$c6,$82,$82,$82,$fe,$fe,$fe,$fe
-	fcb	$82,$82,$82,$82,$82,$82,$82,$82
-	fcb	$82,$82,$82,$82,$82,$82,$82,$82
+INMIDAT	fcb	$63,$63,$63,$63,$63,$63,$63,$63
+	fcb	$63,$63,$63,$63,$7f,$7f,$7f,$7f
+	fcb	$63,$63,$63,$63,$63,$63,$63,$63
+	fcb	$63,$63,$63,$63,$63,$63,$63,$63
+	fcb	$10,$38,$7c,$fe,$ee,$c6,$82,$82
+	fcb	$82,$82,$82,$c6,$fe,$fe,$fe,$fe
+	fcb	$c6,$c6,$c6,$c6,$c6,$c6,$c6,$c6
+	fcb	$c6,$c6,$c6,$c6,$c6,$c6,$c6,$c6
 
-ININDAT	fcb	$fc,$fe,$ff,$83,$81,$81,$81,$81
-	fcb	$81,$81,$81,$81,$83,$ff,$fe,$fc
-	fcb	$88,$88,$88,$8c,$8c,$84,$84,$86
-	fcb	$86,$82,$82,$83,$83,$81,$81,$81
-	fcb	$fe,$fe,$fe,$fe,$80,$80,$80,$80
-	fcb	$80,$80,$80,$80,$fc,$fc,$fc,$fc
-	fcb	$80,$80,$80,$80,$80,$80,$80,$80
-	fcb	$80,$80,$80,$80,$80,$80,$80,$80
+ININDAT	fcb	$fc,$fe,$ff,$ff,$c7,$c3,$c3,$c3
+	fcb	$c3,$c3,$c3,$c7,$ff,$ff,$fe,$fc
+	fcb	$d8,$d8,$d8,$d8,$cc,$cc,$cc,$cc
+	fcb	$c6,$c6,$c6,$c6,$c3,$c3,$c3,$c3
+	fcb	$fe,$fe,$fe,$fe,$c0,$c0,$c0,$c0
+	fcb	$c0,$c0,$c0,$c0,$f8,$f8,$f8,$f8
+	fcb	$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0
+	fcb	$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0
 
 *
 * Data for "COPYRIGHT 2012"
