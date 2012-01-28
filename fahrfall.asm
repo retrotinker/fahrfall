@@ -327,8 +327,22 @@ VSYNC	lda	$ff03		Wait for Vsync
 
 	andb	#JOYMSK		Mask-off disallowed joystick movements
 	stb	MOVFLGS		Store movement flags for later
+	beq	SNDDSBL		No movement?  Then disable sound effects
 
-	jsr	KEYBDRD		Read the keyboard (?)
+	tst	GAMFLGS		Movement?  Check for platform collision
+	bpl	SNDDSBL		If not moving on a platform, disable sound
+
+	lda	#SQWVBIT	Enable sound effects
+	ora	SNDHDAT
+	sta	SNDHDAT
+
+	bra	KYBDCHK
+
+SNDDSBL	lda	#($ff-SQWVBIT)	Disable sound effects
+	anda	SNDHDAT
+	sta	SNDHDAT
+
+KYBDCHK	jsr	KEYBDRD		Read the keyboard (?)
 
 	jsr	CMPSCOR		Compute score
 
@@ -641,6 +655,9 @@ SCRLPNT	lda	FRAMCNT
 	bita	#$01
 	bne	SCROUT1
 
+	lda	SNDHDAT		Bump the 30 Hz square wave generator
+	sta	$ff22
+
 	lda	SCRTCOT		Retrieve last outer scroll top color data
 	tfr     a,b		Advance the color data
 	adda    #$30
@@ -653,7 +670,10 @@ SCRLPNT	lda	FRAMCNT
 
 	bra	SCROTLP
 
-SCROUT1	lda	SCRCCOT		Retrieve last outer scroll current color data
+SCROUT1	lda	SNDLDAT		Bump the 30 Hz square wave generator
+	sta	$ff22
+
+	lda	SCRCCOT		Retrieve last outer scroll current color data
 	tfr     a,b		Recreate B half of the color data
 	subb    #$30
 	orb     #$80
@@ -694,6 +714,16 @@ SCRMO0	lda	SCRTCMO		Retrieve last outer-mid scroll top color data
 	ldx	#SCNBASE		Paint 1st qtr...
 	ldy	#(SCNBASE+SCNQRTR)
 	pshs	y
+
+	lda	SNDLDAT		Enable square wave sound output
+	sta	$ff22
+	lda	PDDEABL
+	sta	$ff23
+	lda	PDDSEBL
+	sta	$ff22
+	lda	PDDDABL
+	sta	$ff23
+
 	bra	SCRMOLP
 
 SCRMO1	ldx	#(SCNBASE+SCNQRTR)	Paint 2nd qtr...
@@ -702,6 +732,16 @@ SCRMO1	ldx	#(SCNBASE+SCNQRTR)	Paint 2nd qtr...
 
 SCRMO2	ldx	#(SCNBASE+SCNHALF)	Paint 3rd qtr...
 	ldy	#(SCNBASE+SCN3QTR)
+
+	lda	SNDLDAT		Disable square wave sound output
+	sta	$ff22
+	lda	PDDEABL
+	sta	$ff23
+	lda	PDDSDBL
+	sta	$ff22
+	lda	PDDDABL
+	sta	$ff23
+
 	bra	SCRMOCM
 
 SCRMO3	ldx	#(SCNBASE+SCN3QTR)	Paint 4th qtr...
