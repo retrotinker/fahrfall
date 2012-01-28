@@ -91,6 +91,8 @@ MOVDN	equ	JOYDN
 
 PBTCNTI	equ	64
 
+SQWVBIT	equ	$02
+
 	org	STRUCT		Platform info structure declarations
 PLTBASE	rmb	2		Current base addresses for drawing platform
 PLTDATA	rmb	1		Mask representing platform configuration
@@ -139,6 +141,14 @@ SCORDLY	rmb	1		Delay counter for scoring
 
 PBUTCNT	rmb	1		Counter for flashing "press button"
 
+PDDEABL	rmb	1		PIA data direction register enable value
+PDDDABL	rmb	1		PIA data direction register disable value
+PDDSEBL	rmb	1		PIA DDIR sound enable value
+PDDSDBL	rmb	1		PIA DDIR sound disable value
+
+SNDHDAT	rmb	1		PIA data value for sound output "high"
+SNDLDAT	rmb	1		PIA data value for sound output "low"
+
 	org	LOAD
 
 INIT	equ	*		Basic one-time setup goes here!
@@ -149,9 +159,29 @@ INIT	equ	*		Basic one-time setup goes here!
 
 	clr	$ffc5		Select SG12 mode
 
-	lda	#$08		Select orange text color set
+	lda	#$08		Set PIA data value for orange text color set
 	ora	$ff22
+*	ora	#SQWVBIT	Set PIA data value for sound output "high"
+*	sta	SNDHDAT		Store PIA data value for sound output "high"
+	anda	#($ff-SQWVBIT)	Set PIA data value for sound output "low"
+	sta	SNDHDAT		Actually, default to "high" same as "low" (sound off)
+	sta	SNDLDAT		Store PIA data value for sound output "low"
 	sta	$ff22
+
+	lda	$ff23
+	anda	#$fb
+	sta	PDDEABL		Store PIA data direction register enable value
+	sta	$ff23
+	lda	#SQWVBIT
+	ora	$ff22
+	sta	PDDSEBL		Store PIA DDIR sound enable value
+	sta	$ff22
+	anda	#($ff-SQWVBIT)
+	sta	PDDSDBL		Store PIA DDIR sound disable value
+	lda	$ff23
+	ora	#$04
+	sta	PDDDABL		Store PIA data direction register disable value
+	sta	$ff23
 
 	ldx	#HISCORE	Initialize high score
 	lda	#(SCORLEN-1)
@@ -1030,7 +1060,42 @@ CMPSCRX	rts
 *
 * Game Over
 *
-GAMEOVR	jmp	RESTART
+GAMEOVR	lda	SNDHDAT		Set the sound output
+	sta	$ff22
+	lda	PDDEABL		Enable square wave sound output
+	sta	$ff23
+	lda	PDDSEBL
+	sta	$ff22
+	lda	PDDDABL
+	sta	$ff23
+
+	tst	$ff00		Clear Hsync interrupt signal
+	lda	#$0f		Setup line counter for game over sound effect
+	ldb	#$5a
+	pshs	a,b
+
+GMOVRLP	lda	$ff01		Wait for Hsync
+	bpl	GMOVRLP
+	tst	$ff00
+
+	jsr	LFSRADV		Advance the LFSR
+
+	lda	LFSRDAT
+	anda	#SQWVBIT
+	ora	SNDLDAT
+	sta	$ff22
+	puls	a,b
+	decb
+	bne	GMOVCNT
+	deca
+	beq	GMOVOUT
+GMOVCNT	pshs	a,b
+	bne	GMOVRLP
+
+GMOVOUT	lda	SNDLDAT		Clear the sound output
+	sta	$ff22
+
+	jmp	RESTART
 
 *
 * Collision detection for new bottom platform
