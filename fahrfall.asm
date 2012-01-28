@@ -71,6 +71,8 @@ PLTDFLT	equ	$3c		Default substitue for "sweeper" platforms
 
 PLYRHGT	equ	12*SCNWIDT	Player object height in terms of screen size
 PLODDBT	equ	$80		Bit for switching even/odd player drawing
+PLFALBT	equ	$40		Bit indicating falling/standing player
+PLMOVBT	equ	$20		Bit indicating moving/stationary player (L/R)
 
 GMCOLFL	equ	$80		Bit for collision detection in game flags
 
@@ -383,10 +385,14 @@ VLOOP	jmp	VSYNC
 PLYDRAW	ldx	PLRDPOS
 	leax	3*SCNWIDT,x
 
-	tst	PLDFLGS
-	bmi	PDRWODD
+	lda	PLDFLGS
+	bita	#PLMOVBT
+	lbne	PDRWMOV
 
-PDRWEVN	lda	#BFLESH		Draw player on even pixel start
+PDRWSTA	tst	PLDFLGS
+	bmi	PDSTAOD
+
+PDSTAEV	lda	#BFLESH		Draw player on even pixel start
 	anda	#PXMSK10
 	sta	-3*SCNWIDT+1,x
 	sta	-2*SCNWIDT+1,x
@@ -428,7 +434,7 @@ PDRWEVN	lda	#BFLESH		Draw player on even pixel start
 
 	rts
 
-PDRWODD	lda	#BFLESH		Draw player on odd pixel start
+PDSTAOD	lda	#BFLESH		Draw player on odd pixel start
 	anda	#PXMSK01
 	sta	-3*SCNWIDT+1,x
 	sta	-2*SCNWIDT+1,x
@@ -470,19 +476,109 @@ PDRWODD	lda	#BFLESH		Draw player on odd pixel start
 
 	rts
 
+PDRWMOV	tst	PLDFLGS
+	bmi	PDMOVOD
+
+PDMOVEV	lda	#BFLESH		Draw player on even pixel start
+	anda	#PXMSK10
+	sta	-3*SCNWIDT+1,x
+	sta	-2*SCNWIDT+1,x
+	sta	2*SCNWIDT,x
+	sta	2*SCNWIDT+2,x
+
+	lda	#BSHIRT
+	tfr	a,b
+	sta	-SCNWIDT+1,x
+	std	,x
+	anda	#PXMSK01
+	sta	-SCNWIDT,x
+	eora	#PXMSKXO
+	tfr	a,b
+	sta	2,x
+	std	SCNWIDT,x
+	sta	SCNWIDT+2,x
+	sta	2*SCNWIDT+1,x
+
+	leax	6*SCNWIDT,x
+
+	lda	#BPANTS
+	sta	-2*SCNWIDT+1,x
+	anda	#PXMSK10
+	sta	-3*SCNWIDT+1,x
+	eora	#PXMSKXO
+	tfr	a,b
+	sta	-2*SCNWIDT,x
+	std	-SCNWIDT,x
+	sta	,x
+	sta	SCNWIDT,x
+
+	lda	#BSHOES
+	sta	2*SCNWIDT,x
+	anda	#PXMSK01
+	sta	1,x
+	eora	#PXMSKXO
+	sta	2,x
+
+	rts
+
+PDMOVOD	lda	#BFLESH		Draw player on odd pixel start
+	anda	#PXMSK01
+	sta	-3*SCNWIDT+1,x
+	sta	-2*SCNWIDT+1,x
+	sta	2*SCNWIDT,x
+	sta	2*SCNWIDT+2,x
+
+	lda	#BSHIRT
+	tfr	a,b
+	sta	-SCNWIDT+1,x
+	std	1,x
+	anda	#PXMSK10
+	sta	-SCNWIDT+2,x
+	eora	#PXMSKXO
+	tfr	a,b
+	sta	,x
+	std	SCNWIDT,x
+	sta	SCNWIDT+2,x
+	sta	2*SCNWIDT+1,x
+
+	leax	6*SCNWIDT,x
+
+	lda	#BPANTS
+	sta	-2*SCNWIDT+1,x
+	anda	#PXMSK01
+	sta	-3*SCNWIDT+1,x
+	eora	#PXMSKXO
+	tfr	a,b
+	sta	-2*SCNWIDT+2,x
+	std	-SCNWIDT+1,x
+	sta	2,x
+	sta	SCNWIDT+2,x
+
+	lda	#BSHOES
+	sta	2*SCNWIDT+2,x
+	anda	#PXMSK01
+	sta	,x
+	eora	#PXMSKXO
+	sta	1,x
+
+	rts
+
 *
 * Erase the player
 *	X,A,B get clobbered
 *
 PLYERAS	ldx	PLREPOS
-	beq	PLYERSX
 
 	leax	3*SCNWIDT,x
 
-	tst	PLEFLGS
-	bmi	PERAODD
+	lda	PLEFLGS
+	bita	#PLMOVBT
+	bne	PERAMOV
 
-PERAEVN	ldd	#WBLACK		Erase player from even pixel start
+PERASTA	tst	PLEFLGS
+	bmi	PESTAOD
+
+PESTAEV	ldd	#WBLACK		Erase player from even pixel start
 	sta	-3*SCNWIDT+1,x
 	sta	-2*SCNWIDT+1,x
 	std	-SCNWIDT,x
@@ -502,12 +598,9 @@ PERAEVN	ldd	#WBLACK		Erase player from even pixel start
 	std	2*SCNWIDT,x
 	sta	2*SCNWIDT+2,x
 
-	clr	PLREPOS		Don't erase again until next move!
-	clr	PLREPOS+1
-
 	rts
 
-PERAODD	ldd	#WBLACK		Erase player from odd pixel start
+PESTAOD	ldd	#WBLACK		Erase player from odd pixel start
 	sta	-3*SCNWIDT+1,x
 	sta	-2*SCNWIDT+1,x
 	std	-SCNWIDT+1,x
@@ -527,10 +620,54 @@ PERAODD	ldd	#WBLACK		Erase player from odd pixel start
 	std	2*SCNWIDT,x
 	sta	2*SCNWIDT+2,x
 
-	clr	PLREPOS		Don't erase again until next move!
-	clr	PLREPOS+1
+	rts
 
-PLYERSX	rts
+PERAMOV	tst	PLEFLGS
+	bmi	PEMOVOD
+
+PEMOVEV	ldd	#WBLACK		Erase player from even pixel start
+	sta	-3*SCNWIDT+1,x
+	sta	-2*SCNWIDT+1,x
+	std	-SCNWIDT,x
+	std	,x
+	sta	2,x
+	std	SCNWIDT,x
+	sta	SCNWIDT+2,x
+	std	2*SCNWIDT,x
+	sta	2*SCNWIDT+2,x
+	sta	3*SCNWIDT+1,x
+
+	leax	6*SCNWIDT,x
+	std	-2*SCNWIDT,x
+	std	-SCNWIDT,x
+	std	,x
+	sta	2,x
+	sta	SCNWIDT,x
+	sta	2*SCNWIDT,x
+
+	rts
+
+PEMOVOD	ldd	#WBLACK		Erase player from odd pixel start
+	sta	-3*SCNWIDT+1,x
+	sta	-2*SCNWIDT+1,x
+	std	-SCNWIDT+1,x
+	std	,x
+	sta	2,x
+	std	SCNWIDT,x
+	sta	SCNWIDT+2,x
+	std	2*SCNWIDT,x
+	sta	2*SCNWIDT+2,x
+	sta	3*SCNWIDT+1,x
+
+	leax	6*SCNWIDT,x
+	std	-2*SCNWIDT+1,x
+	std	-SCNWIDT+1,x
+	std	,x
+	sta	2,x
+	sta	SCNWIDT+2,x
+	sta	2*SCNWIDT+2,x
+
+	rts
 
 *
 * Draw the platforms
@@ -989,15 +1126,19 @@ MOVCOMP	tst	GAMFLGS		Check for player/platform collision
 MOVCMP1	lda	MOVFLGS		Check for movement
 	beq	MOVSKIP		Skip if movement flags are not set
 
-MOVCMP2	ldx	PLRDPOS		Schedule a player erase at current position
+	ldx	PLRDPOS		Schedule a player erase at current position
 	stx	PLREPOS
 	ldb	PLDFLGS		Make sure correct erase routine is used
 	stb	PLEFLGS
+
+	andb	#($ff-PLMOVBT)	Temporarily indicate that player is stationary
+	stb	PLDFLGS	
 
 	bita	#MOVLT
 	beq	MOVRGHT
 
 	eorb	#PLODDBT	Switch odd/even draw flag status
+	orb	#PLMOVBT	Indicate player is moving l/r
 	stb	PLDFLGS
 	bmi	MOVLADJ		Always can move left from odd
 
@@ -1011,7 +1152,7 @@ MOVLADJ	tfr	x,d		Enforce limits on player horizontal position
 	leax	-1,x
 	bra	MOVEUP
 
-MOVLSTP	ldb	#($ff-PLODDBT)	Set even drawing status on left edge of screen
+MOVLSTP	ldb	#PLODDBT	Reset odd drawing status on left edge of screen
 	andb	PLDFLGS
 	stb	PLDFLGS
 	bra	MOVEUP
@@ -1020,6 +1161,7 @@ MOVRGHT	bita	#MOVRT
 	beq	MOVEUP
 
 	eorb	#PLODDBT	Switch odd/even draw flag status
+	orb	#PLMOVBT	Indicate player is moving l/r
 	stb	PLDFLGS
 	bpl	MOVRADJ		Always can move right from even
 
@@ -1034,7 +1176,7 @@ MOVRADJ	tfr	x,d		Enforce limits on player horizontal position
 	leax	1,x
 	bra	MOVEUP
 
-MOVRSTP	ldb	#PLODDBT	Set odd drawing status on right edge of screen
+MOVRSTP	ldb	#($ff-PLODDBT)	Reset even drawing status on right edge of screen
 	orb	PLDFLGS
 	stb	PLDFLGS
 
@@ -1053,6 +1195,14 @@ MOVCMPX	stx	PLRDPOS		Update player position
 	rts
 
 MOVSKIP	ldx	PLRDPOS		Reload current player draw position
+	stx	PLREPOS
+	ldb	PLDFLGS		Make sure correct erase routine is used
+	stb	PLEFLGS
+
+	ldb	#($ff-PLMOVBT)	Indicate that player is stationary l/r
+	andb	PLDFLGS
+	stb	PLDFLGS
+
 	rts
 
 *
