@@ -2059,7 +2059,7 @@ ININDAT	fcb	$fc,$fe,$ff,$ff,$c7,$c3,$c3,$c3
 	fcb	$c3,$c3,$c3,$c7,$ff,$ff,$fe,$fc
 	fcb	$d8,$d8,$d8,$d8,$cc,$cc,$cc,$cc
 	fcb	$c6,$c6,$c6,$c6,$c3,$c3,$c3,$c3
-	fcb	$fe,$fe,$fe,$fe,$c0,$c0,$c0,$c0
+	fcb	$fc,$fc,$fc,$fc,$c0,$c0,$c0,$c0
 	fcb	$c0,$c0,$c0,$c0,$f8,$f8,$f8,$f8
 	fcb	$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0
 	fcb	$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0
