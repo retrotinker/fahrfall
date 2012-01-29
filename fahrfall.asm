@@ -483,20 +483,17 @@ PDMOVEV	lda	#BFLESH		Draw player on even pixel start
 	anda	#PXMSK10
 	sta	-3*SCNWIDT+1,x
 	sta	-2*SCNWIDT+1,x
-	sta	2*SCNWIDT,x
+	sta	SCNWIDT,x
 	sta	2*SCNWIDT+2,x
 
 	lda	#BSHIRT
 	tfr	a,b
-	sta	-SCNWIDT+1,x
+	std	-SCNWIDT,x
 	std	,x
-	anda	#PXMSK01
-	sta	-SCNWIDT,x
-	eora	#PXMSKXO
+	anda	#PXMSK10
 	tfr	a,b
 	sta	2,x
-	std	SCNWIDT,x
-	sta	SCNWIDT+2,x
+	std	SCNWIDT+1,x
 	sta	2*SCNWIDT+1,x
 
 	leax	6*SCNWIDT,x
@@ -525,20 +522,17 @@ PDMOVOD	lda	#BFLESH		Draw player on odd pixel start
 	anda	#PXMSK01
 	sta	-3*SCNWIDT+1,x
 	sta	-2*SCNWIDT+1,x
+	sta	SCNWIDT+2,x
 	sta	2*SCNWIDT,x
-	sta	2*SCNWIDT+2,x
 
 	lda	#BSHIRT
 	tfr	a,b
-	sta	-SCNWIDT+1,x
+	std	-SCNWIDT+1,x
 	std	1,x
-	anda	#PXMSK10
-	sta	-SCNWIDT+2,x
-	eora	#PXMSKXO
+	anda	#PXMSK01
 	tfr	a,b
 	sta	,x
 	std	SCNWIDT,x
-	sta	SCNWIDT+2,x
 	sta	2*SCNWIDT+1,x
 
 	leax	6*SCNWIDT,x
@@ -633,8 +627,7 @@ PEMOVEV	ldd	#WBLACK		Erase player from even pixel start
 	sta	2,x
 	std	SCNWIDT,x
 	sta	SCNWIDT+2,x
-	std	2*SCNWIDT,x
-	sta	2*SCNWIDT+2,x
+	std	2*SCNWIDT+1,x
 	sta	3*SCNWIDT+1,x
 
 	leax	6*SCNWIDT,x
@@ -656,7 +649,6 @@ PEMOVOD	ldd	#WBLACK		Erase player from odd pixel start
 	std	SCNWIDT,x
 	sta	SCNWIDT+2,x
 	std	2*SCNWIDT,x
-	sta	2*SCNWIDT+2,x
 	sta	3*SCNWIDT+1,x
 
 	leax	6*SCNWIDT,x
