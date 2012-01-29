@@ -1145,7 +1145,7 @@ MOVLADJ	tfr	x,d		Enforce limits on player horizontal position
 	bra	MOVEUP
 
 MOVLSTP	ldb	#PLODDBT	Reset odd drawing status on left edge of screen
-	andb	PLDFLGS
+	orb	PLDFLGS
 	stb	PLDFLGS
 	bra	MOVEUP
 
@@ -1169,7 +1169,7 @@ MOVRADJ	tfr	x,d		Enforce limits on player horizontal position
 	bra	MOVEUP
 
 MOVRSTP	ldb	#($ff-PLODDBT)	Reset even drawing status on right edge of screen
-	orb	PLDFLGS
+	andb	PLDFLGS
 	stb	PLDFLGS
 
 MOVEUP	bita	#MOVUP
