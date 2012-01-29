@@ -1432,6 +1432,69 @@ ILOOP	lbra	ISYNC
 INTREXT	rts
 
 *
+* Paint display data for introduction
+*	Y points at output destination
+*	A,B get clobbered
+*
+* INTPDT1 and INTPDT2 are alternate entry points for narrower data fields.
+*
+INTPDAT	anda	#$f0		Separate color info
+	ldb	#$c0		Translate pixel mask info
+	andb	5,s
+	lsrb
+	lsrb
+	lsrb
+	lsrb
+	stb	4,s
+	ora	4,s
+	lsrb
+	lsrb
+	stb	4,s
+	ora	4,s
+	anda	6,s
+	sta	,y		Store first byte
+
+INTPDT1	anda	#$f0		Separate color info
+	ldb	#$30		Translate pixel mask info
+	andb	5,s
+	lsrb
+	lsrb
+	stb	4,s
+	ora	4,s
+	lsrb
+	lsrb
+	stb	4,s
+	ora	4,s
+	anda	6,s
+	sta	1,y		Store second byte
+
+INTPDT2	anda	#$f0		Separate color info
+	ldb	#$0c		Translate pixel mask info
+	andb	5,s
+	stb	4,s
+	ora	4,s
+	lsrb
+	lsrb
+	stb	4,s
+	ora	4,s
+	anda	6,s
+	sta	2,y		Store third byte
+
+	anda	#$f0		Separate color info
+	ldb	#$03		Translate pixel mask info
+	andb	5,s
+	stb	4,s
+	ora	4,s
+	lslb
+	lslb
+	stb	4,s
+	ora	4,s
+	anda	6,s
+	sta	3,y		Store fourth byte
+
+	rts
+
+*
 * Paint the intro-scroll effects
 *	X,Y,A,B get clobbered
 *
@@ -1469,56 +1532,17 @@ INTOTLP	ldb	#$0f		XOR pixel data mask
 	ldb	,y+		Operate on data for first letter
 	stb	1,s
 
-	anda	#$f0		Separate color info
-	ldb	#$0c		Translate pixel mask info
-	andb	1,s
-	stb	,s
-	ora	,s
-	lsrb
-	lsrb
-	stb	,s
-	ora	,s
-	anda	2,s
-	sta	2,x		Store first byte
+	pshs	y
+	leay	,x
+	jsr	INTPDT2
 
-	anda	#$f0		Separate color info
-	ldb	#$03		Translate pixel mask info
-	andb	1,s
-	stb	,s
-	ora	,s
-	lslb
-	lslb
-	stb	,s
-	ora	,s
-	anda	2,s
-	sta	3,x		Store second byte
+	ldy	,s
+	ldb	31,y		Operate on data for eighth letter
+	stb	3,s
 
-	ldb	31,y		Operate on data for last letter
-	stb	1,s
-
-	anda	#$f0		Separate color info
-	ldb	#$0c		Translate pixel mask info
-	andb	1,s
-	stb	,s
-	ora	,s
-	lsrb
-	lsrb
-	stb	,s
-	ora	,s
-	anda	2,s
-	sta	(SCNWIDT-4),x	Store first byte
-
-	anda	#$f0		Separate color info
-	ldb	#$03		Translate pixel mask info
-	andb	1,s
-	stb	,s
-	ora	,s
-	lslb
-	lslb
-	stb	,s
-	ora	,s
-	anda	2,s
-	sta	(SCNWIDT-3),x	Store second byte
+	leay	(SCNWIDT-6),x
+	jsr	INTPDT2
+	puls	y
 
 	adda    #$30		Advance the color data
 	ora     #$80
@@ -1587,90 +1611,23 @@ INTMOLP	ldb	#$0f		XOR pixel data mask
 	ldb	,y+		Operate on data for second letter
 	stb	1,s
 
-	anda	#$f0		Separate color info
-	ldb	#$30		Translate pixel mask info
-	andb	1,s
-	lsrb
-	lsrb
-	stb	,s
-	ora	,s
-	lsrb
-	lsrb
-	stb	,s
-	ora	,s
-	anda	2,s
-	sta	4,x		Store first byte
+	pshs	y
+	leay	3,x
+	jsr	INTPDT1
 
-	anda	#$f0		Separate color info
-	ldb	#$0c		Translate pixel mask info
-	andb	1,s
-	stb	,s
-	ora	,s
-	lsrb
-	lsrb
-	stb	,s
-	ora	,s
-	anda	2,s
-	sta	5,x		Store second byte
-
-	anda	#$f0		Separate color info
-	ldb	#$03		Translate pixel mask info
-	andb	1,s
-	stb	,s
-	ora	,s
-	lslb
-	lslb
-	stb	,s
-	ora	,s
-	anda	2,s
-	sta	6,x		Store third byte
-
+	ldy	,s
 	ldb	31,y		Operate on data for seventh letter
-	stb	1,s
+	stb	3,s
 
-	anda	#$f0		Separate color info
-	ldb	#$30		Translate pixel mask info
-	andb	1,s
-	lsrb
-	lsrb
-	stb	,s
-	ora	,s
-	lsrb
-	lsrb
-	stb	,s
-	ora	,s
-	anda	2,s
-	sta	(SCNWIDT-7),x	Store first byte
-
-	anda	#$f0		Separate color info
-	ldb	#$0c		Translate pixel mask info
-	andb	1,s
-	stb	,s
-	ora	,s
-	lsrb
-	lsrb
-	stb	,s
-	ora	,s
-	anda	2,s
-	sta	(SCNWIDT-6),x	Store second byte
-
-	anda	#$f0		Separate color info
-	ldb	#$03		Translate pixel mask info
-	andb	1,s
-	stb	,s
-	ora	,s
-	lslb
-	lslb
-	stb	,s
-	ora	,s
-	anda	2,s
-	sta	(SCNWIDT-5),x	Store third byte
+	leay	(SCNWIDT-8),x
+	jsr	INTPDT1
+	puls	y
 
 	adda    #$30		Advance the color data
 	ora     #$80
 	leax	SCNWIDT,x
 	cmpx	3,s
-	lblt	INTMOLP
+	blt	INTMOLP
 	ldb	SCRTCMO
 	andb	#$0f
 	stb	2,s
@@ -1753,122 +1710,23 @@ INTMILP	ldb	#$0f		XOR pixel data mask
 	ldb	,y+		Operate on data for third letter
 	stb	1,s
 
-	anda	#$f0		Separate color info
-	ldb	#$c0		Translate pixel mask info
-	andb	1,s
-	lsrb
-	lsrb
-	lsrb
-	lsrb
-	stb	,s
-	ora	,s
-	lsrb
-	lsrb
-	stb	,s
-	ora	,s
-	anda	2,s
-	sta	7,x		Store first byte
+	pshs	y
+	leay	7,x
+	jsr	INTPDAT
 
-	anda	#$f0		Separate color info
-	ldb	#$30		Translate pixel mask info
-	andb	1,s
-	lsrb
-	lsrb
-	stb	,s
-	ora	,s
-	lsrb
-	lsrb
-	stb	,s
-	ora	,s
-	anda	2,s
-	sta	8,x		Store second byte
-
-	anda	#$f0		Separate color info
-	ldb	#$0c		Translate pixel mask info
-	andb	1,s
-	stb	,s
-	ora	,s
-	lsrb
-	lsrb
-	stb	,s
-	ora	,s
-	anda	2,s
-	sta	9,x		Store third byte
-
-	anda	#$f0		Separate color info
-	ldb	#$03		Translate pixel mask info
-	andb	1,s
-	stb	,s
-	ora	,s
-	lslb
-	lslb
-	stb	,s
-	ora	,s
-	anda	2,s
-	sta	10,x		Store fourth byte
-
+	ldy	,s
 	ldb	31,y		Operate on data for sixth letter
-	stb	1,s
+	stb	3,s
 
-	anda	#$f0		Separate color info
-	ldb	#$c0		Translate pixel mask info
-	andb	1,s
-	lsrb
-	lsrb
-	lsrb
-	lsrb
-	stb	,s
-	ora	,s
-	lsrb
-	lsrb
-	stb	,s
-	ora	,s
-	anda	2,s
-	sta	(SCNWIDT-11),x	Store first byte
-
-	anda	#$f0		Separate color info
-	ldb	#$30		Translate pixel mask info
-	andb	1,s
-	lsrb
-	lsrb
-	stb	,s
-	ora	,s
-	lsrb
-	lsrb
-	stb	,s
-	ora	,s
-	anda	2,s
-	sta	(SCNWIDT-10),x	Store second byte
-
-	anda	#$f0		Separate color info
-	ldb	#$0c		Translate pixel mask info
-	andb	1,s
-	stb	,s
-	ora	,s
-	lsrb
-	lsrb
-	stb	,s
-	ora	,s
-	anda	2,s
-	sta	(SCNWIDT-9),x	Store third byte
-
-	anda	#$f0		Separate color info
-	ldb	#$03		Translate pixel mask info
-	andb	1,s
-	stb	,s
-	ora	,s
-	lslb
-	lslb
-	stb	,s
-	ora	,s
-	anda	2,s
-	sta	(SCNWIDT-8),x	Store fourth byte
+	leay	(SCNWIDT-11),x
+	jsr	INTPDAT
+	puls	y
 
 	adda    #$30		Advance the color data
 	ora     #$80
 	leax	SCNWIDT,x
 	cmpx	3,s
-	lblt	INTMILP
+	blt	INTMILP
 	ldb	SCRTCMI
 	andb	#$0f
 	stb	2,s
@@ -1959,122 +1817,23 @@ INTINLP	ldb	#$0f		XOR pixel data mask
 	ldb	,y+		Operate on data for fourth letter
 	stb	1,s
 
-	anda	#$f0		Separate color info
-	ldb	#$c0		Translate pixel mask info
-	andb	1,s
-	lsrb
-	lsrb
-	lsrb
-	lsrb
-	stb	,s
-	ora	,s
-	lsrb
-	lsrb
-	stb	,s
-	ora	,s
-	anda	2,s
-	sta	12,x		Store first byte
+	pshs	y
+	leay	12,x
+	jsr	INTPDAT
 
-	anda	#$f0		Separate color info
-	ldb	#$30		Translate pixel mask info
-	andb	1,s
-	lsrb
-	lsrb
-	stb	,s
-	ora	,s
-	lsrb
-	lsrb
-	stb	,s
-	ora	,s
-	anda	2,s
-	sta	13,x		Store second byte
-
-	anda	#$f0		Separate color info
-	ldb	#$0c		Translate pixel mask info
-	andb	1,s
-	stb	,s
-	ora	,s
-	lsrb
-	lsrb
-	stb	,s
-	ora	,s
-	anda	2,s
-	sta	14,x		Store third byte
-
-	anda	#$f0		Separate color info
-	ldb	#$03		Translate pixel mask info
-	andb	1,s
-	stb	,s
-	ora	,s
-	lslb
-	lslb
-	stb	,s
-	ora	,s
-	anda	2,s
-	sta	15,x		Store fourth byte
-
+	ldy	,s
 	ldb	31,y		Operate on data for fifth letter
-	stb	1,s
+	stb	3,s
 
-	anda	#$f0		Separate color info
-	ldb	#$c0		Translate pixel mask info
-	andb	1,s
-	lsrb
-	lsrb
-	lsrb
-	lsrb
-	stb	,s
-	ora	,s
-	lsrb
-	lsrb
-	stb	,s
-	ora	,s
-	anda	2,s
-	sta	(SCNWIDT-15),x	Store first byte
-
-	anda	#$f0		Separate color info
-	ldb	#$30		Translate pixel mask info
-	andb	1,s
-	lsrb
-	lsrb
-	stb	,s
-	ora	,s
-	lsrb
-	lsrb
-	stb	,s
-	ora	,s
-	anda	2,s
-	sta	(SCNWIDT-14),x	Store second byte
-
-	anda	#$f0		Separate color info
-	ldb	#$0c		Translate pixel mask info
-	andb	1,s
-	stb	,s
-	ora	,s
-	lsrb
-	lsrb
-	stb	,s
-	ora	,s
-	anda	2,s
-	sta	(SCNWIDT-13),x	Store third byte
-
-	anda	#$f0		Separate color info
-	ldb	#$03		Translate pixel mask info
-	andb	1,s
-	stb	,s
-	ora	,s
-	lslb
-	lslb
-	stb	,s
-	ora	,s
-	anda	2,s
-	sta	(SCNWIDT-12),x	Store fourth byte
+	leay	(SCNWIDT-15),x
+	jsr	INTPDAT
+	puls	y
 
 	adda    #$30		Advance the color data
 	ora     #$80
 	leax	SCNWIDT,x
 	cmpx	3,s
-	lblt	INTINLP
+	blt	INTINLP
 	ldb	SCRTCIN
 	andb	#$0f
 	stb	2,s
