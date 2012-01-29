@@ -2185,10 +2185,10 @@ INOTDAT	fcb	$ff,$ff,$ff,$ff,$fc,$fc,$fc,$fc
 	fcb	$fc,$fc,$fc,$fc,$fc,$fc,$fc,$fc
 	fcb	$fc,$fc,$fc,$fc,$ff,$ff,$ff,$ff
 
-INMODAT	fcb	$c4,$ce,$df,$df,$db,$d1,$d1,$d1
-	fcb	$d1,$d1,$d1,$db,$df,$df,$df,$df
-	fcb	$db,$db,$db,$db,$db,$db,$db,$db
-	fcb	$db,$db,$db,$db,$db,$db,$db,$db
+INMODAT	fcb	$cc,$cc,$de,$de,$d2,$d2,$d2,$d2
+	fcb	$d2,$d2,$d2,$d2,$de,$de,$de,$de
+	fcb	$d2,$d2,$d2,$d2,$d2,$d2,$d2,$d2
+	fcb	$d2,$d2,$d2,$d2,$d2,$d2,$d2,$d2
 	fcb	$f0,$f0,$f0,$f0,$f0,$f0,$f0,$f0
 	fcb	$f0,$f0,$f0,$f0,$f0,$f0,$f0,$f0
 	fcb	$f0,$f0,$f0,$f0,$f0,$f0,$f0,$f0
@@ -2198,10 +2198,10 @@ INMIDAT	fcb	$63,$63,$63,$63,$63,$63,$63,$63
 	fcb	$63,$63,$63,$63,$7f,$7f,$7f,$7f
 	fcb	$63,$63,$63,$63,$63,$63,$63,$63
 	fcb	$63,$63,$63,$63,$63,$63,$63,$63
-	fcb	$10,$38,$7c,$fe,$ee,$c6,$82,$82
-	fcb	$82,$82,$82,$c6,$fe,$fe,$fe,$fe
-	fcb	$c6,$c6,$c6,$c6,$c6,$c6,$c6,$c6
-	fcb	$c6,$c6,$c6,$c6,$c6,$c6,$c6,$c6
+	fcb	$30,$78,$fc,$fc,$84,$84,$84,$84
+	fcb	$84,$84,$84,$84,$fc,$fc,$fc,$fc
+	fcb	$cc,$cc,$cc,$cc,$cc,$cc,$cc,$cc
+	fcb	$cc,$cc,$cc,$cc,$cc,$cc,$cc,$cc
 
 ININDAT	fcb	$fc,$fe,$ff,$ff,$c7,$c3,$c3,$c3
 	fcb	$c3,$c3,$c3,$c7,$ff,$ff,$fe,$fc
