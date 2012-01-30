@@ -567,34 +567,33 @@ PDRWFAL	tst	PLDFLGS
 PDFALEV	lda	#BFLESH		Draw player on even pixel start
 	anda	#PXMSK10
 	tfr	a,b
-	std	-3*SCNWIDT,x
-	sta	-3*SCNWIDT+2,x
-	sta	-2*SCNWIDT+1,x
+	std	-2*SCNWIDT,x
+	sta	-2*SCNWIDT+2,x
+	sta	-SCNWIDT+1,x
 
 	lda	#BSHIRT
 	tfr	a,b
-	std	-SCNWIDT,x
-	sta	1,x
+	std	,x
+	sta	SCNWIDT+1,x
 	anda	#PXMSK01
-	sta	,x
+	sta	SCNWIDT,x
 	eora	#PXMSKXO
 	tfr	a,b
-	sta	-2*SCNWIDT,x
-	sta	-2*SCNWIDT+2,x
+	sta	-SCNWIDT,x
 	sta	-SCNWIDT+2,x
-	sta	SCNWIDT+1,x
+	sta	2,x
 	sta	2*SCNWIDT+1,x
+	sta	3*SCNWIDT+1,x
 
 	leax	6*SCNWIDT,x
 
 	lda	#BPANTS
-	sta	-2*SCNWIDT+1,x
+	sta	-SCNWIDT+1,x
 	anda	#PXMSK10
-	sta	-3*SCNWIDT+1,x
+	sta	-2*SCNWIDT+1,x
 	eora	#PXMSKXO
 	tfr	a,b
-	sta	-2*SCNWIDT,x
-	std	-SCNWIDT,x
+	sta	-SCNWIDT,x
 	std	,x
 	std	SCNWIDT,x
 
@@ -610,34 +609,33 @@ PDFALEV	lda	#BFLESH		Draw player on even pixel start
 PDFALOD	lda	#BFLESH		Draw player on odd pixel start
 	anda	#PXMSK01
 	tfr	a,b
-	std	-3*SCNWIDT,x
-	sta	-3*SCNWIDT+2,x
-	sta	-2*SCNWIDT+1,x
+	std	-2*SCNWIDT,x
+	sta	-2*SCNWIDT+2,x
+	sta	-SCNWIDT+1,x
 
 	lda	#BSHIRT
 	tfr	a,b
-	std	-SCNWIDT+1,x
-	sta	1,x
+	std	1,x
+	sta	SCNWIDT+1,x
 	anda	#PXMSK10
-	sta	2,x
+	sta	SCNWIDT+2,x
 	eora	#PXMSKXO
 	tfr	a,b
-	sta	-2*SCNWIDT,x
-	sta	-2*SCNWIDT+2,x
 	sta	-SCNWIDT,x
-	sta	SCNWIDT+1,x
+	sta	-SCNWIDT+2,x
+	sta	,x
 	sta	2*SCNWIDT+1,x
+	sta	3*SCNWIDT+1,x
 
 	leax	6*SCNWIDT,x
 
 	lda	#BPANTS
-	sta	-2*SCNWIDT+1,x
+	sta	-SCNWIDT+1,x
 	anda	#PXMSK01
-	sta	-3*SCNWIDT+1,x
+	sta	-2*SCNWIDT+1,x
 	eora	#PXMSKXO
 	tfr	a,b
-	sta	-2*SCNWIDT+2,x
-	std	-SCNWIDT+1,x
+	sta	-SCNWIDT+2,x
 	std	1,x
 	std	SCNWIDT+1,x
 
@@ -761,19 +759,18 @@ PERAFAL	tst	PLEFLGS
 	bmi	PEFALOD
 
 PEFALEV	ldd	#WBLACK		Erase player from even pixel start
-	std	-3*SCNWIDT,x
-	sta	-3*SCNWIDT+2,x
 	std	-2*SCNWIDT,x
 	sta	-2*SCNWIDT+2,x
 	std	-SCNWIDT,x
 	sta	-SCNWIDT+2,x
 	std	,x
-	sta	SCNWIDT+1,x
+	sta	2,x
+	std	SCNWIDT,x
 	sta	2*SCNWIDT+1,x
 	sta	3*SCNWIDT+1,x
 
 	leax	6*SCNWIDT,x
-	std	-2*SCNWIDT,x
+	sta	-2*SCNWIDT+1,x
 	std	-SCNWIDT,x
 	std	,x
 	std	SCNWIDT,x
@@ -783,19 +780,18 @@ PEFALEV	ldd	#WBLACK		Erase player from even pixel start
 	rts
 
 PEFALOD	ldd	#WBLACK		Erase player from odd pixel start
-	std	-3*SCNWIDT,x
-	sta	-3*SCNWIDT+2,x
 	std	-2*SCNWIDT,x
 	sta	-2*SCNWIDT+2,x
 	std	-SCNWIDT,x
 	sta	-SCNWIDT+2,x
-	std	1,x
-	sta	SCNWIDT+1,x
+	std	,x
+	sta	2,x
+	std	SCNWIDT+1,x
 	sta	2*SCNWIDT+1,x
 	sta	3*SCNWIDT+1,x
 
 	leax	6*SCNWIDT,x
-	std	-2*SCNWIDT+1,x
+	sta	-2*SCNWIDT+1,x
 	std	-SCNWIDT+1,x
 	std	1,x
 	std	SCNWIDT+1,x
