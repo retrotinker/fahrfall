@@ -2172,23 +2172,23 @@ PLTCMSK fcb	$80,$80,$c0,$c0,$40,$40,$60,$60
 *
 * Data used for "FAHRFALL" on title screen
 *
-INOTDAT	fcb	$ff,$ff,$ff,$ff,$fc,$fc,$fc,$fc
-	fcb	$fc,$fc,$fc,$fc,$fe,$fe,$fe,$fe
-	fcb	$fc,$fc,$fc,$fc,$fc,$fc,$fc,$fc
-	fcb	$fc,$fc,$fc,$fc,$fc,$fc,$fc,$fc
-	fcb	$fc,$fc,$fc,$fc,$fc,$fc,$fc,$fc
-	fcb	$fc,$fc,$fc,$fc,$fc,$fc,$fc,$fc
-	fcb	$fc,$fc,$fc,$fc,$fc,$fc,$fc,$fc
-	fcb	$fc,$fc,$fc,$fc,$ff,$ff,$ff,$ff
+INOTDAT	fcb	$fe,$fe,$fe,$fe,$f8,$f8,$f8,$f8
+	fcb	$f8,$f8,$f8,$f8,$fc,$fc,$fc,$fc
+	fcb	$f8,$f8,$f8,$f8,$f8,$f8,$f8,$f8
+	fcb	$f8,$f8,$f8,$f8,$f8,$f8,$f8,$f8
+	fcb	$f8,$f8,$f8,$f8,$f8,$f8,$f8,$f8
+	fcb	$f8,$f8,$f8,$f8,$f8,$f8,$f8,$f8
+	fcb	$f8,$f8,$f8,$f8,$f8,$f8,$f8,$f8
+	fcb	$f8,$f8,$f8,$f8,$fe,$fe,$fe,$fe
 
-INMODAT	fcb	$cc,$cc,$de,$de,$d2,$d2,$d2,$d2
+INMODAT	fcb	$cc,$de,$de,$de,$d2,$d2,$d2,$d2
 	fcb	$d2,$d2,$d2,$d2,$de,$de,$de,$de
 	fcb	$d2,$d2,$d2,$d2,$d2,$d2,$d2,$d2
 	fcb	$d2,$d2,$d2,$d2,$d2,$d2,$d2,$d2
 	fcb	$f0,$f0,$f0,$f0,$f0,$f0,$f0,$f0
 	fcb	$f0,$f0,$f0,$f0,$f0,$f0,$f0,$f0
 	fcb	$f0,$f0,$f0,$f0,$f0,$f0,$f0,$f0
-	fcb	$f0,$f0,$f0,$f0,$fe,$fe,$fe,$fe
+	fcb	$f0,$f0,$f0,$f0,$fc,$fc,$fc,$fc
 
 INMIDAT	fcb	$63,$63,$63,$63,$63,$63,$63,$63
 	fcb	$63,$63,$63,$63,$7f,$7f,$7f,$7f
