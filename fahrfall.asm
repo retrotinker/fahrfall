@@ -1765,6 +1765,11 @@ INTRO	jsr	CLRSCRN		Clear the screen to black
 	lda	#CPYS2LN
 	jsr	DRWSTR
 
+	ldx	#ATSTSTR	Indicate that this is an Alpha release...
+	ldy	#(SCNBASE+48*SCNWIDT+9)
+	lda	#(ATSTSLN-ATSTSTR)
+	jsr	DRWSTR
+
 	leas	-2,s		Init time-out counter values
 	lda	#$10
 	sta	1,s
@@ -2415,16 +2420,7 @@ PBKYSET	ldx	#KEYBDRD	Point INPREAD at KEYBDRD
 PBEXTCS	orcc	#$01		Return positive result
 	rts
 
-PBEXTCC	equ	*		Check for monitor activity while we're here...
-
-* Check for user break (development only)
-CHKUART	lda	$ff69		Check for serial port activity
-	bita	#$08
-	beq	PBEXTC2
-	lda	$ff68
-	jmp	[$fffe]		Re-enter monitor
-
-PBEXTC2	andcc	#$fe		Return negative result
+PBEXTCC	andcc	#$fe		Return negative result
 	rts
 
 *
@@ -2464,16 +2460,7 @@ PB2INCK	jsr	[INPREAD]	Read input, flags returned in B
 PB2EXCS	orcc	#$01		Return positive result
 	rts
 
-PB2EXCC	equ	*		Check for monitor activity while we're here...
-
-* Check for user break (development only)
-CHKURT2	lda	$ff69		Check for serial port activity
-	bita	#$08
-	beq	PB2EXC2
-	lda	$ff68
-	jmp	[$fffe]		Re-enter monitor
-
-PB2EXC2	andcc	#$fe		Return negative result
+PB2EXCC	andcc	#$fe		Return negative result
 	rts
 
 *
@@ -2810,5 +2797,12 @@ HOFDFLT	fcb	$40,$40,$40
 	fcb	$30,$30,$30,$32,$30,$30
 	fcb	$40,$40,$40
 	fcb	$30,$30,$30,$31,$30,$30
+
+*
+* Data for "ALPHA TEST 1"
+*
+ATSTSTR	fcb	$20,$01,$0c,$10,$08,$01,$20,$14
+	fcb	$05,$13,$14,$20,$32,$20
+ATSTSLN	equ	*
 
 	end	INIT
