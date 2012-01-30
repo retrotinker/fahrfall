@@ -368,16 +368,9 @@ KYBDCHK	jsr	KEYBDRD		Read the keyboard (?)
 	jsr	FLMFLKR		Bump the flame flicker effect
 
 	dec	FRAMCNT		Bump the frame counter
-	bne	CHKUART
+	bne	VLOOP
 	lda	#FRMCTIN
 	sta	FRAMCNT
-
-* Check for user break (development only)
-CHKUART	lda	$ff69		Check for serial port activity
-	bita	#$08
-	beq	VLOOP
-	lda	$ff68
-	jmp	[$fffe]		Re-enter monitor
 
 * End of main game loop
 VLOOP	jmp	VSYNC
@@ -1531,6 +1524,11 @@ ISYNC	lda	$ff03		Wait for Vsync
 	lda	#(CPYS2LN-CPYSTR2)
 	jsr	DRWSTR
 
+	ldx	#ATSTSTR	Indicate that this is an Alpha release...
+	ldy	#(SCNBASE+48*SCNWIDT+9)
+	lda	#(ATSTSLN-ATSTSTR)
+	jsr	DRWSTR
+
 	jsr	LFSRADV		Advance the LFSR
 
 	lda	#(PBTCNTI/2)	Display "press button" message
@@ -1562,16 +1560,9 @@ PBJOYCK	jsr	JOYREAD		Read joystick, flags returned in B
 	jsr	FLMFLKR		Bump the flame flicker effect
 
 	dec	FRAMCNT		Bump the frame counter
-	bne	CHKURT2
+	bne	ILOOP
 	lda	#FRMCTIN
 	sta	FRAMCNT
-
-* Check for user break (development only)
-CHKURT2	lda	$ff69		Check for serial port activity
-	bita	#$08
-	beq	ILOOP
-	lda	$ff68
-	jmp	[$fffe]		Re-enter monitor
 
 ILOOP	lbra	ISYNC
 
@@ -2234,5 +2225,12 @@ PBTS1LN	equ	*
 PBTSTR2	fcb	$20,$10,$12,$05,$13,$13,$20,$02
 	fcb	$15,$14,$14,$0f,$0e,$20
 PBTS2LN	equ	*
+
+*
+* Data for "ALPHA TEST 1"
+*
+ATSTSTR	fcb	$20,$01,$0c,$10,$08,$01,$20,$14
+	fcb	$05,$13,$14,$20,$31,$20
+ATSTSLN	equ	*
 
 	end	INIT
