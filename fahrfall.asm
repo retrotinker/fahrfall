@@ -1,8 +1,8 @@
 	nam	fahrfall
 	ttl	Game inspired by "Man Goes Down" and/or "Downfall"
 
-DATA	equ	$0300		Base address for random storage
-LOAD	equ	$1c00		Actual load address for binary
+DATA	equ	$4000		Base address for random storage
+LOAD	equ	$4100		Actual load address for binary
 
 STRUCT	equ	0		Dummy origin for declaring structures
 
