@@ -157,6 +157,8 @@ SNDLDAT	rmb	1		PIA data value for sound output "low"
 
 INIT	equ	*		Basic one-time setup goes here!
 
+	orcc	#$50		Disable IRQ and FIRQ -- seems reasonable!
+
 	lda	#(DATA/256)	Set direct page register
 	tfr	a,dp
 	setdp	DATA/256	Tell the assembler about the direct page value
