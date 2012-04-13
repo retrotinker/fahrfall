@@ -1,3 +1,10 @@
+# Vim and Emacs autosave/backup/swap files
+.*
+*.orig
+*~
+\#*#
+
+# Fahrfall binaries
 fahrfall.bin
 fahrfall.s19
 fahrfall.dsk
