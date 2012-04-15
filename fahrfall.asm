@@ -97,6 +97,9 @@ PBTCNTI	equ	64
 
 SQWVBIT	equ	$02
 
+KBROWCC	equ	$08		Row to check for space/left/right keys on CoCo
+KBROWDG	equ	$20		Row to check for space/left/right keys on Dragon
+
 	org	STRUCT		Platform info structure declarations
 PLTBASE	rmb	2		Current base addresses for drawing platform
 PLTDATA	rmb	1		Mask representing platform configuration
@@ -153,6 +156,10 @@ PDDSDBL	rmb	1		PIA DDIR sound disable value
 SNDHDAT	rmb	1		PIA data value for sound output "high"
 SNDLDAT	rmb	1		PIA data value for sound output "low"
 
+KBRWDAT	rmb	1		Data to use when checking for key presses
+
+INPREAD	rmb	2		Function pointer for reading input
+
 	org	LOAD
 
 INIT	equ	*		Basic one-time setup goes here!
@@ -207,6 +214,8 @@ INCSCLP	stb	a,x
 	deca
 	bne	INCSCLP
 	stb	a,x
+
+	jsr	KEYBINI		Initialize the keyboard read routine
 
 RESTART	equ	*		New game starts here!
 
@@ -328,7 +337,7 @@ VSYNC	lda	$ff03		Wait for Vsync
 
 	jsr	DRWFLMS		Draw the flames at the top center of the screen
 
-	jsr	JOYREAD		Read joystick, flags returned in B
+	jsr	[INPREAD]	Read player inputs, flags returned in B
 	stb	JOYFLGS
 
 	andb	#JOYMSK		Mask-off disallowed joystick movements
@@ -342,15 +351,13 @@ VSYNC	lda	$ff03		Wait for Vsync
 	ora	SNDHDAT
 	sta	SNDHDAT
 
-	bra	KYBDCHK
+	bra	SCORCHK
 
 SNDDSBL	lda	#($ff-SQWVBIT)	Disable sound effects
 	anda	SNDHDAT
 	sta	SNDHDAT
 
-KYBDCHK	jsr	KEYBDRD		Read the keyboard (?)
-
-	jsr	CMPSCOR		Compute score
+SCORCHK	jsr	CMPSCOR		Compute score
 
 	jsr	COLDTCT		Check for player/platform collisions
 
@@ -1557,9 +1564,23 @@ PBCTDEC	dec	PBUTCNT
 
 PBJOYCK	jsr	JOYREAD		Read joystick, flags returned in B
 	andb	#JOYBTN		Only check for button press
-	bne	INTREXT		Exit intro on button press
+	beq	PBKEYCK		No joystick button, check keyboard
 
-	jsr	FLMFLKR		Bump the flame flicker effect
+	ldx	#JOYREAD	Point INPREAD at JOYREAD
+	stx	INPREAD
+
+	bra	INTREXT		Exit intro
+
+PBKEYCK	jsr	KEYBDRD		Read the keyboard, flags returned in B
+	andb	#JOYBTN		Only check for button press
+	beq	FLKRBMP		No spacebar, finish the loop
+
+	ldx	#KEYBDRD	Point INPREAD at KEYBDRD
+	stx	INPREAD
+
+	bra	INTREXT		Exit intro
+
+FLKRBMP	jsr	FLMFLKR		Bump the flame flicker effect
 
 	dec	FRAMCNT		Bump the frame counter
 	bne	CHKURT2
@@ -2085,11 +2106,46 @@ JOYRDUP	orb	#JOYUP		Joystick points up
 JYREADX	rts
 
 *
-* Implement a keyboard read routine here
+* Keyboard init routine
+*
+*	-- For now, presume that we are running on a CoCo
+*
+KEYBINI	lda	#KBROWCC
+	sta	KBRWDAT
+	rts
+
+*
+* Keyboard read routine
+*	B holds pending JOYFLGS value
+*	A gets clobbered
+*
 *	-- Use JOYFLGS to record keyboard results
 *	-- Be smart enough to handle the Dragon keyboard too?
 *
-KEYBDRD	rts
+KEYBDRD	lda	#$7f
+	bsr	KEYBHLP
+	bne	KEYBDR1
+
+	orb	#JOYBTN
+
+KEYBDR1	lda	#$bf
+	bsr	KEYBHLP
+	bne	KEYBDR2
+
+	orb	#JOYRT
+
+KEYBDR2	lda	#$df
+	bsr	KEYBHLP
+	bne	KEYBDRX
+
+	orb	#JOYLT
+
+KEYBDRX	rts
+
+KEYBHLP	sta	$ff02
+	lda	$ff00
+	anda	KBRWDAT
+	rts
 
 *
 * Draw a normal text string on the SG12 display
