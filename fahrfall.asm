@@ -215,8 +215,6 @@ INCSCLP	stb	a,x
 	bne	INCSCLP
 	stb	a,x
 
-	jsr	KEYBINI		Initialize the keyboard read routine
-
 RESTART	equ	*		New game starts here!
 
 	lda	#FRMCTIN	Initialize frame sequence counter
@@ -1571,11 +1569,19 @@ PBJOYCK	jsr	JOYREAD		Read joystick, flags returned in B
 
 	bra	INTREXT		Exit intro
 
-PBKEYCK	jsr	KEYBDRD		Read the keyboard, flags returned in B
+PBKEYCK	lda	#KBROWCC	Select CoCo keyboard
+	sta	KBRWDAT
+	jsr	KEYBDRD		Read the keyboard, flags returned in B
+	andb	#JOYBTN		Only check for button press
+	bne	PBKYSET		Spacebar hit, select keyboard and exit intro
+
+PBKYCK2	lda	#KBROWDG	Select Dragon keyboard
+	sta	KBRWDAT
+	jsr	KEYBDRD		Read the keyboard, flags returned in B
 	andb	#JOYBTN		Only check for button press
 	beq	FLKRBMP		No spacebar, finish the loop
 
-	ldx	#KEYBDRD	Point INPREAD at KEYBDRD
+PBKYSET	ldx	#KEYBDRD	Point INPREAD at KEYBDRD
 	stx	INPREAD
 
 	bra	INTREXT		Exit intro
@@ -2104,15 +2110,6 @@ JOYRDDN	orb	#JOYDN		Joystick points down
 JOYRDUP	orb	#JOYUP		Joystick points up
 
 JYREADX	rts
-
-*
-* Keyboard init routine
-*
-*	-- For now, presume that we are running on a CoCo
-*
-KEYBINI	lda	#KBROWCC
-	sta	KBRWDAT
-	rts
 
 *
 * Keyboard read routine
