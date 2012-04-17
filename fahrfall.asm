@@ -2267,6 +2267,9 @@ FLAMES	fcb	$bf,$ff,$9f,$ff,$ff,$ff,$9f,$9f,$ff,$ff
 	fcb	$b0,$b5,$b0,$b5,$b0,$b5,$b0,$b5,$b0,$b0
 	fcb	$ba,$b0,$ba,$b0,$ba,$b0,$ba,$b0,$ba,$b0
 
+*
+* Player/platform collision detection data
+*
 PLTCMSK fcb	$80,$80,$c0,$c0,$40,$40,$60,$60
 	fcb	$20,$20,$30,$30,$10,$10,$18,$18
 	fcb	$08,$08,$0c,$0c,$04,$04,$06,$06
