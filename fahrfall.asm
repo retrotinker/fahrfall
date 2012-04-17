@@ -236,8 +236,6 @@ RESTART	equ	*		New game starts here!
 
 	jsr	INTRO		Show intro/title screen
 
-	jsr	CLRSCRN		Clear the screen to black
-
 	ldx	#CURSCOR	Re-initialize current score
 	lda	#(SCORLEN-1)
 	ldb	#$70
@@ -245,6 +243,10 @@ RINSCLP	stb	a,x
 	deca
 	bne	RINSCLP
 	stb	a,x
+
+	jsr	ISTSCRN		Show the pre-game interstitial screen
+
+	jsr	CLRSCRN		Clear the screen to black
 
 	ldd	#PLTBSIN	Initialize platform section base values
 	std	PLTFRMS+PLTBASE
@@ -1605,6 +1607,52 @@ ILOOP	lbra	ISYNC
 INTREXT	rts
 
 *
+* Interstitial screen is from here to ISTLOOP
+*
+ISTSCRN	jsr	CLRSCRN
+
+	ldx	#HISCORE	Draw the high score
+	ldy	#SCNBASE
+	lda	#SCORLEN
+	jsr	DRWSTR
+
+	ldx	#CURSCOR	Draw the current score
+	ldy	#(SCNBASE+SCNWIDT-SCORLEN)
+	lda	#SCORLEN
+	jsr	DRWSTR
+
+	ldx	#ISTSTR1	Display the pre-game message
+	ldy	#(SCNBASE+42*SCNWIDT+6)
+	lda	#(ISTS1LN-ISTSTR1)
+	jsr	DRWSTR
+
+	ldx	#ISTSTR2
+	ldy	#(SCNBASE+48*SCNWIDT+10)
+	lda	#(ISTS2LN-ISTSTR2)
+	jsr	DRWSTR
+
+	lda	#$c0
+	pshs	a
+
+ISTSYNC	lda	$ff03		Wait for Vsync
+	bpl	ISTSYNC
+	lda	$ff02
+
+	jsr	DRWFLMS		Draw the flames at the top center of the screen
+
+	jsr	LFSRADV		Advance the LFSR
+
+	jsr	FLMFLKR		Bump the flame flicker effect
+
+	dec	,s
+	beq	ISTEXIT
+
+ISTLOOP	bra	ISTSYNC
+
+ISTEXIT	leas	1,s
+	rts
+
+*
 * Paint display data for introduction
 *	Y points at output destination
 *	A,B get clobbered
@@ -2287,5 +2335,16 @@ PBTS1LN	equ	*
 PBTSTR2	fcb	$20,$10,$12,$05,$13,$13,$20,$02
 	fcb	$15,$14,$14,$0f,$0e,$20
 PBTS2LN	equ	*
+
+*
+* Data for "TO SLEEP, PERCHANCE TO DREAM..."
+*
+ISTSTR1	fcb	$60,$54,$4f,$60,$53,$4c,$45,$45
+	fcb	$50,$6c,$60,$50,$45,$52,$43,$48
+	fcb	$41,$4e,$43,$45,$60
+ISTS1LN	equ	*
+ISTSTR2	fcb	$60,$54,$4f,$60,$44,$52,$45,$41
+	fcb	$4d,$6e,$6e,$6e,$60
+ISTS2LN	equ	*
 
 	end	INIT
