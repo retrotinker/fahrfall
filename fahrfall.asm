@@ -1530,12 +1530,12 @@ ISYNC	lda	$ff03		Wait for Vsync
 
 	ldx	#CPYSTR1	Display the copyright info
 	ldy	#(SCNBASE+60*SCNWIDT+5)
-	lda	#(CPYS1LN-CPYSTR1)
+	lda	#CPYS1LN
 	jsr	DRWSTR
 
 	ldx	#CPYSTR2
 	ldy	#(SCNBASE+66*SCNWIDT+9)
-	lda	#(CPYS2LN-CPYSTR2)
+	lda	#CPYS2LN
 	jsr	DRWSTR
 
 	jsr	LFSRADV		Advance the LFSR
@@ -1546,14 +1546,14 @@ ISYNC	lda	$ff03		Wait for Vsync
 
 	ldx	#PBTSTR1
 	ldy	#(SCNBASE+90*SCNWIDT+9)
-	lda	#(PBTS1LN-PBTSTR1)
+	lda	#PBTS1LN
 	jsr	DRWSTR
 
 	bra	PBCTDEC
 
 PBUTINV	ldx	#PBTSTR2
 	ldy	#(SCNBASE+90*SCNWIDT+9)
-	lda	#(PBTS2LN-PBTSTR2)
+	lda	#PBTS2LN
 	jsr	DRWSTR
 
 PBCTDEC	dec	PBUTCNT
@@ -1623,12 +1623,12 @@ ISTSCRN	jsr	CLRSCRN
 
 	ldx	#ISTSTR1	Display the pre-game message
 	ldy	#(SCNBASE+42*SCNWIDT+6)
-	lda	#(ISTS1LN-ISTSTR1)
+	lda	#ISTS1LN
 	jsr	DRWSTR
 
 	ldx	#ISTSTR2
 	ldy	#(SCNBASE+48*SCNWIDT+10)
-	lda	#(ISTS2LN-ISTSTR2)
+	lda	#ISTS2LN
 	jsr	DRWSTR
 
 	lda	#$c0
@@ -2316,7 +2316,8 @@ ININDAT	fcb	$fc,$fe,$ff,$ff,$c7,$c3,$c3,$c3
 *
 CPYSTR1	fcb	$60,$43,$4f,$50,$59,$52,$49,$47
 	fcb	$48,$54,$60,$72,$70,$71,$72,$60
-CPYS1LN	equ	*
+CPYS1ND	equ	*
+CPYS1LN	equ	(CPYS1ND-CPYSTR1)
 
 *
 * Data for "JOHN W. LINVILLE"
@@ -2324,17 +2325,20 @@ CPYS1LN	equ	*
 CPYSTR2	fcb	$60,$4a,$4f,$48,$4e,$60,$57,$6e
 	fcb	$60,$4c,$49,$4e,$56,$49,$4c,$4c
 	fcb	$45,$60
-CPYS2LN	equ	*
+CPYS2ND	equ	*
+CPYS2LN	equ	(CPYS2ND-CPYSTR2)
 
 *
 * Data for "PRESS BUTTON"
 *
 PBTSTR1	fcb	$60,$50,$52,$45,$53,$53,$60,$42
 	fcb	$55,$54,$54,$4f,$4e,$60
-PBTS1LN	equ	*
+PBTS1ND	equ	*
+PBTS1LN	equ	(PBTS1ND-PBTSTR1)
 PBTSTR2	fcb	$20,$10,$12,$05,$13,$13,$20,$02
 	fcb	$15,$14,$14,$0f,$0e,$20
-PBTS2LN	equ	*
+PBTS2ND	equ	*
+PBTS2LN	equ	(PBTS2ND-PBTSTR2)
 
 *
 * Data for "TO SLEEP, PERCHANCE TO DREAM..."
@@ -2342,9 +2346,11 @@ PBTS2LN	equ	*
 ISTSTR1	fcb	$60,$54,$4f,$60,$53,$4c,$45,$45
 	fcb	$50,$6c,$60,$50,$45,$52,$43,$48
 	fcb	$41,$4e,$43,$45,$60
-ISTS1LN	equ	*
+ISTS1ND	equ	*
+ISTS1LN	equ	(ISTS1ND-ISTSTR1)
 ISTSTR2	fcb	$60,$54,$4f,$60,$44,$52,$45,$41
 	fcb	$4d,$6e,$6e,$6e,$60
-ISTS2LN	equ	*
+ISTS2ND	equ	*
+ISTS2LN	equ	(ISTS2ND-ISTSTR2)
 
 	end	INIT
