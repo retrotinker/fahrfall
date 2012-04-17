@@ -2254,6 +2254,9 @@ CLSLOOP	std	,x++
 
 	rts
 
+*
+* Flame effect graphics data
+*
 FLAMES	fcb	$bf,$ff,$9f,$ff,$ff,$ff,$9f,$9f,$ff,$ff
 	fcb	$ff,$ff,$9f,$9f,$ff,$ff,$ff,$9f,$ff,$bf
 	fcb	$bf,$ff,$ff,$ff,$bf,$ff,$ff,$ff,$ff,$bf
