@@ -1607,52 +1607,6 @@ ILOOP	lbra	ISYNC
 INTREXT	rts
 
 *
-* Interstitial screen is from here to ISTLOOP
-*
-ISTSCRN	jsr	CLRSCRN
-
-	ldx	#HISCORE	Draw the high score
-	ldy	#SCNBASE
-	lda	#SCORLEN
-	jsr	DRWSTR
-
-	ldx	#CURSCOR	Draw the current score
-	ldy	#(SCNBASE+SCNWIDT-SCORLEN)
-	lda	#SCORLEN
-	jsr	DRWSTR
-
-	ldx	#ISTSTR1	Display the pre-game message
-	ldy	#(SCNBASE+42*SCNWIDT+6)
-	lda	#ISTS1LN
-	jsr	DRWSTR
-
-	ldx	#ISTSTR2
-	ldy	#(SCNBASE+48*SCNWIDT+10)
-	lda	#ISTS2LN
-	jsr	DRWSTR
-
-	lda	#$c0
-	pshs	a
-
-ISTSYNC	lda	$ff03		Wait for Vsync
-	bpl	ISTSYNC
-	lda	$ff02
-
-	jsr	DRWFLMS		Draw the flames at the top center of the screen
-
-	jsr	LFSRADV		Advance the LFSR
-
-	jsr	FLMFLKR		Bump the flame flicker effect
-
-	dec	,s
-	beq	ISTEXIT
-
-ISTLOOP	bra	ISTSYNC
-
-ISTEXIT	leas	1,s
-	rts
-
-*
 * Paint display data for introduction
 *	Y points at output destination
 *	A,B get clobbered
@@ -2062,6 +2016,52 @@ INTINLP	ldb	#$0f		XOR pixel data mask
 	sta	SCRCCIN
 	leas	5,s		Release all stack space
 
+	rts
+
+*
+* Interstitial screen is from here to ISTLOOP
+*
+ISTSCRN	jsr	CLRSCRN
+
+	ldx	#HISCORE	Draw the high score
+	ldy	#SCNBASE
+	lda	#SCORLEN
+	jsr	DRWSTR
+
+	ldx	#CURSCOR	Draw the current score
+	ldy	#(SCNBASE+SCNWIDT-SCORLEN)
+	lda	#SCORLEN
+	jsr	DRWSTR
+
+	ldx	#ISTSTR1	Display the pre-game message
+	ldy	#(SCNBASE+42*SCNWIDT+6)
+	lda	#ISTS1LN
+	jsr	DRWSTR
+
+	ldx	#ISTSTR2
+	ldy	#(SCNBASE+48*SCNWIDT+10)
+	lda	#ISTS2LN
+	jsr	DRWSTR
+
+	lda	#$c0
+	pshs	a
+
+ISTSYNC	lda	$ff03		Wait for Vsync
+	bpl	ISTSYNC
+	lda	$ff02
+
+	jsr	DRWFLMS		Draw the flames at the top center of the screen
+
+	jsr	LFSRADV		Advance the LFSR
+
+	jsr	FLMFLKR		Bump the flame flicker effect
+
+	dec	,s
+	beq	ISTEXIT
+
+ISTLOOP	bra	ISTSYNC
+
+ISTEXIT	leas	1,s
 	rts
 
 *
