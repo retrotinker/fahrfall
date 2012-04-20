@@ -392,16 +392,9 @@ SCORCHK	jsr	CMPSCOR		Compute score
 	jsr	FLMFLKR		Bump the flame flicker effect
 
 	dec	FRAMCNT		Bump the frame counter
-	bne	CHKUART
+	bne	VLOOP
 	lda	#FRMCTIN
 	sta	FRAMCNT
-
-* Check for user break (development only)
-CHKUART	lda	$ff69		Check for serial port activity
-	bita	#$08
-	beq	VLOOP
-	lda	$ff68
-	jmp	[$fffe]		Re-enter monitor
 
 * End of main game loop
 VLOOP	jmp	VSYNC
@@ -1563,16 +1556,9 @@ ISYNC	lda	$ff03		Wait for Vsync
 	jsr	FLMFLKR		Bump the flame flicker effect
 
 	dec	FRAMCNT		Bump the frame counter
-	bne	CHKURT2
+	bne	ILOOP
 	lda	#FRMCTIN
 	sta	FRAMCNT
-
-* Check for user break (development only)
-CHKURT2	lda	$ff69		Check for serial port activity
-	bita	#$08
-	beq	ILOOP
-	lda	$ff68
-	jmp	[$fffe]		Re-enter monitor
 
 ILOOP	bra	ISYNC
 
@@ -2107,13 +2093,6 @@ HOFSYNC	lda	$ff03		Wait for Vsync
 
 	jsr	FLMFLKR		Bump the flame flicker effect
 
-* Check for user break (development only)
-CHKURT3	lda	$ff69		Check for serial port activity
-	bita	#$08
-	beq	HOFLOOP
-	lda	$ff68
-	jmp	[$fffe]		Re-enter monitor
-
 HOFLOOP	bra	HOFSYNC
 
 HOFEXIT
@@ -2175,7 +2154,16 @@ PBKYSET	ldx	#KEYBDRD	Point INPREAD at KEYBDRD
 PBEXTCS	orcc	#$01		Return positive result
 	rts
 
-PBEXTCC	andcc	#$fe		Return negative result
+PBEXTCC	equ	*		Check for monitor activity while we're here...
+
+* Check for user break (development only)
+CHKUART	lda	$ff69		Check for serial port activity
+	bita	#$08
+	beq	PBEXTC2
+	lda	$ff68
+	jmp	[$fffe]		Re-enter monitor
+
+PBEXTC2	andcc	#$fe		Return negative result
 	rts
 
 *
