@@ -106,6 +106,13 @@ PLTDATA	rmb	1		Mask representing platform configuration
 PLTCOLR	rmb	4		Color data for drawing platform
 PLTSTSZ	equ	*
 
+	org	STRUCT		Hall Of Fame info structure declarations
+HOFINIT	rmb	3		Hall Of Fame player initials
+HOFSCOR	rmb	SCORLEN		Hall Of Fame score
+HOFSTSZ	equ	*
+
+HOFSIZE	set	5		Number of Hall Of Fame entries
+
 	org	DATA
 
 FRAMCNT	rmb	1		Rolling frame sequence counter
@@ -159,6 +166,8 @@ SNDLDAT	rmb	1		PIA data value for sound output "low"
 KBRWDAT	rmb	1		Data to use when checking for key presses
 
 INPREAD	rmb	2		Function pointer for reading input
+
+HOFDATA	rmb	(HOFSIZE*HOFSTSZ)
 
 	org	LOAD
 
@@ -214,6 +223,14 @@ INCSCLP	stb	a,x
 	deca
 	bne	INCSCLP
 	stb	a,x
+
+	ldx	#HOFDFLT	Initialize Hall Of Fame data
+	ldy	#HOFDATA
+	lda	#(HOFSIZE*HOFSTSZ)
+INHOFLP	ldb	,x+
+	stb	,y+
+	deca
+	bne	INHOFLP
 
 RESTART	equ	*		New game starts here!
 
@@ -1540,55 +1557,10 @@ ISYNC	lda	$ff03		Wait for Vsync
 
 	jsr	LFSRADV		Advance the LFSR
 
-	lda	#(PBTCNTI/2)	Display "press button" message
-	bita	PBUTCNT
-	beq	PBUTINV
+	jsr	PUSHBTN		Check for input
+	bcs	INTREXT		Exit intro if carry set
 
-	ldx	#PBTSTR1
-	ldy	#(SCNBASE+90*SCNWIDT+9)
-	lda	#PBTS1LN
-	jsr	DRWSTR
-
-	bra	PBCTDEC
-
-PBUTINV	ldx	#PBTSTR2
-	ldy	#(SCNBASE+90*SCNWIDT+9)
-	lda	#PBTS2LN
-	jsr	DRWSTR
-
-PBCTDEC	dec	PBUTCNT
-	bne	PBJOYCK
-
-	lda	#PBTCNTI	Initialize counter for "press button" message
-	sta	PBUTCNT
-
-PBJOYCK	jsr	JOYREAD		Read joystick, flags returned in B
-	andb	#JOYBTN		Only check for button press
-	beq	PBKEYCK		No joystick button, check keyboard
-
-	ldx	#JOYREAD	Point INPREAD at JOYREAD
-	stx	INPREAD
-
-	bra	INTREXT		Exit intro
-
-PBKEYCK	lda	#KBROWCC	Select CoCo keyboard
-	sta	KBRWDAT
-	jsr	KEYBDRD		Read the keyboard, flags returned in B
-	andb	#JOYBTN		Only check for button press
-	bne	PBKYSET		Spacebar hit, select keyboard and exit intro
-
-PBKYCK2	lda	#KBROWDG	Select Dragon keyboard
-	sta	KBRWDAT
-	jsr	KEYBDRD		Read the keyboard, flags returned in B
-	andb	#JOYBTN		Only check for button press
-	beq	FLKRBMP		No spacebar, finish the loop
-
-PBKYSET	ldx	#KEYBDRD	Point INPREAD at KEYBDRD
-	stx	INPREAD
-
-	bra	INTREXT		Exit intro
-
-FLKRBMP	jsr	FLMFLKR		Bump the flame flicker effect
+	jsr	FLMFLKR		Bump the flame flicker effect
 
 	dec	FRAMCNT		Bump the frame counter
 	bne	CHKURT2
@@ -1602,7 +1574,7 @@ CHKURT2	lda	$ff69		Check for serial port activity
 	lda	$ff68
 	jmp	[$fffe]		Re-enter monitor
 
-ILOOP	lbra	ISYNC
+ILOOP	bra	ISYNC
 
 INTREXT	rts
 
@@ -2065,6 +2037,148 @@ ISTEXIT	leas	1,s
 	rts
 
 *
+* "Hall Of Fame" screen is from here to HOFLOOP
+*
+HOFSCRN	jsr	CLRSCRN
+
+	lda	#PBTCNTI	Initialize counter for "press button" message
+	sta	PBUTCNT
+
+	ldx	#HISCORE	Draw the high score
+	ldy	#SCNBASE
+	lda	#SCORLEN
+	jsr	DRWSTR
+
+	ldx	#CURSCOR	Draw the current score
+	ldy	#(SCNBASE+SCNWIDT-SCORLEN)
+	lda	#SCORLEN
+	jsr	DRWSTR
+
+	ldx	#FHRFSTR	Display the "Fahrfall" header
+	ldy	#(SCNBASE+12*SCNWIDT+11)
+	lda	#FRFSTLN
+	jsr	DRWSTR
+
+	ldx	#HOFSTRN	Display the "Hall Of Fame" header
+	ldy	#(SCNBASE+18*SCNWIDT+9)
+	lda	#HOFSTLN
+	jsr	DRWSTR
+
+	ldx	#HOFDATA	Draw the Hall Of Fame scores
+	ldy	#(SCNBASE+30*SCNWIDT+11)
+	lda	#HOFSIZE
+	pshs	a,x,y
+
+HOFSCLP	lda	#3		Set size for initials string
+	jsr	DRWSTR
+
+	ldx	1,s		Reset for score data
+	leax	3,x
+
+	ldy	3,s		Reset for score position
+	leay	4,y
+	lda	#SCORLEN	Set size for score string
+	jsr	DRWSTR
+
+	ldx	1,s		Advance data pointer for next entry
+	leax	HOFSTSZ,x
+	stx	1,s
+
+	ldy	3,s		Advance position pointer for next entry
+	leay	6*SCNWIDT,y
+	leay	6*SCNWIDT,y
+	sty	3,s
+
+	dec	,s		Check for end of data
+	bne	HOFSCLP
+
+	leas	5,s		Clean-up stack
+
+HOFSYNC	lda	$ff03		Wait for Vsync
+	bpl	HOFSYNC
+	lda	$ff02
+
+	jsr	DRWFLMS		Draw the flames at the top center of the screen
+
+	jsr	LFSRADV		Advance the LFSR
+
+	jsr	PUSHBTN		Check for input
+	bcs	HOFEXIT		Exit "Hall Of Fame" if carry set
+
+	jsr	FLMFLKR		Bump the flame flicker effect
+
+* Check for user break (development only)
+CHKURT3	lda	$ff69		Check for serial port activity
+	bita	#$08
+	beq	HOFLOOP
+	lda	$ff68
+	jmp	[$fffe]		Re-enter monitor
+
+HOFLOOP	bra	HOFSYNC
+
+HOFEXIT
+	rts
+
+*
+* Display "PUSH BUTTON" message and check for input
+*
+*	A,B,X,Y get clobbered
+*
+*	On retun, carry set indicates button pushed
+*
+PUSHBTN	lda	#(PBTCNTI/2)	Display "press button" message
+	bita	PBUTCNT
+	beq	PBUTINV
+
+	ldx	#PBTSTR1
+	ldy	#(SCNBASE+90*SCNWIDT+9)
+	lda	#PBTS1LN
+	jsr	DRWSTR
+
+	bra	PBCTDEC
+
+PBUTINV	ldx	#PBTSTR2
+	ldy	#(SCNBASE+90*SCNWIDT+9)
+	lda	#PBTS2LN
+	jsr	DRWSTR
+
+PBCTDEC	dec	PBUTCNT
+	bne	PBJOYCK
+
+	lda	#PBTCNTI	Initialize counter for "press button" message
+	sta	PBUTCNT
+
+PBJOYCK	jsr	JOYREAD		Read joystick, flags returned in B
+	andb	#JOYBTN		Only check for button press
+	beq	PBKEYCK		No joystick button, check keyboard
+
+	ldx	#JOYREAD	Point INPREAD at JOYREAD
+	stx	INPREAD
+
+	bra	PBEXTCS		Indicate positive result
+
+PBKEYCK	lda	#KBROWCC	Select CoCo keyboard
+	sta	KBRWDAT
+	jsr	KEYBDRD		Read the keyboard, flags returned in B
+	andb	#JOYBTN		Only check for button press
+	bne	PBKYSET		Spacebar hit, select keyboard and exit intro
+
+PBKYCK2	lda	#KBROWDG	Select Dragon keyboard
+	sta	KBRWDAT
+	jsr	KEYBDRD		Read the keyboard, flags returned in B
+	andb	#JOYBTN		Only check for button press
+	beq	PBEXTCC		No spacebar, finish the loop
+
+PBKYSET	ldx	#KEYBDRD	Point INPREAD at KEYBDRD
+	stx	INPREAD
+
+PBEXTCS	orcc	#$01		Return positive result
+	rts
+
+PBEXTCC	andcc	#$fe		Return negative result
+	rts
+
+*
 * Advance the flame flicker effect
 *	A gets clobbered
 *
@@ -2358,5 +2472,35 @@ ISTSTR2	fcb	$60,$54,$4f,$60,$44,$52,$45,$41
 	fcb	$4d,$6e,$6e,$6e,$60
 ISTS2ND	equ	*
 ISTS2LN	equ	(ISTS2ND-ISTSTR2)
+
+*
+* Data for "FAHRFALL"
+*
+FHRFSTR	fcb	$60,$46,$41,$48,$52,$46,$41,$4c
+	fcb	$4c,$60
+FRFSTND	equ	*
+FRFSTLN	equ	(FRFSTND-FHRFSTR)
+
+*
+* Data for "HALL OF FAME"
+*
+HOFSTRN	fcb	$20,$08,$01,$0c,$0c,$20,$0f,$06
+	fcb	$20,$06,$01,$0d,$05,$20
+HOFSTND	equ	*
+HOFSTLN	equ	(HOFSTND-HOFSTRN)
+
+*
+* Data for initial Hall Of Fame
+*
+HOFDFLT	fcb	$4b,$4d,$4c
+	fcb	$30,$30,$31,$32,$38,$32
+	fcb	$40,$40,$40
+	fcb	$30,$30,$31,$30,$30,$30
+	fcb	$40,$40,$40
+	fcb	$30,$30,$30,$37,$35,$30
+	fcb	$40,$40,$40
+	fcb	$30,$30,$30,$35,$30,$30
+	fcb	$40,$40,$40
+	fcb	$30,$30,$30,$32,$35,$30
 
 	end	INIT
