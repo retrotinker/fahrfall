@@ -1518,6 +1518,26 @@ INTRO	jsr	CLRSCRN		Clear the screen to black
 	lda	#PBTCNTI	Initialize counter for "press button" message
 	sta	PBUTCNT
 
+	ldx	#HISCORE	Draw the high score
+	ldy	#SCNBASE
+	lda	#SCORLEN
+	jsr	DRWSTR
+
+	ldx	#CURSCOR	Draw the current score
+	ldy	#(SCNBASE+SCNWIDT-SCORLEN)
+	lda	#SCORLEN
+	jsr	DRWSTR
+
+	ldx	#CPYSTR1	Display the copyright info
+	ldy	#(SCNBASE+60*SCNWIDT+5)
+	lda	#CPYS1LN
+	jsr	DRWSTR
+
+	ldx	#CPYSTR2
+	ldy	#(SCNBASE+66*SCNWIDT+9)
+	lda	#CPYS2LN
+	jsr	DRWSTR
+
 	leas	-2,s		Init time-out counter values
 	lda	#$10
 	sta	1,s
@@ -1535,27 +1555,7 @@ ISYNC	lda	$ff03		Wait for Vsync
 * Must get here before end of Vblank (~7840 cycles from VSYNC)
 *	clr	$ffd8		Lo-speed during display
 
-	ldx	#HISCORE	Draw the high score
-	ldy	#SCNBASE
-	lda	#SCORLEN
-	jsr	DRWSTR
-
-	ldx	#CURSCOR	Draw the current score
-	ldy	#(SCNBASE+SCNWIDT-SCORLEN)
-	lda	#SCORLEN
-	jsr	DRWSTR
-
 	jsr	DRWFLMS		Draw the flames at the top center of the screen
-
-	ldx	#CPYSTR1	Display the copyright info
-	ldy	#(SCNBASE+60*SCNWIDT+5)
-	lda	#CPYS1LN
-	jsr	DRWSTR
-
-	ldx	#CPYSTR2
-	ldy	#(SCNBASE+66*SCNWIDT+9)
-	lda	#CPYS2LN
-	jsr	DRWSTR
 
 	jsr	LFSRADV		Advance the LFSR
 
