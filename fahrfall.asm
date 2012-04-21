@@ -251,9 +251,13 @@ RESTART	equ	*		New game starts here!
 	lda	#FLMCNTI
 	sta	FLAMCNT
 
-	jsr	INTRO		Show intro/title screen
+INTLOOP	jsr	INTRO		Show intro/title screen
+	bcs	GAMSTRT		Start game if carry set...
+	jsr	HOFSCRN		Show Hall Of Fame screen
+	bcs	GAMSTRT		Start game if carry set...
+	bra	INTLOOP		Waiting for game start!
 
-	ldx	#CURSCOR	Re-initialize current score
+GAMSTRT	ldx	#CURSCOR	Re-initialize current score
 	lda	#(SCORLEN-1)
 	ldb	#$70
 RINSCLP	stb	a,x
@@ -1514,6 +1518,11 @@ INTRO	jsr	CLRSCRN		Clear the screen to black
 	lda	#PBTCNTI	Initialize counter for "press button" message
 	sta	PBUTCNT
 
+	leas	-2,s		Init time-out counter values
+	lda	#$10
+	sta	1,s
+	clr	,s
+
 ISYNC	lda	$ff03		Wait for Vsync
 	bpl	ISYNC
 	lda	$ff02
@@ -1551,18 +1560,29 @@ ISYNC	lda	$ff03		Wait for Vsync
 	jsr	LFSRADV		Advance the LFSR
 
 	jsr	PUSHBTN		Check for input
-	bcs	INTREXT		Exit intro if carry set
+	bcs	INTRXCS		Exit intro if carry set
 
 	jsr	FLMFLKR		Bump the flame flicker effect
 
 	dec	FRAMCNT		Bump the frame counter
-	bne	ILOOP
+	bne	ITIMOUT
 	lda	#FRMCTIN
 	sta	FRAMCNT
 
+ITIMOUT	dec	,s		Decrement time-out counter
+	bne	ILOOP
+	dec	1,s
+	beq	INTRXCC		Exit intro if time-out
+
 ILOOP	bra	ISYNC
 
-INTREXT	rts
+INTRXCS	leas	2,s		Clean-up stack
+	orcc	#$01		Indicate game start
+	rts
+
+INTRXCC	leas	2,s		Clean-up stack
+	andcc	#$fe		Indicate time-out
+	rts
 
 *
 * Paint display data for introduction
@@ -2078,7 +2098,11 @@ HOFSCLP	lda	#3		Set size for initials string
 	dec	,s		Check for end of data
 	bne	HOFSCLP
 
-	leas	5,s		Clean-up stack
+	leas	3,s		Tidy-up stack, leave two bytes available
+
+	lda	#$08		Init time-out counter values
+	sta	1,s
+	clr	,s
 
 HOFSYNC	lda	$ff03		Wait for Vsync
 	bpl	HOFSYNC
@@ -2089,13 +2113,23 @@ HOFSYNC	lda	$ff03		Wait for Vsync
 	jsr	LFSRADV		Advance the LFSR
 
 	jsr	PUSHBTN		Check for input
-	bcs	HOFEXIT		Exit "Hall Of Fame" if carry set
+	bcs	HOFEXCS		Exit "Hall Of Fame" if carry set
 
 	jsr	FLMFLKR		Bump the flame flicker effect
 
+	dec	,s		Decrement time-out counter
+	bne	HOFLOOP
+	dec	1,s
+	beq	HOFEXCC
+
 HOFLOOP	bra	HOFSYNC
 
-HOFEXIT
+HOFEXCS	leas	2,s		Clean-up stack
+	orcc	#$01		Indicate game start
+	rts
+
+HOFEXCC	leas	2,s		Clean-up stack
+	andcc	#$fe		Indicate time-out
 	rts
 
 *
