@@ -1444,7 +1444,150 @@ GMOVCNT	pshs	a,b
 GMOVOUT	lda	SNDLDAT		Clear the sound output
 	sta	$ff22
 
+* Search for new Hall Of Fame score
+	lda	#HOFSIZE	Setup Hall Of Fame size counter
+	pshs	a
+
+	clra			Start from MSB end
+	ldx	#(CURSCOR-1)	Point X at current score
+	ldy	#(HOFDATA+HOFSCOR-1)	Point Y at highest score
+
+GVHFCKL	inca
+	ldb	a,x		Load digit from current score
+	andb	#$bf		Convert to format for high score
+	cmpb	a,y		Compare this digit to same one in high score
+
+	blt	GVHFCKN		If lesser, no high score update here
+	bgt	GVHFSCR		If higher, record new high score here
+
+	cmpa	#SCORLEN	Out of digits?
+	blt	GVHFCKL		No, compare next set of digits
+
+* Need code here to shift remaining (non-default?) scores down?
+GVHFSCR	pshs	y		Save HOF score pointer
+	leay	1,y		Point _at_ actual score data
+	dec	2,s		Pre-decrement counter for HOF size counter
+	beq	GVHFSNS		Skip shift if already at end
+GVHFSMV	leay	HOFSTSZ,y	Advance Hall Of Fame score pointer
+	dec	2,s		Decrement Hall Of Fame size counter
+	bne	GVHFSMV		Continue until pointing at last entry
+
+	lda	#SCORLEN
+GVHFSMN	ldb	-9,y
+	stb	,y+
+	deca
+	bne	GVHFSMN
+
+	lda	#SCORLEN
+	leay	-15,y
+	cmpy	,s
+	bge	GVHFSMN
+
+GVHFSNS	puls	y
+
+GVHFSRL	ldb	a,x		Load current score digit
+	andb	#$bf		Convert to format for high score
+	stb	a,y		Store high score digit
+	deca
+	bne	GVHFSRL
+
+	bsr	HFISCRN		Show the induction screen
+	bra	GVHFCKX		Then exit...
+
+GVHFCKN	leay	HOFSTSZ,y	Advance Hall Of Fame score pointer
+	clra			Reset score comparison offset
+	dec	,s		Decrement Hall Of Fame size counter
+	bne	GVHFCKL
+
+GVHFCKX	leas	1,s		Clean-up stack
 	jmp	RESTART
+
+*
+* "Hall Of Fame" induction screen is from here to HFILOOP
+*
+* Should try to share some code w/ HOFSCRN -- JWL
+*
+HFISCRN	jsr	CLRSCRN
+
+	lda	#PBTCNTI	Initialize counter for "press button" message
+	sta	PBUTCNT
+
+	ldx	#HISCORE	Draw the high score
+	ldy	#SCNBASE
+	lda	#SCORLEN
+	jsr	DRWSTR
+
+	ldx	#CURSCOR	Draw the current score
+	ldy	#(SCNBASE+SCNWIDT-SCORLEN)
+	lda	#SCORLEN
+	jsr	DRWSTR
+
+	ldx	#FHRFSTR	Display the "Fahrfall" header
+	ldy	#(SCNBASE+12*SCNWIDT+11)
+	lda	#FRFSTLN
+	jsr	DRWSTR
+
+	ldx	#HOFSTRN	Display the "Hall Of Fame" header
+	ldy	#(SCNBASE+18*SCNWIDT+9)
+	lda	#HOFSTLN
+	jsr	DRWSTR
+
+	ldx	#HOFDATA	Draw the Hall Of Fame scores
+	ldy	#(SCNBASE+30*SCNWIDT+11)
+	lda	#HOFSIZE
+	pshs	a,x,y
+
+HFISCLP	lda	#3		Set size for initials string
+	jsr	DRWSTR
+
+	ldx	1,s		Reset for score data
+	leax	3,x
+
+	ldy	3,s		Reset for score position
+	leay	4,y
+	lda	#SCORLEN	Set size for score string
+	jsr	DRWSTR
+
+	ldx	1,s		Advance data pointer for next entry
+	leax	HOFSTSZ,x
+	stx	1,s
+
+	ldy	3,s		Advance position pointer for next entry
+	leay	6*SCNWIDT,y
+	leay	6*SCNWIDT,y
+	sty	3,s
+
+	dec	,s		Check for end of data
+	bne	HFISCLP
+
+	leas	3,s		Tidy-up stack, leave two bytes available
+
+	lda	#$08		Init time-out counter values
+	sta	1,s
+	clr	,s
+
+HFISYNC	lda	$ff03		Wait for Vsync
+	bpl	HFISYNC
+	lda	$ff02
+
+	jsr	DRWFLMS		Draw the flames at the top center of the screen
+
+	jsr	LFSRADV		Advance the LFSR
+
+	jsr	PUSHBTN		Check for input
+	bcs	HFIEXIT		Exit "Hall Of Fame" if carry set
+
+	jsr	FLMFLKR		Bump the flame flicker effect
+
+	dec	,s		Decrement time-out counter
+	bne	HFILOOP
+	dec	1,s
+	beq	HFIEXIT
+
+HFILOOP	bra	HFISYNC
+
+HFIEXIT	leas	2,s		Clean-up stack
+	rts
 
 *
 * Collision detection for new bottom platform
@@ -2514,15 +2657,25 @@ HOFSTLN	equ	(HOFSTND-HOFSTRN)
 *
 * Data for initial Hall Of Fame
 *
+*HOFDFLT	fcb	$4b,$4d,$4c
+*	fcb	$30,$30,$33,$30,$38,$31
+*	fcb	$4a,$57,$4c
+*	fcb	$30,$30,$32,$32,$32,$37
+*	fcb	$4b,$4d,$4c
+*	fcb	$30,$30,$31,$32,$38,$32
+*	fcb	$40,$40,$40
+*	fcb	$30,$30,$31,$30,$30,$30
+*	fcb	$40,$40,$40
+*	fcb	$30,$30,$30,$35,$30,$30
 HOFDFLT	fcb	$4b,$4d,$4c
-	fcb	$30,$30,$31,$32,$38,$32
-	fcb	$40,$40,$40
-	fcb	$30,$30,$31,$30,$30,$30
-	fcb	$40,$40,$40
-	fcb	$30,$30,$30,$37,$35,$30
-	fcb	$40,$40,$40
-	fcb	$30,$30,$30,$35,$30,$30
-	fcb	$40,$40,$40
 	fcb	$30,$30,$30,$32,$35,$30
+	fcb	$4a,$57,$4c
+	fcb	$30,$30,$30,$32,$30,$30
+	fcb	$4b,$4d,$4c
+	fcb	$30,$30,$30,$31,$35,$30
+	fcb	$40,$40,$40
+	fcb	$30,$30,$30,$31,$30,$30
+	fcb	$40,$40,$40
+	fcb	$30,$30,$30,$30,$35,$30
 
 	end	INIT
