@@ -1444,7 +1444,234 @@ GMOVCNT	pshs	a,b
 GMOVOUT	lda	SNDLDAT		Clear the sound output
 	sta	$ff22
 
+	* Search for new Hall Of Fame score
+	lda	#HOFSIZE	Setup Hall Of Fame size counter
+	pshs	a
+
+	clra			Start from MSB end
+	ldx	#(CURSCOR-1)	Point X at current score
+	ldy	#(HOFDATA+HOFSCOR-1)	Point Y at highest score
+
+GVHFCLP	inca
+	ldb	a,x		Load digit from current score
+	andb	#$bf		Convert to format for high score
+	cmpb	a,y		Compare this digit to same one in high score
+
+	blt	GVHFCKN		If lesser, no high score update here
+	bgt	GVHFSFT		If higher, record new high score here
+
+	cmpa	#SCORLEN	Out of digits?
+	blt	GVHFCLP		No, compare next set of digits
+
+GVHFCKN	leay	HOFSTSZ,y	Advance Hall Of Fame score pointer
+	clra			Reset score comparison offset
+	dec	,s		Decrement Hall Of Fame size counter
+	bne	GVHFCLP
+
+GVHFCKX	leas	1,s		Clean-up stack
 	jmp	RESTART
+
+	* Shift remaining scores down and record new score
+GVHFSFT	leay	SCORLEN,y	Point at next full HOF score data
+	pshs	y		Save HOF score pointer
+
+	ldy	#(HOFDATA+HOFSIZE*HOFSTSZ)
+GVHFSLP	lda	-(HOFSTSZ+1),y
+	sta	,-y
+	cmpy	,s
+	bge	GVHFSLP
+
+	puls	y
+	leay	-SCORLEN,y	Point back to this HOF slot
+
+	lda	#SCORLEN
+GVHFREC	ldb	a,x		Load current score digit
+	andb	#$bf		Convert to format for high score
+	stb	a,y		Store high score digit
+	deca
+	bne	GVHFREC
+
+	lda	#$40
+	sta	,y
+	sta	,-y
+	sta	,-y
+
+	bsr	HFISCRN		Show the induction screen
+	bra	GVHFCKX		Then exit...
+
+*
+* "Hall Of Fame" induction screen is from here to HFILOOP
+*	Y points at initials for new Hall Of Fame entry
+*	A,X,Y get clobbered
+*
+* Should try to share some code w/ HOFSCRN -- JWL
+*
+HFISCRN	pshs	y		Save pointer to new HOF initials
+
+	jsr	CLRSCRN
+
+	lda	#PBTCNTI	Initialize counter for "press button" message
+	sta	PBUTCNT
+
+	ldx	#HISCORE	Draw the high score
+	ldy	#SCNBASE
+	lda	#SCORLEN
+	jsr	DRWSTR
+
+	ldx	#CURSCOR	Draw the current score
+	ldy	#(SCNBASE+SCNWIDT-SCORLEN)
+	lda	#SCORLEN
+	jsr	DRWSTR
+
+	ldx	#FHRFSTR	Display the "Fahrfall" header
+	ldy	#(SCNBASE+12*SCNWIDT+11)
+	lda	#FRFSTLN
+	jsr	DRWSTR
+
+	ldx	#HOFSTRN	Display the "Hall Of Fame" header
+	ldy	#(SCNBASE+18*SCNWIDT+9)
+	lda	#HOFSTLN
+	jsr	DRWSTR
+
+	lda	#$03		Load counter for HOF initials
+	pshs	a
+
+	clra			Init time-out counter values
+	ldb	#$08
+	pshs	a,b
+
+HFISYNC	lda	$ff03		Wait for Vsync
+	bpl	HFISYNC
+	lda	$ff02
+
+	ldy	3,s		Get pointer to current HOF initial
+	lda	,y		Load current HOF initial
+	anda	#$bf		Invert the video
+	sta	,y		Store the inverted HOF initial
+
+	ldx	#HOFDATA	Draw the Hall Of Fame scores
+	ldy	#(SCNBASE+30*SCNWIDT+11)
+	lda	#HOFSIZE
+	pshs	a,x,y
+
+HFISCLP	lda	#3		Set size for initials string
+	jsr	DRWSTR
+
+	ldx	1,s		Reset for score data
+	leax	3,x
+
+	ldy	3,s		Reset for score position
+	leay	4,y
+	lda	#SCORLEN	Set size for score string
+	jsr	DRWSTR
+
+	ldx	1,s		Advance data pointer for next entry
+	leax	HOFSTSZ,x
+	stx	1,s
+
+	ldy	3,s		Advance position pointer for next entry
+	leay	6*SCNWIDT,y
+	leay	6*SCNWIDT,y
+	sty	3,s
+
+	dec	,s		Check for end of data
+	bne	HFISCLP
+
+	leas	5,s		Clean-up stack
+
+	jsr	DRWFLMS		Draw the flames at the top center of the screen
+
+	jsr	LFSRADV		Advance the LFSR
+
+	jsr	PSHBTN2		Check for input
+	bcs	HFIEXCS		Process button push if carry set
+
+	jsr	FLMFLKR		Bump the flame flicker effect
+
+	jsr	[INPREAD]	Read player inputs, flags returned in B
+	bitb	#MOVLT
+	bne	HFIMVLT
+
+	bitb	#MOVRT
+	bne	HFIMVRT
+
+HFITIMO	dec	,s		Decrement time-out counter
+	bne	HFILOOP
+	dec	1,s
+	beq	HFIEXCC
+
+HFILOOP	bra	HFISYNC
+
+HFIPAUS	lda	#$0f		Load counter to debounce the switch...
+	pshs	a
+
+HFISYN2	lda	$ff03		Wait for Vsync
+	bpl	HFISYN2
+	lda	$ff02
+
+	dec	,s		Decrement time-out counter
+	bne	HFISYN2
+	leas	1,s
+
+	bra	HFITIMO
+
+HFIMVLT	
+	ldy	3,s		Get pointer to current HOF initial
+	lda	,y		Load current HOF initial
+	deca			Decrement HOF initial
+	anda	#$3f		Mask it appropriately
+	sta	,y		Store new HOF initial
+
+	bra	HFIPAUS
+
+HFIMVRT	
+	ldy	3,s		Get pointer to current HOF initial
+	lda	,y		Load current HOF initial
+	inca			Decrement HOF initial
+	anda	#$3f		Mask it appropriately
+	sta	,y		Store new HOF initial
+
+	bra	HFIPAUS
+
+HFIEXCS	dec	2,s		Decrement HOF initial counter
+	beq	HFIEXTO		If done, proceed to exit time-out
+
+	ldy	3,s		Get pointer to current HOF initial
+	lda	,y		Load current HOF initial
+	ora	#$40		Un-invert the video
+	sta	,y+		Store the inverted HOF initial and advance
+	sty	3,s		Point at next HOF initial
+
+	lda	#$0f		Load counter to debounce the switch...
+	pshs	a
+
+HFISYN3	lda	$ff03		Wait for Vsync
+	bpl	HFISYN3
+	lda	$ff02
+
+	dec	,s		Decrement time-out counter
+	bne	HFISYN3
+	leas	1,s
+
+	lbra	HFISYNC		Keep counting...
+
+HFIEXTO	lda	#$0f		Init time-out counter values
+	sta	,s
+
+HFISYN4	lda	$ff03		Wait for Vsync
+	bpl	HFISYN4
+	lda	$ff02
+
+	dec	,s		Decrement time-out counter
+	bne	HFISYN4
+
+HFIEXCC	ldy	3,s		Get pointer to current HOF initial
+	lda	,y		Load current HOF initial
+	ora	#$40		Un-invert the video
+	sta	,y		Store the inverted HOF initial
+
+	leas	5,s		Clean-up stack
+	rts
 
 *
 * Collision detection for new bottom platform
@@ -2201,6 +2428,55 @@ PBEXTC2	andcc	#$fe		Return negative result
 	rts
 
 *
+* Display "PUSH BUTTON" message and check for input
+*	like PUSHBTN, but uses pre-set input method
+*
+*	A,B,X,Y get clobbered
+*
+*	On retun, carry set indicates button pushed
+*
+PSHBTN2	lda	#(PBTCNTI/2)	Display "press button" message
+	bita	PBUTCNT
+	beq	PB2TINV
+
+	ldx	#PBTSTR1
+	ldy	#(SCNBASE+90*SCNWIDT+9)
+	lda	#PBTS1LN
+	jsr	DRWSTR
+
+	bra	PB2CDEC
+
+PB2TINV	ldx	#PBTSTR2
+	ldy	#(SCNBASE+90*SCNWIDT+9)
+	lda	#PBTS2LN
+	jsr	DRWSTR
+
+PB2CDEC	dec	PBUTCNT
+	bne	PB2INCK
+
+	lda	#PBTCNTI	Initialize counter for "press button" message
+	sta	PBUTCNT
+
+PB2INCK	jsr	[INPREAD]	Read input, flags returned in B
+	andb	#JOYBTN		Only check for button press
+	beq	PB2EXCC		No button press
+
+PB2EXCS	orcc	#$01		Return positive result
+	rts
+
+PB2EXCC	equ	*		Check for monitor activity while we're here...
+
+* Check for user break (development only)
+CHKURT2	lda	$ff69		Check for serial port activity
+	bita	#$08
+	beq	PB2EXC2
+	lda	$ff68
+	jmp	[$fffe]		Re-enter monitor
+
+PB2EXC2	andcc	#$fe		Return negative result
+	rts
+
+*
 * Advance the flame flicker effect
 *	A gets clobbered
 *
@@ -2514,15 +2790,25 @@ HOFSTLN	equ	(HOFSTND-HOFSTRN)
 *
 * Data for initial Hall Of Fame
 *
-HOFDFLT	fcb	$4b,$4d,$4c
-	fcb	$30,$30,$31,$32,$38,$32
-	fcb	$40,$40,$40
-	fcb	$30,$30,$31,$30,$30,$30
-	fcb	$40,$40,$40
-	fcb	$30,$30,$30,$37,$35,$30
-	fcb	$40,$40,$40
+*HOFDFLT	fcb	$4b,$4d,$4c
+*	fcb	$30,$30,$33,$30,$38,$31
+*	fcb	$4a,$57,$4c
+*	fcb	$30,$30,$32,$32,$32,$37
+*	fcb	$4b,$4d,$4c
+*	fcb	$30,$30,$31,$32,$38,$32
+*	fcb	$40,$40,$40
+*	fcb	$30,$30,$31,$30,$30,$30
+*	fcb	$40,$40,$40
+*	fcb	$30,$30,$30,$35,$30,$30
+HOFDFLT	fcb	$40,$40,$40
 	fcb	$30,$30,$30,$35,$30,$30
 	fcb	$40,$40,$40
-	fcb	$30,$30,$30,$32,$35,$30
+	fcb	$30,$30,$30,$34,$30,$30
+	fcb	$40,$40,$40
+	fcb	$30,$30,$30,$33,$30,$30
+	fcb	$40,$40,$40
+	fcb	$30,$30,$30,$32,$30,$30
+	fcb	$40,$40,$40
+	fcb	$30,$30,$30,$31,$30,$30
 
 	end	INIT
