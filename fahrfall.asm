@@ -2438,16 +2438,16 @@ PSHBTN2	lda	#(PBTCNTI/2)	Display "press button" message
 	bita	PBUTCNT
 	beq	PB2TINV
 
-	ldx	#PBTSTR1
-	ldy	#(SCNBASE+90*SCNWIDT+9)
-	lda	#PBTS1LN
+	ldx	#PB2STR1
+	ldy	#(SCNBASE+90*SCNWIDT+10)
+	lda	#PB2S1LN
 	jsr	DRWSTR
 
 	bra	PB2CDEC
 
-PB2TINV	ldx	#PBTSTR2
-	ldy	#(SCNBASE+90*SCNWIDT+9)
-	lda	#PBTS2LN
+PB2TINV	ldx	#PB2STR2
+	ldy	#(SCNBASE+90*SCNWIDT+10)
+	lda	#PB2S2LN
 	jsr	DRWSTR
 
 PB2CDEC	dec	PBUTCNT
@@ -2756,6 +2756,18 @@ PBTSTR2	fcb	$20,$10,$12,$05,$13,$13,$20,$02
 	fcb	$15,$14,$14,$0f,$0e,$20
 PBTS2ND	equ	*
 PBTS2LN	equ	(PBTS2ND-PBTSTR2)
+
+*
+* Data for "HIGH SCORE"
+*
+PB2STR1	fcb	$60,$48,$49,$47,$48,$60,$53,$43
+	fcb	$4f,$52,$45,$60
+PB2S1ND	equ	*
+PB2S1LN	equ	(PB2S1ND-PB2STR1)
+PB2STR2	fcb	$20,$08,$09,$07,$08,$20,$13,$03
+	fcb	$0f,$12,$05,$20
+PB2S2ND	equ	*
+PB2S2LN	equ	(PB2S2ND-PB2STR2)
 
 *
 * Data for game instructions
