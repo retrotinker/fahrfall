@@ -1584,7 +1584,7 @@ HFISCLP	lda	#3		Set size for initials string
 	jsr	LFSRADV		Advance the LFSR
 
 	jsr	PSHBTN2		Check for input
-	bcs	HFIEXCS		Process button push if carry set
+	bcs	HFIBUTN		Process button push if carry set
 
 	jsr	FLMFLKR		Bump the flame flicker effect
 
@@ -1598,22 +1598,27 @@ HFISCLP	lda	#3		Set size for initials string
 HFITIMO	dec	,s		Decrement time-out counter
 	bne	HFILOOP
 	dec	1,s
-	beq	HFIEXCC
+	beq	HFIEXTO
 
 HFILOOP	bra	HFISYNC
 
 HFIPAUS	lda	#$0f		Load counter to debounce the switch...
 	pshs	a
 
-HFISYN2	lda	$ff03		Wait for Vsync
-	bpl	HFISYN2
+HFIPAU1	lda	$ff03		Wait for Vsync
+	bpl	HFIPAU1
 	lda	$ff02
 
 	dec	,s		Decrement time-out counter
-	bne	HFISYN2
+	bne	HFIPAU1
 	leas	1,s
 
-	bra	HFITIMO
+	clra			Re-init time-out counter values
+	sta	,s
+	lda	#$08
+	sta	1,s
+
+	lbra	HFISYNC
 
 HFIMVLT	
 	ldy	3,s		Get pointer to current HOF initial
@@ -1633,8 +1638,8 @@ HFIMVRT
 
 	bra	HFIPAUS
 
-HFIEXCS	dec	2,s		Decrement HOF initial counter
-	beq	HFIEXTO		If done, proceed to exit time-out
+HFIBUTN	dec	2,s		Decrement HOF initial counter
+	beq	HFIEXIT		If done, proceed to exit time-out
 
 	ldy	3,s		Get pointer to current HOF initial
 	lda	,y		Load current HOF initial
@@ -1642,30 +1647,19 @@ HFIEXCS	dec	2,s		Decrement HOF initial counter
 	sta	,y+		Store the inverted HOF initial and advance
 	sty	3,s		Point at next HOF initial
 
-	lda	#$0f		Load counter to debounce the switch...
-	pshs	a
+	bra	HFIPAUS
 
-HFISYN3	lda	$ff03		Wait for Vsync
-	bpl	HFISYN3
-	lda	$ff02
-
-	dec	,s		Decrement time-out counter
-	bne	HFISYN3
-	leas	1,s
-
-	lbra	HFISYNC		Keep counting...
-
-HFIEXTO	lda	#$0f		Init time-out counter values
+HFIEXIT	lda	#$0f		Init time-out counter values
 	sta	,s
 
-HFISYN4	lda	$ff03		Wait for Vsync
-	bpl	HFISYN4
+HFIEXT1	lda	$ff03		Wait for Vsync
+	bpl	HFIEXT1
 	lda	$ff02
 
 	dec	,s		Decrement time-out counter
-	bne	HFISYN4
+	bne	HFIEXT1
 
-HFIEXCC	ldy	3,s		Get pointer to current HOF initial
+HFIEXTO	ldy	3,s		Get pointer to current HOF initial
 	lda	,y		Load current HOF initial
 	ora	#$40		Un-invert the video
 	sta	,y		Store the inverted HOF initial
