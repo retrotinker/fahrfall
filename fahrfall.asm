@@ -2239,13 +2239,18 @@ ISTSCRN	jsr	CLRSCRN
 	jsr	DRWSTR
 
 	ldx	#ISTSTR1	Display the pre-game message
-	ldy	#(SCNBASE+42*SCNWIDT+6)
+	ldy	#(SCNBASE+36*SCNWIDT+6)
 	lda	#ISTS1LN
 	jsr	DRWSTR
 
 	ldx	#ISTSTR2
-	ldy	#(SCNBASE+48*SCNWIDT+10)
+	ldy	#(SCNBASE+42*SCNWIDT+6)
 	lda	#ISTS2LN
+	jsr	DRWSTR
+
+	ldx	#ISTSTR3
+	ldy	#(SCNBASE+54*SCNWIDT+6)
+	lda	#ISTS3LN
 	jsr	DRWSTR
 
 	lda	#$c0
@@ -2759,17 +2764,27 @@ PBTS2ND	equ	*
 PBTS2LN	equ	(PBTS2ND-PBTSTR2)
 
 *
-* Data for "TO SLEEP, PERCHANCE TO DREAM..."
+* Data for game instructions
 *
-ISTSTR1	fcb	$60,$54,$4f,$60,$53,$4c,$45,$45
-	fcb	$50,$6c,$60,$50,$45,$52,$43,$48
-	fcb	$41,$4e,$43,$45,$60
+*	"RIDE THE PLATFORMS,"
+*	"DON'T GET BURNED..."
+*	"YOU ONLY LIVE ONCE!"
+*
+ISTSTR1	fcb	$60,$52,$49,$44,$45,$60,$54,$48
+	fcb	$45,$60,$50,$4c,$41,$54,$46,$4f
+	fcb	$52,$4d,$53,$6c,$60
 ISTS1ND	equ	*
 ISTS1LN	equ	(ISTS1ND-ISTSTR1)
-ISTSTR2	fcb	$60,$54,$4f,$60,$44,$52,$45,$41
-	fcb	$4d,$6e,$6e,$6e,$60
+ISTSTR2	fcb	$60,$44,$4f,$4e,$67,$54,$60,$47
+	fcb	$45,$54,$60,$42,$55,$52,$4e,$45
+	fcb	$44,$6e,$6e,$6e,$60
 ISTS2ND	equ	*
 ISTS2LN	equ	(ISTS2ND-ISTSTR2)
+ISTSTR3	fcb	$20,$19,$0f,$15,$20,$0f,$0e,$0c
+	fcb	$19,$20,$0c,$09,$16,$05,$20,$0f
+	fcb	$0e,$03,$05,$21,$20
+ISTS3ND	equ	*
+ISTS3LN	equ	(ISTS3ND-ISTSTR3)
 
 *
 * Data for "FAHRFALL"
