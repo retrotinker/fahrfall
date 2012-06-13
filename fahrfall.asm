@@ -1609,6 +1609,8 @@ HFIPAU1	lda	$ff03		Wait for Vsync
 	bpl	HFIPAU1
 	lda	$ff02
 
+	jsr	PSHBTN2		Dummy input check to preserve blinking
+
 	dec	,s		Decrement time-out counter
 	bne	HFIPAU1
 	leas	1,s
