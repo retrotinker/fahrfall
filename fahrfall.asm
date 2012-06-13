@@ -1528,11 +1528,6 @@ HFISCRN	pshs	y		Save pointer to new HOF initials
 	lda	#FRFSTLN
 	jsr	DRWSTR
 
-	ldx	#HOFSTRN	Display the "Hall Of Fame" header
-	ldy	#(SCNBASE+18*SCNWIDT+9)
-	lda	#HOFSTLN
-	jsr	DRWSTR
-
 	lda	#$03		Load counter for HOF initials
 	pshs	a
 
@@ -2436,19 +2431,19 @@ PBEXTC2	andcc	#$fe		Return negative result
 *
 *	On retun, carry set indicates button pushed
 *
-PSHBTN2	lda	#(PBTCNTI/2)	Display "press button" message
+PSHBTN2	lda	#(PBTCNTI/2)	Display "high score" message
 	bita	PBUTCNT
 	beq	PB2TINV
 
 	ldx	#PB2STR1
-	ldy	#(SCNBASE+90*SCNWIDT+10)
+	ldy	#(SCNBASE+18*SCNWIDT+10)
 	lda	#PB2S1LN
 	jsr	DRWSTR
 
 	bra	PB2CDEC
 
 PB2TINV	ldx	#PB2STR2
-	ldy	#(SCNBASE+90*SCNWIDT+10)
+	ldy	#(SCNBASE+18*SCNWIDT+10)
 	lda	#PB2S2LN
 	jsr	DRWSTR
 
