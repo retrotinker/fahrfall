@@ -69,6 +69,8 @@ PLTFCTI	equ	$cfcf		Initial top row color pattern for platforms
 PLTFCBI	equ	$cfcf		Initial bottom row color pattern for platforms
 PLTDFLT	equ	$3c		Default substitue for "sweeper" platforms
 
+PLCLRCI	equ	$40		Number of platforms for each color
+
 PLYRHGT	equ	12*SCNWIDT	Player object height in terms of screen size
 PLODDBT	equ	$80		Bit for switching even/odd player drawing
 PLFALBT	equ	$40		Bit indicating falling/standing player
@@ -168,6 +170,8 @@ KBRWDAT	rmb	1		Data to use when checking for key presses
 INPREAD	rmb	2		Function pointer for reading input
 
 HOFDATA	rmb	(HOFSIZE*HOFSTSZ)
+
+PLCLRCT	rmb	1		Counter for platforms of current color
 
 	org	LOAD
 
@@ -299,6 +303,9 @@ PLTDINI	sta	PLTFRMS+PLTDATA
 
 	lda	#PLTFMCI	Initialize platform movement counter
 	sta	PLTMCNT
+
+	lda	#PLCLRCI	Initialize platform color counter
+	sta	PLCLRCT
 
 	clr	PLEFLGS		Clear player erase flags
 	clr	PLDFLGS		Clear player draw flags
@@ -1203,7 +1210,7 @@ SCRINLP	std	14,x
 *	A,B get clobbered
 *
 PLTADV	dec	PLTMCNT		Countdown until next platform movement
-	bne	PLTADVX
+	lbne	PLTADVX
 
 	lda	#PLTFMCI	Reset platform movement counter
 	sta	PLTMCNT
@@ -1218,7 +1225,25 @@ PLTADV	dec	PLTMCNT		Countdown until next platform movement
 	cmpd	#PLTFTOP	Check for top of platform movement
 	bgt	PLTBSTO
 
-	lda	PLTFRMS+PLTSTSZ+PLTDATA		Shift platform data values
+	dec	PLCLRCT		Decrement count of platforms for this color
+	bne	PLTDSFT
+
+	lda	#PLCLRCI	Re-initialize platform color counter
+	sta	PLCLRCT
+
+	ldd	PLTNCLR		Bump platform color data
+	adda	#$50
+	ora	#$80
+	tfr	a,b
+	std	PLTNCLR
+
+	ldd	PLTNCLR+2	Bump platform color data
+	adda	#$50
+	ora	#$80
+	tfr	a,b
+	std	PLTNCLR+2
+
+PLTDSFT	lda	PLTFRMS+PLTSTSZ+PLTDATA		Shift platform data values
 	sta	PLTFRMS+2*PLTSTSZ+PLTDATA
 	lda	PLTFRMS+PLTDATA
 	sta	PLTFRMS+PLTSTSZ+PLTDATA
