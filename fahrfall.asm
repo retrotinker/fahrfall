@@ -66,6 +66,12 @@ PLTDATA	rmb	1		Mask representing platform configuration
 PLTCOLR	rmb	4		Color data for drawing platform
 PLTSTSZ	equ	*
 
+JOYLT	equ	$01
+JOYRT	equ	$02
+JOYUP	equ	$04
+JOYDN	equ	$08
+JOYBTN	equ	$10
+
 	org	DATA
 
 FRAMCNT	rmb	1		Rolling frame sequence counter
@@ -92,6 +98,8 @@ LFSRDAT	rmb	2
 PLTMCNT	rmb	1		Countdown until next platform movement
 PLTNCLR	rmb	4		Color patterns for next platform
 PLTFRMS	rmb	3*PLTSTSZ	Platform info data structures
+
+JOYFLGS	rmb	1
 
 	org	LOAD
 
@@ -204,6 +212,49 @@ VSYNC	lda	$ff03		Wait for Vsync
 
 	* Draw the player
 
+* Joystick demo code -- read the joystick flags and draw an appropriate box
+
+	lda	JOYFLGS
+	bita	#JOYBTN
+	beq	JYLEFT
+
+	ldx	#(SCNBASE+44*SCNWIDT-SCNWIDT/2-1)
+	jsr	JOYBOX
+	lda	JOYFLGS
+
+JYLEFT	bita	#JOYLT
+	beq	JYRIGHT
+
+	ldx	#(SCNBASE+44*SCNWIDT+3)
+	jsr	JOYBOX
+	lda	JOYFLGS
+
+	bra	JYUP		Can't be both left and right...?
+
+JYRIGHT bita	#JOYRT
+	beq	JYUP
+
+	ldx	#(SCNBASE+45*SCNWIDT-5)
+	jsr	JOYBOX
+	lda	JOYFLGS
+
+JYUP	bita	#JOYUP
+	beq	JYDN
+
+	ldx	#(SCNBASE+12*SCNWIDT+SCNWIDT/2-1)
+	jsr	JOYBOX
+	lda	JOYFLGS
+
+	bra	JYDONE		Can't be both up and down...?
+
+JYDN	bita	#JOYDN
+	beq	JYDONE
+
+	ldx	#(SCNBASE+76*SCNWIDT+SCNWIDT/2-1)
+	jsr	JOYBOX
+
+JYDONE
+
 * Must get here before end of Vblank (~7840 cycles from VSYNC)
 	clr	$ffd8		Lo-speed during display
 
@@ -221,7 +272,60 @@ VSYNC	lda	$ff03		Wait for Vsync
 
 	jsr	>DRWFLMS	Draw the flames at the top center of the screen
 
-	* Read the controls
+	clr	JOYFLGS		Clear the old joystick flag values
+	lda	$ff00		Read from the PIA connected to the joystick buttons
+	bita	#$02		Test for left joystick button press
+	bne	JOYRDRL
+	lda	#JOYBTN
+	sta	JOYFLGS
+
+JOYRDRL	lda	#$34		Read the right/left axis of the left joystick
+	sta	$ff01
+	lda	#$3c
+	sta	$ff03
+
+	lda	#$65		Test for low value on axis
+	sta	$ff20
+	lda	$ff00
+	bpl	JOYRDLT
+	lda	#$98		Test for high value on axis
+	sta	$ff20
+	lda	$ff00
+	bpl	JOYRDUD
+
+JOYRDRT	lda	#JOYRT		Joystick points right
+	ora	JOYFLGS
+	sta	JOYFLGS
+	bra	JOYRDUD
+
+JOYRDLT	lda	#JOYLT		Joystick points left
+	ora	JOYFLGS
+	sta	JOYFLGS
+
+JOYRDUD	lda	#$3c		Read the up/down axis of the left joystick
+	sta	$ff01
+
+	lda	#$65		Test for low value on axis
+	sta	$ff20
+	lda	$ff00
+	bpl	JOYRDUP
+	lda	#$98		Test for high value on axis
+	sta	$ff20
+	lda	$ff00
+	bpl	JOYDONE
+
+JOYRDDN	lda	#JOYDN		Joystick points down
+	ora	JOYFLGS
+	sta	JOYFLGS
+	bra	JOYDONE
+
+JOYRDUP	lda	#JOYUP		Joystick points up
+	ora	JOYFLGS
+	sta	JOYFLGS
+
+JOYDONE	equ	*
+
+	* Read the keyboard?
 
 	* Compute movement
 
@@ -727,6 +831,22 @@ DRWSKOR	stb	a,y
 	lda	#FLAMLEN
 	bra	DRWFMLP
 DRWFLMX	leas	1,s
+	rts
+
+*
+* Draw a red box on the screen -- used by joystick demo code
+* 	X points to the dest
+*	A,B get clobbered
+*
+JOYBOX	lda	#$08
+	pshs	a
+	lda	#$bf
+	tfr	a,b
+JOYLP	std	,x
+	leax	SCNWIDT,x
+	dec	,s
+	bne	JOYLP
+	leas	1,s
 	rts
 
 FLAMES	fcb	$bf,$ff,$9f,$ff,$ff,$ff,$9f,$9f,$ff,$ff
