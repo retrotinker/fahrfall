@@ -11,7 +11,7 @@ all: $(TARGETS)
 	mamou -mb -tb -l -y -o$@ $<
 
 %.s19: %.asm
-	mamou -mb -ts -l -y -o$@ $<
+	mamou -mr -ts -l -y -o$@ $<
 
 %.ram: %.asm
 	mamou -mr -tb -l -y -o$@ $<
