@@ -218,7 +218,9 @@ INHSCLP	stb	a,x
 	stb	a,x
 
 	ldd	TIMVAL		Seed the LFSR data
-	std	LFSRDAT
+	bne	LFSRINI		Can't tolerate a zero-value LFSR seed...
+	ldb	#$01
+LFSRINI	std	LFSRDAT
 
 	ldx	#CURSCOR	Initialize current score
 	lda	#(SCORLEN-1)
@@ -2531,16 +2533,16 @@ FLMFLKX	rts
 *	http://en.wikipedia.org/wiki/Linear_feedback_shift_register
 *
 LFSRADV	lda	LFSRDAT		Get MSB of LFSR data
-	eora	#$04		Capture x11 of LFSR polynomial
-	lsla
-	lsla
-	eora	LFSRDAT		Capture X13 of LFSR polynomial
-	lsla
+	anda	#$80		Capture x16 of LFSR polynomial
+	lsra
+	lsra
 	eora	LFSRDAT		Capture X14 of LFSR polynomial
-	lsla
-	lsla
-	eora	LFSRDAT		Capture X16 of LFSR polynomial
-	lsla			Move result to Carry bit of CC
+	lsra
+	eora	LFSRDAT		Capture X13 of LFSR polynomial
+	lsra
+	lsra
+	eora	LFSRDAT		Capture X11 of LFSR polynomial
+	lsra			Move result to Carry bit of CC
 	ldd	LFSRDAT		Get all of LFSR data
 	rolb			Shift through 16 bits of LFSR
 	rola
