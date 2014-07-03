@@ -1,7 +1,5 @@
 .PHONY: all clean
 
-CFLAGS=-Wall
-
 TARGETS=fahrfall.bin fahrfall.s19 fahrfall.dsk fahrfall.wav
 
 all: $(TARGETS)
@@ -16,9 +14,6 @@ all: $(TARGETS)
 	cecb bulkerase $@
 	cecb copy -2 -b -g $< \
 		$(@),$$(echo $< | cut -c1-8 | tr [:lower:] [:upper:])
-
-.c.o:
-	$(CC) $(CFLAGS) -c -o $@ $<
 
 fahrfall.dsk: fahrfall.bin fahrfall.bas LICENSE.TXT
 	decb dskini fahrfall.dsk
