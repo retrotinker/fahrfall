@@ -8,13 +8,13 @@ EXTRA=fahrfall.ram
 all: $(TARGETS)
 
 %.bin: %.asm
-	mamou -mb -tb -l -y -o$@ $<
+	lwasm -9 -l -f decb -o $@ $<
 
 %.s19: %.asm
-	mamou -mr -ts -l -y -o$@ $<
+	lwasm -9 -l -f srec -o $@ $<
 
 %.ram: %.asm
-	mamou -mr -tb -l -y -o$@ $<
+	lwasm -9 -l -f raw -o $@ $<
 
 .c.o:
 	$(CC) $(CFLAGS) -c -o $@ $<
