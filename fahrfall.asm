@@ -2276,7 +2276,9 @@ ISTSCRN	jsr	CLRSCRN
 	lda	#ISTS3LN
 	jsr	DRWSTR
 
-	lda	#$c0
+	lda	#$b0		Set counter value for checking keypress
+	pshs	a
+	lda	#$c0		Set counter value for screen timing
 	pshs	a
 
 ISTSYNC	lda	$ff03		Wait for Vsync
@@ -2292,9 +2294,17 @@ ISTSYNC	lda	$ff03		Wait for Vsync
 	dec	,s
 	beq	ISTEXIT
 
+ISTEXCK	lda	,s		Delay before checking for keypress
+	cmpa	1,s
+	bgt	ISTLOOP
+
+	jsr	[INPREAD]	Read input, flags returned in B
+	andb	#JOYBTN		Only check for button press
+	bne	ISTEXIT		Exit early for impatient player
+
 ISTLOOP	bra	ISTSYNC
 
-ISTEXIT	leas	1,s
+ISTEXIT	leas	2,s
 	rts
 
 *
