@@ -2607,7 +2607,9 @@ JYREADX	rts
 *	-- Use JOYFLGS to record keyboard results
 *	-- Be smart enough to handle the Dragon keyboard too?
 *
-KEYBDRD	lda	#$7f
+KEYBDRD	clr	JOYFLGS		Clear the old joystick flag values
+	clrb
+	lda	#$7f
 	bsr	KEYBHLP
 	bne	KEYBDR1
 
