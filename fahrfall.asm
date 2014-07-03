@@ -1,8 +1,13 @@
 	nam	fahrfall
 	ttl	Game inspired by "Man Goes Down" and/or "Downfall"
 
+	ifdef ROM
+DATA	equ	$0200		Base address for random storage
+LOAD	equ	$c000		Actual load address for binary
+	else
 DATA	equ	$4000		Base address for random storage
 LOAD	equ	$4100		Actual load address for binary
+	endc
 
 STRUCT	equ	0		Dummy origin for declaring structures
 
@@ -178,6 +183,10 @@ PLCLRCT	rmb	1		Counter for platforms of current color
 INIT	equ	*		Basic one-time setup goes here!
 
 	orcc	#$50		Disable IRQ and FIRQ -- seems reasonable!
+
+	ifdef ROM
+	lds	#SCNBASE	Set stack pointer to just below screen base
+	endif
 
 	lda	#(DATA/256)	Set direct page register
 	tfr	a,dp

@@ -1,6 +1,6 @@
 .PHONY: all clean
 
-TARGETS=fahrfall.bin fahrfall.s19 fahrfall.dsk fahrfall.wav
+TARGETS=fahrfall.bin fahrfall.s19 fahrfall.dsk fahrfall.wav fahrfall.ccc
 
 all: $(TARGETS)
 
@@ -9,6 +9,9 @@ all: $(TARGETS)
 
 %.s19: %.asm
 	lwasm -9 -l -f srec -o $@ $<
+
+%.ccc: %.asm
+	lwasm -DROM -9 -l -f raw -o $@ $<
 
 %.wav: %.bin
 	cecb bulkerase $@
