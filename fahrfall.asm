@@ -1401,11 +1401,17 @@ CMPSCOR	dec	SCORDLY		Decrement score delay counter
 
 	lda	#SCORLEN	Start from LSB end
 	ldx	#(CURSCOR-1)	Point X at current score
+
+	ldb	#PLFALBT	Check if the player is falling
+	andb	PLDFLGS
+	beq	CMPSLP1
+	inc	a,x		If falling, add an extra point
+
 CMPSLP1	ldb	a,x		Increment current digit
 	incb
 	cmpb	#$7a
 	blt	CMPSCR1		Value less than encoding for "9", we are done
-	ldb	#$70		Otherwise, reset to encoding for "0"
+	subb	#$0a		Otherwise, adjust encoding back toward "0"
 	stb	a,x
 	deca
 	bne	CMPSLP1		Then increment the next digit
