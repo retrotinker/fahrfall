@@ -179,6 +179,8 @@ HOFDATA	rmb	(HOFSIZE*HOFSTSZ)
 
 PLCLRCT	rmb	1		Counter for platforms of current color
 
+PLTMOCV	rmb	2		Current inc for platform movement counter
+
 	org	LOAD
 
 INIT	equ	*		Basic one-time setup goes here!
@@ -315,6 +317,9 @@ PLTDINI	sta	PLTFRMS+PLTDATA
 
 	clr	PLTMCNT		Initialize platform movement counter
 	clr	PLTMCNT+1
+
+	ldd	#PLTMOCI	Initialize platform movement increment
+	std	PLTMOCV
 
 	lda	#PLCLRCI	Initialize platform color counter
 	sta	PLCLRCT
@@ -1222,7 +1227,7 @@ SCRINLP	std	14,x
 * Advance the platforms
 *	A,B get clobbered
 *
-PLTADV	ldd	#PLTMOCI	Increment platform movement overflow counter
+PLTADV	ldd	PLTMOCV		Increment platform movement overflow counter
 	addd	PLTMCNT
 	std	PLTMCNT
 	lbcc	PLTADVX
