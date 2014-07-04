@@ -69,7 +69,7 @@ NUMPLTF	set	3
 PLTFTOP	equ	SCNBASE-SCNWIDT	Top of highest platform animation section
 PLTFRNG	equ	SCNSIZE/NUMPLTF	Size of each platform animation section
 PLTBSIN	equ	SCNEND-SCNWIDT	Initial value for base of bottom platform
-PLTFMCI	equ	$03		Default count value for platform movement
+PLTMOCI	equ	$5500		Default platform movement overflow counter increment
 PLTFCTI	equ	$cfcf		Initial top row color pattern for platforms
 PLTFCBI	equ	$cfcf		Initial bottom row color pattern for platforms
 PLTDFLT	equ	$3c		Default substitue for "sweeper" platforms
@@ -144,7 +144,7 @@ FLAMCNT	rmb	1		Current count of frames until next flicker
 
 LFSRDAT	rmb	2
 
-PLTMCNT	rmb	1		Countdown until next platform movement
+PLTMCNT	rmb	2		Overflow counter for platform movement
 PLTNCLR	rmb	4		Color patterns for next platform
 PLTFRMS	rmb	3*PLTSTSZ	Platform info data structures
 
@@ -313,8 +313,8 @@ PLTDINI	sta	PLTFRMS+PLTDATA
 	clr	PLTFRMS+PLTSTSZ+PLTDATA
 	clr	PLTFRMS+2*PLTSTSZ+PLTDATA
 
-	lda	#PLTFMCI	Initialize platform movement counter
-	sta	PLTMCNT
+	clr	PLTMCNT		Initialize platform movement counter
+	clr	PLTMCNT+1
 
 	lda	#PLCLRCI	Initialize platform color counter
 	sta	PLCLRCT
@@ -1222,11 +1222,10 @@ SCRINLP	std	14,x
 * Advance the platforms
 *	A,B get clobbered
 *
-PLTADV	dec	PLTMCNT		Countdown until next platform movement
-	lbne	PLTADVX
-
-	lda	#PLTFMCI	Reset platform movement counter
-	sta	PLTMCNT
+PLTADV	ldd	#PLTMOCI	Increment platform movement overflow counter
+	addd	PLTMCNT
+	std	PLTMCNT
+	lbcc	PLTADVX
 
 	lda	GAMFLGS		Indicate platform movement in game flags
 	ora	#GMPLMFL
