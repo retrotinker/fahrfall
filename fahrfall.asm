@@ -69,7 +69,8 @@ NUMPLTF	set	3
 PLTFTOP	equ	SCNBASE-SCNWIDT	Top of highest platform animation section
 PLTFRNG	equ	SCNSIZE/NUMPLTF	Size of each platform animation section
 PLTBSIN	equ	SCNEND-SCNWIDT	Initial value for base of bottom platform
-PLTMOCI	equ	$5500		Default platform movement overflow counter increment
+PLTMOCI	equ	$5555		Initial platform movement counter increment
+PLTMOCB	equ	$002a		Adjustment for platform movement cntr increment
 PLTFCTI	equ	$cfcf		Initial top row color pattern for platforms
 PLTFCBI	equ	$cfcf		Initial bottom row color pattern for platforms
 PLTDFLT	equ	$3c		Default substitue for "sweeper" platforms
@@ -1245,6 +1246,12 @@ PLTADV	ldd	PLTMOCV		Increment platform movement overflow counter
 
 	cmpd	#PLTFTOP	Check for top of platform movement
 	bgt	PLTBSTO
+
+	ldd	PLTMOCV		Bump the platform movement incrementer value
+	addd	#PLTMOCB
+	bcc	.1?
+	ldd	#$ffff
+.1?	std	PLTMOCV
 
 	dec	PLCLRCT		Decrement count of platforms for this color
 	bne	PLTDSFT
