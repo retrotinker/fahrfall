@@ -84,6 +84,7 @@ PLMOVBT	equ	$20		Bit indicating moving/stationary player (L/R)
 PLMVMSK	equ	PLMOVBT+PLFALBT	Mask for any current player movement
 
 GMCOLFL	equ	$80		Bit for collision detection in game flags
+GMPLMFL	equ	$01		Bit for platform movement in game flags
 
 SCORDLI	equ	$0f		Counter value for scoring delay
 
@@ -910,9 +911,10 @@ PLTDRW8	leas	1,s
 *	X points to the platform structure
 *	X,Y,A,B get clobbered
 *
-PLTERAS	lda	#PLTFMCI	Check for platform movement
-	cmpa	PLTMCNT
-	bne	PLTERAX		Skip erase if no movement
+PLTERAS	lda	GAMFLGS		Check for platform movement
+	bita	#GMPLMFL
+	beq	PLTERAX		Skip erase if no movement
+	anda	#($ff-GMPLMFL)	Reset platform movement flag
 
 	lda	PLTDATA,x
 	pshs	a
@@ -1225,6 +1227,10 @@ PLTADV	dec	PLTMCNT		Countdown until next platform movement
 
 	lda	#PLTFMCI	Reset platform movement counter
 	sta	PLTMCNT
+
+	lda	GAMFLGS		Indicate platform movement in game flags
+	ora	#GMPLMFL
+	sta	GAMFLGS
 
 	ldd	PLTFRMS+PLTBASE	Decrement platform base values
 	subd	#SCNWIDT
