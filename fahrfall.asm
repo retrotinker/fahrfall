@@ -1587,11 +1587,6 @@ HFISCRN	pshs	y		Save pointer to new HOF initials
 	lda	#FRFSTLN
 	jsr	DRWSTR
 
-	ldx	#CGRTSTR	Display the "Congrats!!" footer
-	ldy	#(SCNBASE+90*SCNWIDT+10)
-	lda	#CGRSTLN
-	jsr	DRWSTR
-
 	lda	#$03		Load counter for HOF initials
 	pshs	a
 
@@ -2514,11 +2509,21 @@ PSHBTN2	lda	#(PBTCNTI/2)	Display "high score" message
 	lda	#PB2S1LN
 	jsr	DRWSTR
 
+	ldx	#CGRTSTR	...and the "Congrats!!" footer
+	ldy	#(SCNBASE+90*SCNWIDT+10)
+	lda	#CGRSTLN
+	jsr	DRWSTR
+
 	bra	PB2CDEC
 
 PB2TINV	ldx	#PB2STR2
 	ldy	#(SCNBASE+18*SCNWIDT+10)
 	lda	#PB2S2LN
+	jsr	DRWSTR
+
+	ldx	#CGT2STR
+	ldy	#(SCNBASE+90*SCNWIDT+10)
+	lda	#CG2STLN
 	jsr	DRWSTR
 
 PB2CDEC	dec	PBUTCNT
@@ -2888,7 +2893,10 @@ CGRTSTR	fcb	$60,$43,$4f,$4e,$47,$52,$41,$54
 	fcb	$53,$61,$61,$60
 CGRSTND	equ	*
 CGRSTLN	equ	(CGRSTND-CGRTSTR)
-
+CGT2STR	fcb	$20,$03,$0f,$0e,$07,$12,$01,$14
+	fcb	$13,$21,$21,$20
+CG2STND	equ	*
+CG2STLN	equ	(CG2STND-CGT2STR)
 
 *
 * Data for initial Hall Of Fame
