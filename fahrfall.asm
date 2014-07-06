@@ -75,7 +75,8 @@ PLTFCTI	equ	$cfcf		Initial top row color pattern for platforms
 PLTFCBI	equ	$cfcf		Initial bottom row color pattern for platforms
 PLTDFLT	equ	$3c		Default substitue for "sweeper" platforms
 
-PLCLRCI	equ	$40		Number of platforms for each color
+PLCLRCI	equ	$20		Number of platforms for each color
+PLNCINI	equ	$90		Initial seed for platform color data LFSR
 
 PLYRHGT	equ	12*SCNWIDT	Player object height in terms of screen size
 PLODDBT	equ	$80		Bit for switching even/odd player drawing
@@ -181,6 +182,8 @@ HOFDATA	rmb	(HOFSIZE*HOFSTSZ)
 
 PLCLRCT	rmb	1		Counter for platforms of current color
 
+PLNCDAT	rmb	1		Current value for platform color LFSR
+
 PLTMOCV	rmb	2		Current inc for platform movement counter
 
 SCRDLCV	rmb	2		Current inc for scoring delay counter
@@ -272,6 +275,9 @@ RESTART	equ	*		New game starts here!
 	sta	FLAMMSK
 	lda	#FLMCNTI
 	sta	FLAMCNT
+
+	lda	#PLNCINI	Initialize platform color LFSR seed
+	sta	PLNCDAT
 
 INTLOOP	jsr	INTRO		Show intro/title screen
 	bcs	GAMSTRT		Start game if carry set...
@@ -1251,7 +1257,7 @@ PLTADV	ldd	PLTMOCV		Increment platform movement overflow counter
 	subd	#PLTFRNG
 
 	cmpd	#PLTFTOP	Check for top of platform movement
-	bgt	PLTBSTO
+	lbgt	PLTBSTO
 
 	ldd	PLTMOCV		Bump the platform movement incrementer value
 	addd	#PLTMOCB
@@ -1260,22 +1266,77 @@ PLTADV	ldd	PLTMOCV		Increment platform movement overflow counter
 .1?	std	PLTMOCV
 
 	dec	PLCLRCT		Decrement count of platforms for this color
-	bne	PLTDSFT
+	lbne	PLTDSFT
 
 	lda	#PLCLRCI	Re-initialize platform color counter
 	sta	PLCLRCT
 
-	ldd	PLTNCLR		Bump platform color data
-	adda	#$50
-	ora	#$80
+	jsr	PLNCGET		Get next value for platform color data
+	pshs	a
+	anda	#$03
+	lsla
+	ldy	#PLNSWCH
+	jmp	a,y
+
+PLNSWCH	bra	PLNC0
+	bra	PLNC1
+	bra	PLNC2
+	bra	PLNC3
+
+PLNC0	lda	,s		Solid over solid...
+	lsra
+	ora	#$8f
 	tfr	a,b
 	std	PLTNCLR
-
-	ldd	PLTNCLR+2	Bump platform color data
-	adda	#$50
-	ora	#$80
+	lda	,s
+	lsla
+	lsla
+	ora	#$8f
 	tfr	a,b
 	std	PLTNCLR+2
+	bra	PLNCDON
+
+PLNC1	lda	,s		Vertical stripes...
+	lsra
+	ora	#$8f
+	ldb	,s
+	lslb
+	lslb
+	orb	#$8f
+	std	PLTNCLR
+	std	PLTNCLR+2
+	bra	PLNCDON
+
+PLNC2	lda	,s		Checker board...
+	lsra
+	ora	#$8f
+	ldb	,s
+	lslb
+	lslb
+	orb	#$8f
+	std	PLTNCLR
+	exg	a,b
+	std	PLTNCLR+2
+	bra	PLNCDON
+
+PLNC3	lda	,s		Twister...
+	lsra
+	anda	#$70
+	ora	#$8a
+	tfr	a,b
+	eorb	#$0f
+	std	PLTNCLR
+	lda	,s
+	lsla
+	lsla
+	anda	#$70
+	ora	#$85
+	tfr	a,b
+	eorb	#$0f
+	std	PLTNCLR+2
+;	bra	PLNCDON
+
+PLNCDON	leas	1,s
 
 PLTDSFT	lda	PLTFRMS+PLTSTSZ+PLTDATA		Shift platform data values
 	sta	PLTFRMS+2*PLTSTSZ+PLTDATA
@@ -2609,6 +2670,36 @@ LFSRADV	lda	LFSRDAT		Get MSB of LFSR data
 	rolb			Shift through 16 bits of LFSR
 	rola
 	std	LFSRDAT		Store the result
+	rts
+
+*
+* Advance the platform color LFSR value and return pseudo-random value
+*
+*	A returns pseudo-random value
+*	B gets clobbered
+*
+* 	Wikipedia article on LFSR cites this polynomial for a maximal 8-bit LFSR:
+*
+*		x8 + x6 + x5 + x4 + 1
+*
+*	http://en.wikipedia.org/wiki/Linear_feedback_shift_register
+*
+PLNCGET	lda	PLNCDAT		Get MSB of LFSR data
+	anda	#$80		Capture x8 of LFSR polynomial
+	lsra
+	lsra
+	eora	PLNCDAT		Capture X6 of LFSR polynomial
+	lsra
+	eora	PLNCDAT		Capture X5 of LFSR polynomial
+	lsra
+	eora	PLNCDAT		Capture X4 of LFSR polynomial
+	lsra			Move result to Carry bit of CC
+	lsra
+	lsra
+	lsra
+	lda	PLNCDAT		Get all of LFSR data
+	rola			Shift result into 8-bit LFSR
+	sta	PLNCDAT		Store the result
 	rts
 
 *
