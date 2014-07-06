@@ -87,7 +87,8 @@ PLMVMSK	equ	PLMOVBT+PLFALBT	Mask for any current player movement
 GMCOLFL	equ	$80		Bit for collision detection in game flags
 GMPLMFL	equ	$01		Bit for platform movement in game flags
 
-SCORDLI	equ	$0f		Counter value for scoring delay
+SCORDLI	equ	$1111		Initial scoring delay increment value
+SCORDLB	equ	$0003		Adjustment for scoring delay cntr increment
 
 JOYLT	equ	$01		Joystick flag definitions
 JOYRT	equ	$02
@@ -160,7 +161,7 @@ MOVFLGS	rmb	1		Flags representing movement info
 
 GAMFLGS	rmb	1		Flags representing game status
 
-SCORDLY	rmb	1		Delay counter for scoring
+SCORDLY	rmb	2		Overflow counter for scoring
 
 PBUTCNT	rmb	1		Counter for flashing "press button"
 
@@ -181,6 +182,8 @@ HOFDATA	rmb	(HOFSIZE*HOFSTSZ)
 PLCLRCT	rmb	1		Counter for platforms of current color
 
 PLTMOCV	rmb	2		Current inc for platform movement counter
+
+SCRDLCV	rmb	2		Current inc for scoring delay counter
 
 	org	LOAD
 
@@ -334,8 +337,11 @@ PLTDINI	sta	PLTFRMS+PLTDATA
 	stx	PLREPOS
 	stx	PLRDPOS
 
-	lda	#SCORDLI	Initialize scoring delay counter
-	sta	SCORDLY
+	clr	SCORDLY		Initialize scoring overflow counter
+	clr	SCORDLY+1
+
+	ldd	#SCORDLI	Initialize scoring overflow counter increment
+	std	SCRDLCV
 
 * Main game loop is from here to VLOOP
 VSYNC	lda	$ff03		Wait for Vsync
@@ -1420,10 +1426,15 @@ MOVSKIP	ldx	PLRDPOS		Reload current player draw position
 *
 * Compute the score
 *
-CMPSCOR	dec	SCORDLY		Decrement score delay counter
-	bne	CMPSCRX		Not expired, so exit
-	lda	#SCORDLI
-	sta	SCORDLY		Restore delay counter
+CMPSCOR	ldd	SCRDLCV		Bump score delay counter incrementer
+	addd	#SCORDLB
+	bcc	.1?
+	ldd	#$ffff
+.1?	std	SCRDLCV
+
+	addd	SCORDLY		Increment score delay counter
+	std	SCORDLY
+	bcc	CMPSCRX		Exit if no overflow
 
 	lda	#SCORLEN	Start from LSB end
 	ldx	#(CURSCOR-1)	Point X at current score
