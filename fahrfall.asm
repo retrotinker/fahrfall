@@ -2493,12 +2493,14 @@ PBEXTCS	orcc	#$01		Return positive result
 
 PBEXTCC	equ	*		Check for monitor activity while we're here...
 
+	ifdef MON09
 * Check for user break (development only)
 CHKUART	lda	$ff69		Check for serial port activity
 	bita	#$08
 	beq	PBEXTC2
 	lda	$ff68
 	jmp	[$fffe]		Re-enter monitor
+	endif
 
 PBEXTC2	andcc	#$fe		Return negative result
 	rts
@@ -2552,12 +2554,14 @@ PB2EXCS	orcc	#$01		Return positive result
 
 PB2EXCC	equ	*		Check for monitor activity while we're here...
 
+	ifdef MON09
 * Check for user break (development only)
 CHKURT2	lda	$ff69		Check for serial port activity
 	bita	#$08
 	beq	PB2EXC2
 	lda	$ff68
 	jmp	[$fffe]		Re-enter monitor
+	endif
 
 PB2EXC2	andcc	#$fe		Return negative result
 	rts
