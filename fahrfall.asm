@@ -2711,6 +2711,9 @@ PLNCGET	lda	PLNCDAT		Get MSB of LFSR data
 *
 JOYREAD	clr	JOYFLGS		Clear the old joystick flag values
 	clrb
+
+	lda	$ff20		Save DAC value
+	pshs	a
 	lda	$ff00		Read from the PIA connected to the joystick buttons
 	bita	#$02		Test for left joystick button press
 	bne	JOYRDRL
@@ -2723,10 +2726,14 @@ JOYRDRL	lda	#$34		Read the right/left axis of the left joystick
 
 	lda	#$65		Test for low value on axis
 	sta	$ff20
+	nop
+	nop
 	lda	$ff00
 	bpl	JOYRDLT
 	lda	#$98		Test for high value on axis
 	sta	$ff20
+	nop
+	nop
 	lda	$ff00
 	bpl	JOYRDUD
 
@@ -2740,10 +2747,14 @@ JOYRDUD	lda	#$3c		Read the up/down axis of the left joystick
 
 	lda	#$65		Test for low value on axis
 	sta	$ff20
+	nop
+	nop
 	lda	$ff00
 	bpl	JOYRDUP
 	lda	#$98		Test for high value on axis
 	sta	$ff20
+	nop
+	nop
 	lda	$ff00
 	bpl	JYREADX
 
@@ -2752,7 +2763,9 @@ JOYRDDN	orb	#JOYDN		Joystick points down
 
 JOYRDUP	orb	#JOYUP		Joystick points up
 
-JYREADX	rts
+JYREADX	puls	a
+	sta	$ff20		Restore DAC value
+	rts
 
 *
 * Keyboard read routine
