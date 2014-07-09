@@ -194,6 +194,8 @@ INIT	equ	*		Basic one-time setup goes here!
 
 	orcc	#$50		Disable IRQ and FIRQ -- seems reasonable!
 
+	clr	$ffd7		Enable address-dependent clocking
+
 	ifdef ROM
 	lds	#SCNBASE	Set stack pointer to just below screen base
 	endif
