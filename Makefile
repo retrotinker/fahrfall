@@ -19,10 +19,11 @@ all: $(TARGETS)
 		$(@),$$(echo $< | cut -c1-8 | tr [:lower:] [:upper:])
 
 fahrfall.dsk: fahrfall.bin fahrfall.bas LICENSE.TXT
-	decb dskini fahrfall.dsk
-	decb copy -2 -b fahrfall.bin fahrfall.dsk,FAHRFALL.BIN
-	decb copy -0 -b -l -t fahrfall.bas fahrfall.dsk,FAHRFALL.BAS
-	decb copy -3 -a -l LICENSE.TXT fahrfall.dsk,LICENSE.TXT
+	rm -f $@
+	decb dskini $@
+	decb copy -2 -b fahrfall.bin $@,FAHRFALL.BIN
+	decb copy -0 -b -l -t fahrfall.bas $@,FAHRFALL.BAS
+	decb copy -3 -a -l LICENSE.TXT $@,LICENSE.TXT
 
 clean:
 	rm -f $(TARGETS)
