@@ -2016,6 +2016,11 @@ INTRO	jsr	CLRSCRN		Clear the screen to black
 	lda	#CPYS2LN
 	jsr	DRWSTR
 
+	ldx	#BTSTSTR	Indicate that this is an Alpha release...
+	ldy	#(SCNBASE+48*SCNWIDT+12)
+	lda	#(BTSTSLN-BTSTSTR)
+	jsr	DRWSTR
+
 	leas	-2,s		Init time-out counter values
 	lda	#$10
 	sta	1,s
@@ -3940,5 +3945,12 @@ SNGSTRT	fcb	$15
 	fdb	00
 
 SONGEND	equ	*
+
+*
+* Data for "BETA 1"
+*
+BTSTSTR	fcb	$20,$02,$05,$14,$01,$20,$32
+	fcb	$20
+BTSTSLN	equ	*
 
 	end	INIT
