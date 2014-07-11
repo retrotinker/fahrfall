@@ -188,6 +188,12 @@ PLTMOCV	rmb	2		Current inc for platform movement counter
 
 SCRDLCV	rmb	2		Current inc for scoring delay counter
 
+NOTESTP	rmb	1		Song playback variables
+NOTEDLY	rmb	1
+NOTECNT	rmb	2
+NOTEINC	rmb	2
+NOTENXT	rmb	2
+
 	org	LOAD
 
 INIT	equ	*		Basic one-time setup goes here!
@@ -229,6 +235,9 @@ INIT	equ	*		Basic one-time setup goes here!
 	ora	#$04
 	sta	PDDDABL		Store PIA data direction register disable value
 	sta	$ff23
+
+	clr	NOTECNT		Clear note-playing overflow counter
+	clr	NOTECNT+1
 
 	ldx	#HISCORE	Initialize high score
 	lda	#(SCORLEN-1)
@@ -351,10 +360,70 @@ PLTDINI	sta	PLTFRMS+PLTDATA
 	ldd	#SCORDLI	Initialize scoring overflow counter increment
 	std	SCRDLCV
 
+	ldx	#SNGSTRT	Setup in-game background music
+	lda	,x
+	sta	NOTEDLY
+	ldd	1,x
+	std	NOTEINC
+	leax	3,x
+	stx	NOTENXT
+	lda	#WAVESIZ
+	sta	NOTESTP
+
 * Main game loop is from here to VLOOP
-VSYNC	lda	$ff03		Wait for Vsync
-	bpl	VSYNC
-	lda	$ff02
+VSYNC	lda	#$00		Select DAC audio source
+	sta	$ff20
+	lda	#$34
+	sta	$ff01
+	lda	#$34
+	sta	$ff03
+
+	lda	$ff23		Enable MUX audio output
+	ora	#$38
+	sta	$ff23
+
+VSYNC1	lda	$ff03		Wait for Vsync
+	bmi	VSYNC2
+	lda	$ff01
+	bpl	VSYNC1
+	lda	$ff00
+	ldd	NOTEINC
+	addd	NOTECNT
+	std	NOTECNT
+	bcc	VSYNC1
+	ldx	#WAVEFRM
+	ldb	NOTESTP
+	decb
+	bne	.1?
+	ldb	#WAVESIZ
+.1?	stb	NOTESTP
+	ldb	b,x
+	stb	$ff20
+	bra	VSYNC1
+VSYNC2	lda	$ff02
+
+	dec	NOTEDLY
+	bne	VSYNC3
+	ldx	NOTENXT
+
+	lda	,x
+	sta	NOTEDLY
+	ldd	1,x
+	std	NOTEINC
+
+	leax	3,x
+	cmpx	#SONGEND
+	blt	.1?
+	ldx	#SNGSTRT
+.1?	stx	NOTENXT
+
+VSYNC3	lda	SCORDLY+1	"Fuzz" the DAC output (helps w/ noise!)
+	anda	#$9c
+	sta	$ff20
+
+	lda	$ff23		Disable MUX audio output
+	anda	#$f7
+	sta	$ff23
 
 	clr	$ffd9		Hi-speed during Vblank
 
@@ -3032,5 +3101,495 @@ HOFDFLT	fcb	$42,$45,$51
 	fcb	$30,$30,$30,$32,$30,$30
 	fcb	$4e,$4f,$50
 	fcb	$30,$30,$30,$31,$30,$30
+
+WAVEFRM	fcb	$50,$44,$58,$78,$b0,$bc,$a8,$88
+WAVESIZ	equ	*-WAVEFRM
+
+NOTE_E	equ	21987
+NOTE_D	equ	19588
+NOTE_C	equ	17451
+NOTE_B	equ	16471
+NOTE_A	equ	14674
+NOTE_G	equ	13073
+NOTE_F	equ	11647
+
+SNGSTRT	fcb	$15
+	fdb	NOTE_F
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_G
+	fcb	$02
+	fdb	00
+	fcb	$15
+	fdb	NOTE_A
+	fcb	$02
+	fdb	00
+	fcb	$15
+	fdb	NOTE_G
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_B
+	fcb	$02
+	fdb	00
+	fcb	$11
+	fdb	NOTE_A
+	fcb	$06
+	fdb	00
+	fcb	$11
+	fdb	NOTE_G
+	fcb	$06
+	fdb	00
+	fcb	$1d
+	fdb	NOTE_F
+	fcb	$21
+	fdb	00
+
+	fcb	$15
+	fdb	NOTE_F
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_G
+	fcb	$02
+	fdb	00
+	fcb	$15
+	fdb	NOTE_A
+	fcb	$02
+	fdb	00
+	fcb	$15
+	fdb	NOTE_G
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_B
+	fcb	$02
+	fdb	00
+	fcb	$11
+	fdb	NOTE_A
+	fcb	$06
+	fdb	00
+	fcb	$11
+	fdb	NOTE_G
+	fcb	$06
+	fdb	00
+	fcb	$1d
+	fdb	NOTE_F
+	fcb	$21
+	fdb	00
+
+	fcb	$15
+	fdb	NOTE_F
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_G
+	fcb	$02
+	fdb	00
+	fcb	$15
+	fdb	NOTE_A
+	fcb	$02
+	fdb	00
+	fcb	$15
+	fdb	NOTE_G
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_B
+	fcb	$02
+	fdb	00
+	fcb	$11
+	fdb	NOTE_A
+	fcb	$06
+	fdb	00
+	fcb	$11
+	fdb	NOTE_G
+	fcb	$06
+	fdb	00
+	fcb	$1d
+	fdb	NOTE_F
+	fcb	$21
+	fdb	00
+
+	fcb	$15
+	fdb	NOTE_F
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_G
+	fcb	$02
+	fdb	00
+	fcb	$15
+	fdb	NOTE_A
+	fcb	$02
+	fdb	00
+	fcb	$15
+	fdb	NOTE_G
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_B
+	fcb	$02
+	fdb	00
+	fcb	$11
+	fdb	NOTE_A
+	fcb	$06
+	fdb	00
+	fcb	$11
+	fdb	NOTE_G
+	fcb	$06
+	fdb	00
+	fcb	$1d
+	fdb	NOTE_F
+	fcb	$21
+	fdb	00
+
+	fcb	$15
+	fdb	NOTE_E
+	fcb	$02
+	fdb	00
+	fcb	$15
+	fdb	NOTE_D
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_E
+	fcb	$02
+	fdb	00
+	fcb	$27
+	fdb	NOTE_C
+	fcb	$0c
+	fdb	00
+	fcb	$11
+	fdb	NOTE_C
+	fcb	$02
+	fdb	00
+	fcb	$15
+	fdb	NOTE_D
+	fcb	$02
+	fdb	00
+	fcb	$11
+	fdb	NOTE_E
+	fcb	$02
+	fdb	00
+	fcb	$1f
+	fdb	NOTE_D
+	fcb	$1a
+	fdb	00
+
+	fcb	$15
+	fdb	NOTE_F
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_G
+	fcb	$02
+	fdb	00
+	fcb	$15
+	fdb	NOTE_A
+	fcb	$02
+	fdb	00
+	fcb	$15
+	fdb	NOTE_G
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_B
+	fcb	$02
+	fdb	00
+	fcb	$11
+	fdb	NOTE_A
+	fcb	$06
+	fdb	00
+	fcb	$11
+	fdb	NOTE_G
+	fcb	$06
+	fdb	00
+	fcb	$1d
+	fdb	NOTE_F
+	fcb	$21
+	fdb	00
+
+	fcb	$15
+	fdb	NOTE_F
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_G
+	fcb	$02
+	fdb	00
+	fcb	$15
+	fdb	NOTE_A
+	fcb	$02
+	fdb	00
+	fcb	$15
+	fdb	NOTE_G
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_B
+	fcb	$02
+	fdb	00
+	fcb	$11
+	fdb	NOTE_A
+	fcb	$06
+	fdb	00
+	fcb	$11
+	fdb	NOTE_G
+	fcb	$06
+	fdb	00
+	fcb	$1d
+	fdb	NOTE_F
+	fcb	$21
+	fdb	00
+
+	fcb	$15
+	fdb	NOTE_F
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_G
+	fcb	$02
+	fdb	00
+	fcb	$15
+	fdb	NOTE_A
+	fcb	$02
+	fdb	00
+	fcb	$15
+	fdb	NOTE_G
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_B
+	fcb	$02
+	fdb	00
+	fcb	$11
+	fdb	NOTE_A
+	fcb	$06
+	fdb	00
+	fcb	$11
+	fdb	NOTE_G
+	fcb	$06
+	fdb	00
+	fcb	$1d
+	fdb	NOTE_F
+	fcb	$31
+	fdb	00
+
+	fcb	$15
+	fdb	NOTE_E
+	fcb	$02
+	fdb	00
+	fcb	$15
+	fdb	NOTE_D
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_E
+	fcb	$02
+	fdb	00
+	fcb	$1d
+	fdb	NOTE_D
+	fcb	$0a
+	fdb	00
+	fcb	$15
+	fdb	NOTE_E
+	fcb	$02
+	fdb	00
+	fcb	$15
+	fdb	NOTE_D
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_E
+	fcb	$02
+	fdb	00
+	fcb	$1d
+	fdb	NOTE_C
+	fcb	$0a
+	fdb	00
+	fcb	$15
+	fdb	NOTE_E
+	fcb	$02
+	fdb	00
+	fcb	$15
+	fdb	NOTE_D
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_E
+	fcb	$02
+	fdb	00
+	fcb	$1d
+	fdb	NOTE_D
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_D
+	fcb	$02
+	fdb	00
+	fcb	$1d
+	fdb	NOTE_D
+	fcb	$0a
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_C
+	fcb	$02
+	fdb	00
+	fcb	$11
+	fdb	NOTE_D
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_E
+	fcb	$02
+	fdb	00
+	fcb	$11
+	fdb	NOTE_D
+	fcb	$1a
+	fdb	00
+
+	fcb	$15
+	fdb	NOTE_F
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_G
+	fcb	$02
+	fdb	00
+	fcb	$15
+	fdb	NOTE_A
+	fcb	$02
+	fdb	00
+	fcb	$15
+	fdb	NOTE_G
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_B
+	fcb	$02
+	fdb	00
+	fcb	$11
+	fdb	NOTE_A
+	fcb	$06
+	fdb	00
+	fcb	$11
+	fdb	NOTE_G
+	fcb	$06
+	fdb	00
+	fcb	$1d
+	fdb	NOTE_F
+	fcb	$21
+	fdb	00
+
+	fcb	$15
+	fdb	NOTE_F
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_G
+	fcb	$02
+	fdb	00
+	fcb	$15
+	fdb	NOTE_A
+	fcb	$02
+	fdb	00
+	fcb	$15
+	fdb	NOTE_G
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_B
+	fcb	$02
+	fdb	00
+	fcb	$11
+	fdb	NOTE_A
+	fcb	$06
+	fdb	00
+	fcb	$11
+	fdb	NOTE_G
+	fcb	$06
+	fdb	00
+	fcb	$1d
+	fdb	NOTE_F
+	fcb	$21
+	fdb	00
+
+	fcb	$15
+	fdb	NOTE_F
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_G
+	fcb	$02
+	fdb	00
+	fcb	$15
+	fdb	NOTE_A
+	fcb	$02
+	fdb	00
+	fcb	$15
+	fdb	NOTE_G
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_B
+	fcb	$02
+	fdb	00
+	fcb	$11
+	fdb	NOTE_A
+	fcb	$06
+	fdb	00
+	fcb	$11
+	fdb	NOTE_G
+	fcb	$06
+	fdb	00
+	fcb	$1d
+	fdb	NOTE_F
+	fcb	$21
+	fdb	00
+
+	fcb	70
+	fdb	NOTE_E
+	fcb	20
+	fdb	00
+	fcb	70
+	fdb	NOTE_D
+	fcb	20
+	fdb	00
+	fcb	7
+	fdb	00
+	fcb	70
+	fdb	NOTE_E
+	fcb	20
+	fdb	00
+	fcb	70
+	fdb	NOTE_C
+	fcb	20
+	fdb	00
+	fcb	7
+	fdb	00
+	fcb	70
+	fdb	NOTE_E
+	fcb	20
+	fdb	00
+	fcb	70
+	fdb	NOTE_D
+	fcb	20
+	fdb	00
+	fcb	7
+	fdb	00
+	fcb	70
+	fdb	NOTE_E
+	fcb	20
+	fdb	00
+	fcb	70
+	fdb	NOTE_C
+	fcb	20
+	fdb	00
+	fcb	7
+	fdb	00
+
+SONGEND	equ	*
 
 	end	INIT
