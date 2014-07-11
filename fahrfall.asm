@@ -1889,6 +1889,11 @@ INTRO	jsr	CLRSCRN		Clear the screen to black
 	lda	#CPYS2LN
 	jsr	DRWSTR
 
+	ldx	#ATSTSTR	Indicate that this is an Alpha release...
+	ldy	#(SCNBASE+48*SCNWIDT+12)
+	lda	#(ATSTSLN-ATSTSTR)
+	jsr	DRWSTR
+
 	leas	-2,s		Init time-out counter values
 	lda	#$10
 	sta	1,s
@@ -3032,5 +3037,12 @@ HOFDFLT	fcb	$42,$45,$51
 	fcb	$30,$30,$30,$32,$30,$30
 	fcb	$4e,$4f,$50
 	fcb	$30,$30,$30,$31,$30,$30
+
+*
+* Data for "BETA 1"
+*
+ATSTSTR	fcb	$20,$02,$05,$14,$01,$20,$31
+	fcb	$20
+ATSTSLN	equ	*
 
 	end	INIT
