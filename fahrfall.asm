@@ -2448,12 +2448,72 @@ ISTSCRN	jsr	CLRSCRN
 
 	lda	#$b0		Set counter value for checking keypress
 	pshs	a
-	lda	#$c0		Set counter value for screen timing
+	lda	#$d0		Set counter value for screen timing
 	pshs	a
 
-ISTSYNC	lda	$ff03		Wait for Vsync
-	bpl	ISTSYNC
-	lda	$ff02
+	ldx	#PRLSTRT	Setup in-game background music
+	lda	,x
+	sta	NOTEDLY
+	ldd	1,x
+	std	NOTEINC
+	leax	3,x
+	stx	NOTENXT
+	lda	#WAVESIZ
+	sta	NOTESTP
+
+ISTSYNC	lda	#$00		Select DAC audio source
+	sta	$ff20
+	lda	#$34
+	sta	$ff01
+	lda	#$34
+	sta	$ff03
+
+	lda	$ff23		Enable MUX audio output
+	ora	#$38
+	sta	$ff23
+
+.1?	lda	$ff03		Wait for Vsync
+	bmi	.3?
+	lda	$ff01
+	bpl	.1?
+	lda	$ff00
+	ldd	NOTEINC
+	addd	NOTECNT
+	std	NOTECNT
+	bcc	.1?
+	ldx	#WAVEFRM
+	ldb	NOTESTP
+	decb
+	bne	.2?
+	ldb	#WAVESIZ
+.2?	stb	NOTESTP
+	ldb	b,x
+	stb	$ff20
+	bra	.1?
+.3?	lda	$ff02
+	dec	NOTEDLY
+	bne	.5?
+	ldx	NOTENXT
+	lda	,x
+	sta	NOTEDLY
+	ldd	1,x
+	std	NOTEINC
+	leax	3,x
+	cmpx	#PRELEND
+	blt	.4?
+	clr	NOTEDLY
+	clr	NOTEINC
+	clr	NOTEINC+1
+	lda	#WAVESIZ
+	sta	NOTESTP
+.4?	stx	NOTENXT
+.5?	lda	SCORDLY+1	"Fuzz" the DAC output (helps w/ noise!)
+	anda	#$9c
+	sta	$ff20
+
+	lda	$ff23		Disable MUX audio output
+	anda	#$f7
+	sta	$ff23
 
 	jsr	DRWFLMS		Draw the flames at the top center of the screen
 
@@ -2472,7 +2532,7 @@ ISTEXCK	lda	,s		Delay before checking for keypress
 	andb	#JOYBTN		Only check for button press
 	bne	ISTEXIT		Exit early for impatient player
 
-ISTLOOP	bra	ISTSYNC
+ISTLOOP	lbra	ISTSYNC
 
 ISTEXIT	leas	2,s
 	rts
@@ -3112,6 +3172,41 @@ NOTE_B	equ	16471
 NOTE_A	equ	14674
 NOTE_G	equ	13073
 NOTE_F	equ	11647
+
+PRLSTRT	fcb	$15
+	fdb	NOTE_C
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_B
+	fcb	$02
+	fdb	00
+	fcb	$15
+	fdb	NOTE_A
+	fcb	$02
+	fdb	00
+	fcb	$15
+	fdb	NOTE_G
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_B
+	fcb	$02
+	fdb	00
+	fcb	$15
+	fdb	NOTE_A
+	fcb	$02
+	fdb	00
+	fcb	$15
+	fdb	NOTE_G
+	fcb	$02
+	fdb	00
+	fcb	$1d
+	fdb	NOTE_F
+	fcb	$02
+	fdb	00
+
+PRELEND	equ	*
 
 SNGSTRT	fcb	$15
 	fdb	NOTE_F
