@@ -382,42 +382,38 @@ VSYNC	lda	#$00		Select DAC audio source
 	ora	#$38
 	sta	$ff23
 
-VSYNC1	lda	$ff03		Wait for Vsync
-	bmi	VSYNC2
+.1?	lda	$ff03		Wait for Vsync
+	bmi	.3?
 	lda	$ff01
-	bpl	VSYNC1
+	bpl	.1?
 	lda	$ff00
 	ldd	NOTEINC
 	addd	NOTECNT
 	std	NOTECNT
-	bcc	VSYNC1
+	bcc	.1?
 	ldx	#WAVEFRM
 	ldb	NOTESTP
 	decb
-	bne	.1?
+	bne	.2?
 	ldb	#WAVESIZ
-.1?	stb	NOTESTP
+.2?	stb	NOTESTP
 	ldb	b,x
 	stb	$ff20
-	bra	VSYNC1
-VSYNC2	lda	$ff02
-
+	bra	.1?
+.3?	lda	$ff02
 	dec	NOTEDLY
-	bne	VSYNC3
+	bne	.5?
 	ldx	NOTENXT
-
 	lda	,x
 	sta	NOTEDLY
 	ldd	1,x
 	std	NOTEINC
-
 	leax	3,x
 	cmpx	#SONGEND
-	blt	.1?
+	blt	.4?
 	ldx	#SNGSTRT
-.1?	stx	NOTENXT
-
-VSYNC3	lda	SCORDLY+1	"Fuzz" the DAC output (helps w/ noise!)
+.4?	stx	NOTENXT
+.5?	lda	SCORDLY+1	"Fuzz" the DAC output (helps w/ noise!)
 	anda	#$9c
 	sta	$ff20
 
