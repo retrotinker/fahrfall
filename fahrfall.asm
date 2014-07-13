@@ -194,6 +194,10 @@ NOTECNT	rmb	2
 NOTEINC	rmb	2
 NOTENXT	rmb	2
 
+HFICNT	rmb	1		Sound effect variables for HoF induction
+HFIINC	rmb	1
+HFIRST	rmb	1
+
 	org	LOAD
 
 INIT	equ	*		Basic one-time setup goes here!
@@ -1733,9 +1737,46 @@ HFISCRN	pshs	y		Save pointer to new HOF initials
 	ldb	#$08
 	pshs	a,b
 
-HFISYNC	lda	$ff03		Wait for Vsync
-	bpl	HFISYNC
-	lda	$ff02
+	clr	HFICNT		Setup induction sound effect
+	lda	#$14
+	sta	HFIINC
+	sta	HFIRST
+
+HFISYNC	lda	#$00		Select DAC audio source
+	sta	$ff20
+	lda	#$34
+	sta	$ff01
+	lda	#$34
+	sta	$ff03
+
+	lda	$ff23		Enable MUX audio output
+	ora	#$38
+	sta	$ff23
+
+.1?	lda	$ff03		Wait for Vsync
+	bmi	.2?
+	lda	$ff01
+	bpl	.1?
+	lda	$ff00
+	lda	HFIINC
+	adda	HFICNT
+	sta	HFICNT
+	bcc	.1?
+	ldb	$ff20
+	eorb	#$90
+	stb	$ff20
+	bra	.1?
+.2?	lda	$ff02
+	dec	HFIINC
+	bne	.3?
+	lda	HFIRST
+	sta	HFIINC
+.3?	lda	HFICNT		Set neutral DAC value (helps w/ noise?)
+	sta	$ff20
+
+	lda	$ff23		Disable MUX audio output
+	anda	#$f7
+	sta	$ff23
 
 	ldy	3,s		Get pointer to current HOF initial
 	lda	,y		Load current HOF initial
@@ -1793,7 +1834,7 @@ HFITIMO	dec	,s		Decrement time-out counter
 	dec	1,s
 	beq	HFIEXTO
 
-HFILOOP	bra	HFISYNC
+HFILOOP	lbra	HFISYNC
 
 HFIPAUS	lda	#$0f		Load counter to debounce the switch...
 	pshs	a
