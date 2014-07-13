@@ -2064,13 +2064,15 @@ ISYNC	lda	#$00		Select DAC audio source
 	anda	#$f7
 	sta	$ff23
 
-*	clr	$ffd9		Hi-speed during Vblank
-
 * Vblank work goes here
+	ifdef	ROM
 	jsr	INTRPNT
-
-* Must get here before end of Vblank (~7840 cycles from VSYNC)
-*	clr	$ffd8		Lo-speed during display
+	else
+	ldx	#FHRFSTR	Display the "Fahrfall" header
+	ldy	#(SCNBASE+30*SCNWIDT+11)
+	lda	#FRFSTLN
+	jsr	DRWSTR
+	endc
 
 	jsr	DRWFLMS		Draw the flames at the top center of the screen
 
@@ -2164,6 +2166,7 @@ INTPDT2	anda	#$f0		Separate color info
 
 	rts
 
+	ifdef	ROM
 *
 * Paint the intro-scroll effects
 *	X,Y,A,B get clobbered
@@ -2512,6 +2515,7 @@ INTINLP	ldb	#$0f		XOR pixel data mask
 	leas	5,s		Release all stack space
 
 	rts
+	endc
 
 *
 * Interstitial screen is from here to ISTLOOP
