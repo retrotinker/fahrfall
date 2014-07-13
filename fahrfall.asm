@@ -193,6 +193,8 @@ NOTEDLY	rmb	1
 NOTECNT	rmb	2
 NOTEINC	rmb	2
 NOTENXT	rmb	2
+NOTETCK	rmb	2
+NOTETKO	rmb	2
 
 HFICNT	rmb	1		Sound effect variables for HoF induction
 HFIINC	rmb	1
@@ -373,6 +375,10 @@ PLTDINI	sta	PLTFRMS+PLTDATA
 	stx	NOTENXT
 	lda	#WAVESIZ
 	sta	NOTESTP
+	ldd	#$0200
+	std	NOTETCK
+	clr	NOTETKO
+	clr	NOTETKO+1
 
 * Main game loop is from here to VLOOP
 VSYNC	lda	#$00		Select DAC audio source
@@ -405,10 +411,21 @@ VSYNC	lda	#$00		Select DAC audio source
 	stb	$ff20
 	bra	.1?
 .3?	lda	$ff02
-	dec	NOTEDLY
-	bne	.5?
+	ldd	NOTETKO
+	addd	NOTETCK
+	stb	NOTETKO+1
+	tfr	a,b
+	anda	#$01
+	sta	NOTETKO
+	lsrb
+	pshs	b
+	lda	NOTEDLY
+	suba	,s		Just the MSB of NOTETKO...
+	leas	1,s
+	sta	NOTEDLY
+	bgt	.5?
 	ldx	NOTENXT
-	lda	,x
+	adda	,x
 	sta	NOTEDLY
 	ldd	1,x
 	std	NOTEINC
@@ -1335,6 +1352,12 @@ PLTADV	ldd	PLTMOCV		Increment platform movement overflow counter
 	bcc	.1?
 	ldd	#$ffff
 .1?	std	PLTMOCV
+
+	ldd	NOTETCK		Bump the music tick incrementer value
+	addd	#$0001
+	bne	.1?
+	ldd	#$ffff
+.1?	std	NOTETCK
 
 	dec	PLCLRCT		Decrement count of platforms for this color
 	lbne	PLTDSFT
