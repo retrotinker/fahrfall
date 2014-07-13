@@ -2000,9 +2000,69 @@ INTRO	jsr	CLRSCRN		Clear the screen to black
 	sta	1,s
 	clr	,s
 
-ISYNC	lda	$ff03		Wait for Vsync
-	bpl	ISYNC
-	lda	$ff02
+	ldx	#OVTSTRT	Setup intro music
+	lda	,x
+	sta	NOTEDLY
+	ldd	1,x
+	std	NOTEINC
+	leax	3,x
+	stx	NOTENXT
+	lda	#WAVESIZ
+	sta	NOTESTP
+
+ISYNC	lda	#$00		Select DAC audio source
+	sta	$ff20
+	lda	#$34
+	sta	$ff01
+	lda	#$34
+	sta	$ff03
+
+	lda	$ff23		Enable MUX audio output
+	ora	#$38
+	sta	$ff23
+
+.1?	lda	$ff03		Wait for Vsync
+	bmi	.3?
+	lda	$ff01
+	bpl	.1?
+	lda	$ff00
+	ldd	NOTEINC
+	addd	NOTECNT
+	std	NOTECNT
+	bcc	.1?
+	ldx	#WAVEFRM
+	ldb	NOTESTP
+	decb
+	bne	.2?
+	ldb	#WAVESIZ
+.2?	stb	NOTESTP
+	ldb	b,x
+	stb	$ff20
+	bra	.1?
+.3?	lda	$ff02
+	dec	NOTEDLY
+	bne	.5?
+	ldx	NOTENXT
+	lda	,x
+	sta	NOTEDLY
+	ldd	1,x
+	std	NOTEINC
+	leax	3,x
+	cmpx	#OVRTEND
+	blt	.4?
+	clr	NOTEDLY
+	clr	NOTEINC
+	clr	NOTEINC+1
+	lda	#WAVESIZ
+	sta	NOTESTP
+.4?	stx	NOTENXT
+.5?	lda	NOTESTP		"Fuzz" the DAC output (helps w/ noise!)
+	anda	#$9c
+	sta	$ff20
+
+	lda	$ff23		Disable MUX audio output
+	anda	#$f7
+	sta	$ff23
 
 *	clr	$ffd9		Hi-speed during Vblank
 
@@ -2031,7 +2091,7 @@ ITIMOUT	dec	,s		Decrement time-out counter
 	dec	1,s
 	beq	INTRXCC		Exit intro if time-out
 
-ILOOP	bra	ISYNC
+ILOOP	lbra	ISYNC
 
 INTRXCS	leas	2,s		Clean-up stack
 	orcc	#$01		Indicate game start
@@ -3202,13 +3262,154 @@ HOFDFLT	fcb	$42,$45,$51
 WAVEFRM	fcb	$50,$44,$58,$78,$b0,$bc,$a8,$88
 WAVESIZ	equ	*-WAVEFRM
 
+NOTE_F2	equ	23294		Actually "F5"...
 NOTE_E	equ	21987
 NOTE_D	equ	19588
 NOTE_C	equ	17451
 NOTE_B	equ	16471
 NOTE_A	equ	14674
 NOTE_G	equ	13073
-NOTE_F	equ	11647
+NOTE_F	equ	11647		Actually "F4"...
+
+OVTSTRT	fcb	$13
+	fdb	NOTE_F
+	fcb	$04
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_G
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_A
+	fcb	$02
+	fdb	00
+	fcb	$1d
+	fdb	NOTE_B
+	fcb	$02
+	fdb	00
+	fcb	$1d
+	fdb	NOTE_A
+	fcb	$04
+	fdb	00
+	fcb	$13
+	fdb	NOTE_G
+	fcb	$04
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_A
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_B
+	fcb	$02
+	fdb	00
+	fcb	$19
+	fdb	NOTE_C
+	fcb	$20
+	fdb	00
+	fcb	$13
+	fdb	NOTE_E
+	fcb	$04
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_D
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_C
+	fcb	$02
+	fdb	00
+	fcb	$1d
+	fdb	NOTE_B
+	fcb	$18
+	fdb	00
+	fcb	$13
+	fdb	NOTE_C
+	fcb	$04
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_B
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_A
+	fcb	$02
+	fdb	00
+	fcb	$1d
+	fdb	NOTE_G
+	fcb	$14
+	fdb	00
+
+	fcb	$13
+	fdb	NOTE_G
+	fcb	$04
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_A
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_B
+	fcb	$02
+	fdb	00
+	fcb	$1d
+	fdb	NOTE_C
+	fcb	$02
+	fdb	00
+	fcb	$1d
+	fdb	NOTE_B
+	fcb	$04
+	fdb	00
+	fcb	$13
+	fdb	NOTE_A
+	fcb	$04
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_B
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_C
+	fcb	$02
+	fdb	00
+	fcb	$19
+	fdb	NOTE_D
+	fcb	$20
+	fdb	00
+	fcb	$13
+	fdb	NOTE_F2
+	fcb	$04
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_E
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_D
+	fcb	$02
+	fdb	00
+	fcb	$15
+	fdb	NOTE_C
+	fcb	$08
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_A
+	fcb	$02
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_B
+	fcb	$02
+	fdb	00
+	fcb	$1f
+	fdb	NOTE_A
+	fcb	$14
+	fdb	00
+	fcb	$0d
+	fdb	NOTE_A
+	fcb	$02
+	fdb	00
+
+OVRTEND	equ	*
 
 PRLSTRT	fcb	$15
 	fdb	NOTE_C
