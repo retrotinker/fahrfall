@@ -2088,16 +2088,10 @@ ISYNC	lda	#$00		Select DAC audio source
 	sta	$ff23
 
 * Vblank work goes here
-	ifdef	ROM
+	tst	NOTEINC		Only paint the title when no notes are playing
+	bne	.1?
 	jsr	INTRPNT
-	else
-	ldx	#FHRFSTR	Display the "Fahrfall" header
-	ldy	#(SCNBASE+30*SCNWIDT+11)
-	lda	#FRFSTLN
-	jsr	DRWSTR
-	endc
-
-	jsr	DRWFLMS		Draw the flames at the top center of the screen
+.1?	jsr	DRWFLMS		Draw the flames at the top center of the screen
 
 	jsr	LFSRADV		Advance the LFSR
 
@@ -2189,7 +2183,6 @@ INTPDT2	anda	#$f0		Separate color info
 
 	rts
 
-	ifdef	ROM
 *
 * Paint the intro-scroll effects
 *	X,Y,A,B get clobbered
@@ -2538,7 +2531,6 @@ INTINLP	ldb	#$0f		XOR pixel data mask
 	leas	5,s		Release all stack space
 
 	rts
-	endc
 
 *
 * Interstitial screen is from here to ISTLOOP
@@ -3298,7 +3290,10 @@ NOTE_A	equ	14674
 NOTE_G	equ	13073
 NOTE_F	equ	11647		Actually "F4"...
 
-OVTSTRT	fcb	$13
+OVTSTRT	fcb	$40		Start with a delay, so "FAHRFALL" can paint...
+	fdb	00
+
+	fcb	$13
 	fdb	NOTE_F
 	fcb	$04
 	fdb	00
