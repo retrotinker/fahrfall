@@ -3293,140 +3293,140 @@ NOTE_F	equ	11647		Actually "F4"...
 OVTSTRT	fcb	$40		Start with a delay, so "FAHRFALL" can paint...
 	fdb	00
 
-	fcb	$13
+	fcb	$0a
 	fdb	NOTE_F
 	fcb	$04
 	fdb	00
-	fcb	$0d
+	fcb	$07
 	fdb	NOTE_G
 	fcb	$02
 	fdb	00
-	fcb	$0d
+	fcb	$07
 	fdb	NOTE_A
 	fcb	$02
 	fdb	00
-	fcb	$1d
+	fcb	$0f
 	fdb	NOTE_B
 	fcb	$02
 	fdb	00
-	fcb	$1d
+	fcb	$0f
 	fdb	NOTE_A
 	fcb	$04
 	fdb	00
-	fcb	$13
+	fcb	$0a
 	fdb	NOTE_G
 	fcb	$04
 	fdb	00
-	fcb	$0d
+	fcb	$07
 	fdb	NOTE_A
 	fcb	$02
 	fdb	00
-	fcb	$0d
+	fcb	$07
 	fdb	NOTE_B
 	fcb	$02
 	fdb	00
-	fcb	$19
+	fcb	$0d
 	fdb	NOTE_C
-	fcb	$20
+	fcb	$10
 	fdb	00
-	fcb	$13
+	fcb	$0a
 	fdb	NOTE_E
 	fcb	$04
 	fdb	00
-	fcb	$0d
+	fcb	$07
 	fdb	NOTE_D
 	fcb	$02
 	fdb	00
-	fcb	$0d
+	fcb	$07
 	fdb	NOTE_C
 	fcb	$02
 	fdb	00
-	fcb	$1d
+	fcb	$0f
 	fdb	NOTE_B
-	fcb	$18
+	fcb	$10
 	fdb	00
-	fcb	$13
+	fcb	$0a
 	fdb	NOTE_C
 	fcb	$04
 	fdb	00
-	fcb	$0d
+	fcb	$07
 	fdb	NOTE_B
 	fcb	$02
 	fdb	00
-	fcb	$0d
+	fcb	$07
 	fdb	NOTE_A
 	fcb	$02
 	fdb	00
-	fcb	$1d
+	fcb	$0f
 	fdb	NOTE_G
-	fcb	$14
+	fcb	$0f
 	fdb	00
 
-	fcb	$13
+	fcb	$0a
 	fdb	NOTE_G
 	fcb	$04
 	fdb	00
-	fcb	$0d
+	fcb	$07
 	fdb	NOTE_A
 	fcb	$02
 	fdb	00
-	fcb	$0d
+	fcb	$07
 	fdb	NOTE_B
 	fcb	$02
 	fdb	00
-	fcb	$1d
+	fcb	$0f
 	fdb	NOTE_C
 	fcb	$02
 	fdb	00
-	fcb	$1d
+	fcb	$0f
 	fdb	NOTE_B
 	fcb	$04
 	fdb	00
-	fcb	$13
+	fcb	$0a
 	fdb	NOTE_A
 	fcb	$04
 	fdb	00
-	fcb	$0d
+	fcb	$07
 	fdb	NOTE_B
 	fcb	$02
 	fdb	00
-	fcb	$0d
+	fcb	$07
 	fdb	NOTE_C
 	fcb	$02
 	fdb	00
-	fcb	$19
+	fcb	$0d
 	fdb	NOTE_D
-	fcb	$20
+	fcb	$10
 	fdb	00
-	fcb	$13
+	fcb	$0a
 	fdb	NOTE_F2
 	fcb	$04
 	fdb	00
-	fcb	$0d
+	fcb	$07
 	fdb	NOTE_E
 	fcb	$02
 	fdb	00
-	fcb	$0d
+	fcb	$07
 	fdb	NOTE_D
 	fcb	$02
 	fdb	00
-	fcb	$15
-	fdb	NOTE_C
-	fcb	$08
-	fdb	00
 	fcb	$0d
+	fdb	NOTE_C
+	fcb	$04
+	fdb	00
+	fcb	$07
 	fdb	NOTE_A
 	fcb	$02
 	fdb	00
-	fcb	$0d
+	fcb	$07
 	fdb	NOTE_B
 	fcb	$02
 	fdb	00
-	fcb	$1f
+	fcb	$0f
 	fdb	NOTE_A
 	fcb	$14
 	fdb	00
-	fcb	$0d
+	fcb	$07
 	fdb	NOTE_A
 	fcb	$02
 	fdb	00
