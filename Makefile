@@ -1,6 +1,7 @@
 .PHONY: all clean
 
-TARGETS=fahrfall.bin fahrfall.s19 fahrfall.dsk fahrfall.wav fahrfall.ccc
+TARGETS=fahrfall.bin fahrfall.s19 fahrfall.dsk fahrfall.wav \
+	fahrfall.ccc fahrfall.8k
 
 all: $(TARGETS)
 
@@ -24,6 +25,12 @@ fahrfall.dsk: fahrfall.bin fahrfall.bas LICENSE.TXT
 	decb copy -2 -b fahrfall.bin $@,FAHRFALL.BIN
 	decb copy -0 -b -l -t fahrfall.bas $@,FAHRFALL.BAS
 	decb copy -3 -a -l LICENSE.TXT $@,LICENSE.TXT
+
+fahrfall.8k: fahrfall.ccc
+	rm -f $@
+	dd if=/dev/zero bs=8k count=1 | \
+		tr '\000' '\377' > $@
+	dd if=$< of=$@ conv=notrunc
 
 clean:
 	rm -f $(TARGETS)
