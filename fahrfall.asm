@@ -434,9 +434,7 @@ VSYNC	lda	#$00		Select DAC audio source
 	blt	.4?
 	ldx	#SNGSTRT
 .4?	stx	NOTENXT
-.5?	lda	SCORDLY+1	"Fuzz" the DAC output (helps w/ noise!)
-	anda	#$9c
-	sta	$ff20
+.5?	clr	$ff20		Clear the DAC output (helps w/ noise)
 
 	lda	$ff23		Disable MUX audio output
 	anda	#$f7
@@ -2079,9 +2077,7 @@ ISYNC	lda	#$00		Select DAC audio source
 	lda	#WAVESIZ
 	sta	NOTESTP
 .4?	stx	NOTENXT
-.5?	lda	NOTESTP		"Fuzz" the DAC output (helps w/ noise!)
-	anda	#$9c
-	sta	$ff20
+.5?	clr	$ff20		Clear the DAC output (helps w/ noise)
 
 	lda	$ff23		Disable MUX audio output
 	anda	#$f7
@@ -2623,9 +2619,7 @@ ISTSYNC	lda	#$00		Select DAC audio source
 	lda	#WAVESIZ
 	sta	NOTESTP
 .4?	stx	NOTENXT
-.5?	lda	SCORDLY+1	"Fuzz" the DAC output (helps w/ noise!)
-	anda	#$9c
-	sta	$ff20
+.5?	clr	$ff20		Clear the DAC output (helps w/ noise)
 
 	lda	$ff23		Disable MUX audio output
 	anda	#$f7
