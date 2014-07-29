@@ -196,6 +196,8 @@ NOTENXT	rmb	2
 NOTETCK	rmb	2
 NOTETKO	rmb	2
 
+HUMSTEP	rmb	1
+
 HFICNT	rmb	1		Sound effect variables for HoF induction
 HFIINC	rmb	1
 HFIRST	rmb	1
@@ -375,6 +377,8 @@ PLTDINI	sta	PLTFRMS+PLTDATA
 	stx	NOTENXT
 	lda	#WAVESIZ
 	sta	NOTESTP
+	lda	#HUMSIZE
+	sta	HUMSTEP
 	ldd	#$0200
 	std	NOTETCK
 	clr	NOTETKO
@@ -392,6 +396,12 @@ VSYNC	lda	#$00		Select DAC audio source
 	ora	#$38
 	sta	$ff23
 
+	tst	NOTEINC		Bump the DAC, only when notes are playing
+	beq	.1?
+	ldx	#HUMFORM
+	ldb	HUMSTEP
+	lda	b,x
+	sta	$ff20
 .1?	lda	$ff03		Wait for Vsync
 	bmi	.3?
 	lda	$ff01
@@ -434,7 +444,20 @@ VSYNC	lda	#$00		Select DAC audio source
 	blt	.4?
 	ldx	#SNGSTRT
 .4?	stx	NOTENXT
-.5?	clr	$ff20		Clear the DAC output (helps w/ noise)
+.5?	tst	NOTEINC		Reset the DAC output (helps w/ noise)
+	bne	.6?
+	clra
+	bra	.7?
+.6?
+	ldx	#HUMFORM
+	ldb	HUMSTEP
+	decb
+	bne	.8?
+	ldb	#HUMSIZE
+.8?	stb	HUMSTEP
+	eorb	#(HUMSIZE/2)
+	lda	b,x
+.7?	sta	$ff20
 
 	lda	$ff23		Disable MUX audio output
 	anda	#$f7
@@ -2042,6 +2065,12 @@ ISYNC	lda	#$00		Select DAC audio source
 	ora	#$38
 	sta	$ff23
 
+	tst	NOTEINC		Bump the DAC, only when notes are playing
+	beq	.1?
+	ldx	#HUMFORM
+	ldb	HUMSTEP
+	lda	b,x
+	sta	$ff20
 .1?	lda	$ff03		Wait for Vsync
 	bmi	.3?
 	lda	$ff01
@@ -2077,7 +2106,20 @@ ISYNC	lda	#$00		Select DAC audio source
 	lda	#WAVESIZ
 	sta	NOTESTP
 .4?	stx	NOTENXT
-.5?	clr	$ff20		Clear the DAC output (helps w/ noise)
+.5?	tst	NOTEINC		Reset the DAC output (helps w/ noise)
+	bne	.6?
+	clra
+	bra	.7?
+.6?
+	ldx	#HUMFORM
+	ldb	HUMSTEP
+	decb
+	bne	.8?
+	ldb	#HUMSIZE
+.8?	stb	HUMSTEP
+	eorb	#(HUMSIZE/2)
+	lda	b,x
+.7?	sta	$ff20
 
 	lda	$ff23		Disable MUX audio output
 	anda	#$f7
@@ -2584,6 +2626,12 @@ ISTSYNC	lda	#$00		Select DAC audio source
 	ora	#$38
 	sta	$ff23
 
+	tst	NOTEINC		Bump the DAC, only when notes are playing
+	beq	.1?
+	ldx	#HUMFORM
+	ldb	HUMSTEP
+	lda	b,x
+	sta	$ff20
 .1?	lda	$ff03		Wait for Vsync
 	bmi	.3?
 	lda	$ff01
@@ -2619,7 +2667,20 @@ ISTSYNC	lda	#$00		Select DAC audio source
 	lda	#WAVESIZ
 	sta	NOTESTP
 .4?	stx	NOTENXT
-.5?	clr	$ff20		Clear the DAC output (helps w/ noise)
+.5?	tst	NOTEINC		Reset the DAC output (helps w/ noise)
+	bne	.6?
+	clra
+	bra	.7?
+.6?
+	ldx	#HUMFORM
+	ldb	HUMSTEP
+	decb
+	bne	.8?
+	ldb	#HUMSIZE
+.8?	stb	HUMSTEP
+	eorb	#(HUMSIZE/2)
+	lda	b,x
+.7?	sta	$ff20
 
 	lda	$ff23		Disable MUX audio output
 	anda	#$f7
@@ -3274,6 +3335,8 @@ HOFDFLT	fcb	$42,$45,$51
 
 WAVEFRM	fcb	$50,$44,$58,$78,$b0,$bc,$a8,$88
 WAVESIZ	equ	*-WAVEFRM
+HUMFORM	fcb	$7c,$70,$72,$7e,$84,$90,$8e,$82
+HUMSIZE	equ	*-HUMFORM
 
 NOTE_F2	equ	23294		Actually "F5"...
 NOTE_E	equ	21987
