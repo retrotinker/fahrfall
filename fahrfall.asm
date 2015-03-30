@@ -1888,6 +1888,7 @@ HFIPAU1	lda	$ff03		Wait for Vsync
 	lda	$ff02
 
 	jsr	PSHBTN2		Dummy input check to preserve blinking
+	bcs	HFIPAU1		Continue to pause while button is pressed
 
 	dec	,s		Decrement time-out counter
 	bne	HFIPAU1
@@ -1935,6 +1936,9 @@ HFIEXIT	lda	#$0f		Init time-out counter values
 HFIEXT1	lda	$ff03		Wait for Vsync
 	bpl	HFIEXT1
 	lda	$ff02
+
+	jsr	PSHBTN2		Do not exit if button remains pressed
+	bcs	HFIEXT1
 
 	dec	,s		Decrement time-out counter
 	bne	HFIEXT1
