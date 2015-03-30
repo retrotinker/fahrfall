@@ -2043,6 +2043,11 @@ INTRO	jsr	CLRSCRN		Clear the screen to black
 	lda	#CPYS2LN
 	jsr	DRWSTR
 
+	ldx	#CCFESTR	Indicate that this is a special release...
+	ldy	#(SCNBASE+48*SCNWIDT+6)
+	lda	#(CCFESLN-CCFESTR)
+	jsr	DRWSTR
+
 	leas	-2,s		Init time-out counter values
 	lda	#$10
 	sta	1,s
@@ -3240,10 +3245,10 @@ ININDAT	fcb	$fc,$fe,$ff,$ff,$c7,$c3,$c3,$c3
 	fcb	$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0
 
 *
-* Data for "COPYRIGHT 2014"
+* Data for "COPYRIGHT 2015"
 *
 CPYSTR1	fcb	$60,$43,$4f,$50,$59,$52,$49,$47
-	fcb	$48,$54,$60,$72,$70,$71,$74,$60
+	fcb	$48,$54,$60,$72,$70,$71,$75,$60
 CPYS1ND	equ	*
 CPYS1LN	equ	(CPYS1ND-CPYSTR1)
 
@@ -4015,5 +4020,13 @@ SNGSTRT	fcb	$15
 	fdb	00
 
 SONGEND	equ	*
+
+*
+* Data for "COCOFEST! EDITION"
+*
+CCFESTR	fcb	$20,$03,$0f,$03,$0f,$06,$05,$13
+	fcb	$14,$21,$20,$05,$04,$09,$14,$09
+	fcb	$0f,$0e,$20
+CCFESLN	equ	*
 
 	end	INIT
