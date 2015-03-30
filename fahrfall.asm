@@ -2154,7 +2154,11 @@ ITIMOUT	dec	,s		Decrement time-out counter
 
 ILOOP	lbra	ISYNC
 
-INTRXCS	leas	2,s		Clean-up stack
+INTRXCS	jsr	[INPREAD]	Read input, flags returned in B
+	andb	#JOYBTN		Only check for button press
+	bne	INTRXCS		Do not exit if button still pressed
+
+	leas	2,s		Clean-up stack
 	orcc	#$01		Indicate game start
 	rts
 
@@ -2709,7 +2713,11 @@ ISTEXCK	lda	,s		Delay before checking for keypress
 
 ISTLOOP	lbra	ISTSYNC
 
-ISTEXIT	leas	2,s
+ISTEXIT	jsr	[INPREAD]	Read input, flags returned in B
+	andb	#JOYBTN		Only check for button press
+	bne	ISTEXIT		Do not exit if button still pressed
+
+	leas	2,s
 	rts
 
 *
