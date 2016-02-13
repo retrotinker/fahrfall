@@ -221,6 +221,13 @@ INIT	equ	*		Basic one-time setup goes here!
 
 	clr	$ffc5		Select SG12 mode
 
+	lda	#$80		Select DAC audio source
+	sta	$ff20
+	lda	#$34
+	sta	$ff01
+	lda	#$34
+	sta	$ff03
+
 	lda	#$08		Set PIA data value for orange text color set
 	ora	$ff22
 *	ora	#SQWVBIT	Set PIA data value for sound output "high"
@@ -395,14 +402,7 @@ PLTDINI	sta	PLTFRMS+PLTDATA
 	clr	NOTETKO+1
 
 * Main game loop is from here to VLOOP
-VSYNC	lda	#$00		Select DAC audio source
-	sta	$ff20
-	lda	#$34
-	sta	$ff01
-	lda	#$34
-	sta	$ff03
-
-	lda	$ff23		Enable MUX audio output
+VSYNC	lda	$ff23		Enable MUX audio output
 	ora	#$38
 	sta	$ff23
 
@@ -1796,14 +1796,7 @@ HFISCRN	pshs	y		Save pointer to new HOF initials
 	sta	HFIINC
 	sta	HFIRST
 
-HFISYNC	lda	#$00		Select DAC audio source
-	sta	$ff20
-	lda	#$34
-	sta	$ff01
-	lda	#$34
-	sta	$ff03
-
-	lda	$ff23		Enable MUX audio output
+HFISYNC	lda	$ff23		Enable MUX audio output
 	ora	#$38
 	sta	$ff23
 
@@ -2068,14 +2061,7 @@ INTRO	jsr	CLRSCRN		Clear the screen to black
 	lda	#WAVESIZ
 	sta	NOTESTP
 
-ISYNC	lda	#$00		Select DAC audio source
-	sta	$ff20
-	lda	#$34
-	sta	$ff01
-	lda	#$34
-	sta	$ff03
-
-	lda	$ff23		Enable MUX audio output
+ISYNC	lda	$ff23		Enable MUX audio output
 	ora	#$38
 	sta	$ff23
 
@@ -2633,14 +2619,7 @@ ISTSCRN	jsr	CLRSCRN
 	lda	#WAVESIZ
 	sta	NOTESTP
 
-ISTSYNC	lda	#$00		Select DAC audio source
-	sta	$ff20
-	lda	#$34
-	sta	$ff01
-	lda	#$34
-	sta	$ff03
-
-	lda	$ff23		Enable MUX audio output
+ISTSYNC	lda	$ff23		Enable MUX audio output
 	ora	#$38
 	sta	$ff23
 
@@ -3087,6 +3066,11 @@ JOYRDUP	orb	#JOYUP		Joystick points up
 
 JYREADX	puls	a
 	sta	$ff20		Restore DAC value
+	lda	#$34
+	sta	$ff01
+	lda	#$34
+	sta	$ff03
+
 	rts
 
 *
