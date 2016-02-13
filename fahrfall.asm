@@ -2037,13 +2037,18 @@ INTRO	jsr	CLRSCRN		Clear the screen to black
 	jsr	DRWSTR
 
 	ldx	#CPYSTR1	Display the copyright info
-	ldy	#(SCNBASE+60*SCNWIDT+5)
+	ldy	#(SCNBASE+66*SCNWIDT+5)
 	lda	#CPYS1LN
 	jsr	DRWSTR
 
 	ldx	#CPYSTR2
-	ldy	#(SCNBASE+66*SCNWIDT+9)
+	ldy	#(SCNBASE+72*SCNWIDT+9)
 	lda	#CPYS2LN
+	jsr	DRWSTR
+
+	ldx	#GOLDSTR	Indicate that this is the "final" release...
+	ldy	#(SCNBASE+48*SCNWIDT+8)
+	lda	#(GOLDSLN-GOLDSTR)
 	jsr	DRWSTR
 
 	leas	-2,s		Init time-out counter values
@@ -4009,5 +4014,12 @@ SNGSTRT	fcb	$15
 	fdb	00
 
 SONGEND	equ	*
+
+*
+* Data for "GOLDEN EDITION"
+*
+GOLDSTR	fcb	$20,$07,$0f,$0c,$04,$05,$0e,$20
+	fcb	$05,$04,$09,$14,$09,$0f,$0e,$20
+GOLDSLN	equ	*
 
 	end	INIT
