@@ -107,6 +107,7 @@ MOVDN	equ	JOYDN
 PBTCNTI	equ	64
 
 SQWVBIT	equ	$02
+SOUTBIT	equ	$02
 
 KBROWCC	equ	$08		Row to check for space/left/right keys on CoCo
 KBROWDG	equ	$20		Row to check for space/left/right keys on Dragon
@@ -228,6 +229,15 @@ INIT	equ	*		Basic one-time setup goes here!
 	sta	SNDHDAT		Actually, default to "high" same as "low" (sound off)
 	sta	SNDLDAT		Store PIA data value for sound output "low"
 	sta	$ff22
+
+	lda	$ff21		disable serial port output
+	anda	#$fb
+	sta	$ff21
+	ldb	$ff20
+	andb	#(~SOUTBIT)
+	stb	$ff20
+	ora	#$04
+	sta	$ff21
 
 	lda	$ff23
 	anda	#$fb
