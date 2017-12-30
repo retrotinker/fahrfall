@@ -3349,14 +3349,19 @@ WAVESIZ	equ	*-WAVEFRM
 HUMFORM	fcb	$7c,$70,$72,$7e,$84,$90,$8e,$82
 HUMSIZE	equ	*-HUMFORM
 
-NOTE_F2	equ	23294		Actually "F5"...
-NOTE_E	equ	21987
-NOTE_D	equ	19588
-NOTE_C	equ	17451
-NOTE_B	equ	16471
-NOTE_A	equ	14674
-NOTE_G	equ	13073
-NOTE_F	equ	11647		Actually "F4"...
+*
+* Multiply note value by 0.029983521 for note frequency (multiplied by 2?)
+*	(value is 15720 / (8 * 65536))
+*
+*							target		calculated	n		int(n)		hex(n)				encoded
+NOTE_F2	equ	23294		Actually "F5"...	698.46		698.436		178.971		179		0B3	00 1011 0011		83 0B
+NOTE_E	equ	21987					659.25		659.247		189.610		190		0BE	00 1011 1110		8E 0B
+NOTE_D	equ	19588					587.33		587.317		212.832		213		0D5	00 1101 0101		85 0D
+NOTE_C	equ	17451					523.25		523.242		238.895		239		0EF	00 1110 1111		8F 0E
+NOTE_B	equ	16471					493.88		493.858		253.109		253		0FD	00 1111 1101		8D 0F
+NOTE_A	equ	14674					440.00		439.978		284.105		284		11C	01 0001 1100		8C 11
+NOTE_G	equ	13073					392.00		391.974		318.899		319		13F	01 0011 1111		8F 13
+NOTE_F	equ	11647		Actually "F4"...	349.23		349.218		357.943		358		166	01 0110 0110		86 16
 
 OVTSTRT	fcb	$40		Start with a delay, so "FAHRFALL" can paint...
 	fdb	00
