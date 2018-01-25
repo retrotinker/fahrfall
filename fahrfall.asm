@@ -3239,10 +3239,10 @@ ININDAT	fcb	$fc,$fe,$ff,$ff,$c7,$c3,$c3,$c3
 	fcb	$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0
 
 *
-* Data for "COPYRIGHT 2016"
+* Data for "COPYRIGHT 2018"
 *
 CPYSTR1	fcb	$60,$43,$4f,$50,$59,$52,$49,$47
-	fcb	$48,$54,$60,$72,$70,$71,$76,$60
+	fcb	$48,$54,$60,$72,$70,$71,$78,$60
 CPYS1ND	equ	*
 CPYS1LN	equ	(CPYS1ND-CPYSTR1)
 
