@@ -3653,13 +3653,18 @@ NOTE_F	equ	11647		Actually "F4"...	349.23		349.218		357.943		358		165	01 0110 01
 OVTSTRT	fcb	$40
 	fcb	$01,$9f
 	fcb	$01
-	fcb	$03,$85,$16,$98
+	fcb	$09,$85,$16,$98
+	fcb	$ac,$11,$b8
+	fcb	$c9,$1a,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$08
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$04
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
 	fcb	$03,$8e,$13,$98
 	fcb	$01
@@ -3693,13 +3698,18 @@ OVTSTRT	fcb	$40
 	fcb	$04
 	fcb	$01,$9f
 	fcb	$01
-	fcb	$03,$8e,$13,$98
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$08
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$04
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
 	fcb	$03,$8c,$11,$98
 	fcb	$01
@@ -3717,21 +3727,31 @@ OVTSTRT	fcb	$40
 	fcb	$02
 	fcb	$01,$9f
 	fcb	$01
-	fcb	$03,$8e,$0e,$98
+	fcb	$09,$8e,$0e,$98
+	fcb	$ae,$0b,$b8
+	fcb	$cc,$11,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$0b
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$10
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$8f,$0b,$98
+	fcb	$09,$8f,$0b,$98
+	fcb	$af,$09,$b8
+	fcb	$ce,$0e,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$08
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$04
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
 	fcb	$03,$87,$0d,$98
 	fcb	$01
@@ -3749,21 +3769,33 @@ OVTSTRT	fcb	$40
 	fcb	$02
 	fcb	$01,$9f
 	fcb	$01
-	fcb	$03,$8d,$0f,$98
+*
+	fcb	$09,$8d,$0f,$98
+	fcb	$a5,$0d,$b8
+	fcb	$ce,$13,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$0d
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$10
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$8e,$0e,$98
+*
+	fcb	$09,$8e,$0e,$98
+	fcb	$ae,$0b,$b8
+	fcb	$cc,$11,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$08
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$04
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
 	fcb	$03,$8d,$0f,$98
 	fcb	$01
@@ -3781,21 +3813,33 @@ OVTSTRT	fcb	$40
 	fcb	$02
 	fcb	$01,$9f
 	fcb	$01
-	fcb	$03,$8e,$13,$98
+*
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$b8
+	fcb	$cc,$16,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$0d
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$0f
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$8e,$13,$98
+*
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$b8
+	fcb	$cc,$16,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$08
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$04
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
 	fcb	$03,$8c,$11,$98
 	fcb	$01
@@ -3813,29 +3857,47 @@ OVTSTRT	fcb	$40
 	fcb	$02
 	fcb	$01,$9f
 	fcb	$01
-	fcb	$03,$8e,$0e,$98
+*
+	fcb	$09,$8e,$0e,$98
+	fcb	$af,$0b,$b8
+	fcb	$cc,$11,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$0d
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$8d,$0f,$98
+*
+	fcb	$09,$8d,$0f,$98
+	fcb	$a5,$0d,$b8
+	fcb	$ce,$13,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$0d
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$04
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$8c,$11,$98
+*
+	fcb	$09,$8c,$11,$98
+	fcb	$ae,$0e,$b8
+	fcb	$c5,$16,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$08
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$04
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
 	fcb	$03,$8d,$0f,$98
 	fcb	$01
@@ -3853,21 +3915,33 @@ OVTSTRT	fcb	$40
 	fcb	$02
 	fcb	$01,$9f
 	fcb	$01
-	fcb	$03,$87,$0d,$98
+*
+	fcb	$09,$87,$0d,$98
+	fcb	$a3,$0b,$b8
+	fcb	$cd,$0f,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$0b
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$10
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$84,$0b,$98
+*
+	fcb	$09,$83,$0b,$98
+	fcb	$ae,$08,$b8
+	fcb	$c7,$0d,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$08
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$04
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
 	fcb	$03,$8f,$0b,$98
 	fcb	$01
@@ -3885,13 +3959,19 @@ OVTSTRT	fcb	$40
 	fcb	$02
 	fcb	$01,$9f
 	fcb	$01
-	fcb	$03,$8e,$0e,$98
+*
+	fcb	$09,$8e,$0e,$98
+	fcb	$af,$0b,$b8
+	fcb	$cc,$11,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$0b
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$04
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
 	fcb	$03,$8c,$11,$98
 	fcb	$01
@@ -3909,31 +3989,55 @@ OVTSTRT	fcb	$40
 	fcb	$02
 	fcb	$01,$9f
 	fcb	$01
+*
+*	fcb	$09,$8c,$11,$98
+*	fcb	$ae,$0e,$b8
+*	fcb	$c5,$16,$d8
 	fcb	$03,$8c,$11,$98
+*
 	fcb	$01
+*	fcb	$03,$94
+*	fcb	$b4,$d4
 	fcb	$01,$94
+*
 	fcb	$0d
+*	fcb	$03,$9c
+*	fcb	$bc,$dc
 	fcb	$01,$9c
+*
 	fcb	$14
+*	fcb	$03,$9f
+*	fcb	$bf,$df
 	fcb	$01,$9f
+*
 	fcb	$01
-	fcb	$03,$8c,$11,$98
+	fcb	$09,$8c,$11,$98
+	fcb	$ae,$0e,$b8
+	fcb	$c5,$16,$d8
 	fcb	$01
-	fcb	$01,$94
-	fcb	$05
-	fcb	$01,$9c
-	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$0a
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$01
+	fcb	$03,$9f
+	fcb	$bf,$df
 OVRTEND	equ	*
 
 PRLSTRT	fcb	$01
-	fcb	$03,$8e,$0e,$98
+	fcb	$09,$8e,$0e,$98
+	fcb	$ae,$0b,$b8
+	fcb	$cc,$11,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$13
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
 	fcb	$03,$8d,$0f,$98
 	fcb	$01
@@ -3943,21 +4047,31 @@ PRLSTRT	fcb	$01
 	fcb	$02
 	fcb	$01,$9f
 	fcb	$01
-	fcb	$03,$8c,$11,$98
+	fcb	$09,$8c,$11,$98
+	fcb	$ae,$0e,$b8
+	fcb	$c5,$16,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$13
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$8e,$13,$98
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$13
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
 	fcb	$03,$8d,$0f,$98
 	fcb	$01
@@ -3967,13 +4081,18 @@ PRLSTRT	fcb	$01
 	fcb	$02
 	fcb	$01,$9f
 	fcb	$01
-	fcb	$03,$8c,$11,$98
+	fcb	$09,$8c,$11,$98
+	fcb	$ae,$0e,$b8
+	fcb	$c5,$16,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$13
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
 	fcb	$03,$8e,$13,$98
 	fcb	$01
@@ -3983,23 +4102,36 @@ PRLSTRT	fcb	$01
 	fcb	$02
 	fcb	$01,$9f
 	fcb	$01
-	fcb	$03,$85,$16,$98
+	fcb	$09,$85,$16,$98
+	fcb	$ac,$11,$b8
+	fcb	$c9,$1a,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$1b
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 PRELEND	equ	*
 
-SNGSTRT	fcb	$01
-	fcb	$03,$85,$16,$98
+SNGSTRT
+*#
 	fcb	$01
-	fcb	$01,$94
+*
+	fcb	$09,$85,$16,$98
+	fcb	$ac,$11,$b8
+	fcb	$c9,$1a,$d8
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$13
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
 	fcb	$03,$8e,$13,$98
 	fcb	$01
@@ -4033,13 +4165,19 @@ SNGSTRT	fcb	$01
 	fcb	$02
 	fcb	$01,$9f
 	fcb	$01
-	fcb	$03,$8c,$11,$98
+*
+	fcb	$09,$8c,$11,$98
+	fcb	$ae,$0e,$b8
+	fcb	$c5,$16,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$0f
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$06
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
 	fcb	$03,$8e,$13,$98
 	fcb	$01
@@ -4049,21 +4187,34 @@ SNGSTRT	fcb	$01
 	fcb	$06
 	fcb	$01,$9f
 	fcb	$01
-	fcb	$03,$85,$16,$98
+*
+	fcb	$09,$85,$16,$98
+	fcb	$ac,$11,$b8
+	fcb	$c9,$1a,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$1b
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$21
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$85,$16,$98
+*#<
+*
+	fcb	$09,$85,$16,$98
+	fcb	$ac,$11,$b8
+	fcb	$c9,$1a,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$13
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
 	fcb	$03,$8e,$13,$98
 	fcb	$01
@@ -4073,21 +4224,33 @@ SNGSTRT	fcb	$01
 	fcb	$02
 	fcb	$01,$9f
 	fcb	$01
-	fcb	$03,$8c,$11,$98
+*
+	fcb	$09,$8c,$11,$98
+	fcb	$ae,$0e,$b8
+	fcb	$c5,$16,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$13
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$8e,$13,$98
+*
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$13
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
 	fcb	$03,$8d,$0f,$98
 	fcb	$01
@@ -4097,13 +4260,19 @@ SNGSTRT	fcb	$01
 	fcb	$02
 	fcb	$01,$9f
 	fcb	$01
-	fcb	$03,$8c,$11,$98
+*
+	fcb	$09,$8c,$11,$98
+	fcb	$ae,$0e,$b8
+	fcb	$c5,$16,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$0f
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$06
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
 	fcb	$03,$8e,$13,$98
 	fcb	$01
@@ -4113,21 +4282,33 @@ SNGSTRT	fcb	$01
 	fcb	$06
 	fcb	$01,$9f
 	fcb	$01
-	fcb	$03,$85,$16,$98
+*
+	fcb	$09,$85,$16,$98
+	fcb	$ac,$11,$b8
+	fcb	$c9,$1a,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$1b
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$21
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$85,$16,$98
+*
+	fcb	$09,$85,$16,$98
+	fcb	$ac,$11,$b8
+	fcb	$c9,$1a,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$13
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
 	fcb	$03,$8e,$13,$98
 	fcb	$01
@@ -4137,21 +4318,33 @@ SNGSTRT	fcb	$01
 	fcb	$02
 	fcb	$01,$9f
 	fcb	$01
-	fcb	$03,$8c,$11,$98
+*
+	fcb	$09,$8c,$11,$98
+	fcb	$ae,$0e,$b8
+	fcb	$c5,$16,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$13
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$8e,$13,$98
+*
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$13
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
 	fcb	$03,$8d,$0f,$98
 	fcb	$01
@@ -4161,101 +4354,174 @@ SNGSTRT	fcb	$01
 	fcb	$02
 	fcb	$01,$9f
 	fcb	$01
-	fcb	$03,$8c,$11,$98
+*
+	fcb	$09,$8c,$11,$98
+	fcb	$ae,$0e,$b8
+	fcb	$c5,$16,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$0f
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$06
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$8e,$13,$98
+*
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$0f
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$06
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$85,$16,$98
+*
+	fcb	$09,$85,$16,$98
+	fcb	$ac,$11,$b8
+	fcb	$c9,$1a,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$1b
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$21
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$85,$16,$98
+*
+	fcb	$09,$85,$16,$98
+	fcb	$ac,$11,$b8
+	fcb	$c9,$1a,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$13
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$8e,$13,$98
+*
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$0b
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$8c,$11,$98
+*
+	fcb	$09,$8c,$11,$98
+	fcb	$ae,$0e,$b8
+	fcb	$c5,$16,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$13
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$8e,$13,$98
+*
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$13
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$8d,$0f,$98
+*
+	fcb	$09,$8d,$0f,$98
+	fcb	$a5,$0d,$b8
+	fcb	$ce,$13,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$0b
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$8c,$11,$98
+*
+	fcb	$09,$8c,$11,$98
+	fcb	$ae,$0e,$b8
+	fcb	$c5,$16,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$0f
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$06
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$8e,$13,$98
+*
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$0f
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$06
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$85,$16,$98
+*
+	fcb	$09,$85,$16,$98
+	fcb	$ac,$11,$b8
+	fcb	$c9,$1a,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$1b
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$21
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
+*#>
 	fcb	$01
-	fcb	$03,$8f,$0b,$98
+*
+	fcb	$09,$8f,$0b,$98
+	fcb	$af,$09,$b8
+	fcb	$ce,$0e,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$13
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
 	fcb	$03,$87,$0d,$98
 	fcb	$01
@@ -4265,21 +4531,33 @@ SNGSTRT	fcb	$01
 	fcb	$02
 	fcb	$01,$9f
 	fcb	$01
-	fcb	$03,$8f,$0b,$98
+*
+	fcb	$09,$8f,$0b,$98
+	fcb	$af,$09,$b8
+	fcb	$ce,$0e,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$0b
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$8e,$0e,$98
+*
+	fcb	$09,$8e,$0e,$98
+	fcb	$ae,$0b,$b8
+	fcb	$cc,$11,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$25
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$0c
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
 	fcb	$03,$8e,$0e,$98
 	fcb	$01
@@ -4305,21 +4583,486 @@ SNGSTRT	fcb	$01
 	fcb	$02
 	fcb	$01,$9f
 	fcb	$01
-	fcb	$03,$87,$0d,$98
+*
+	fcb	$09,$87,$0d,$98
+	fcb	$a3,$0b,$b8
+	fcb	$cd,$0f,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$1d
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$1a
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+*#<
+*
+	fcb	$09,$85,$16,$98
+	fcb	$ac,$11,$b8
+	fcb	$c9,$1a,$d8
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$13
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$02
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+	fcb	$03,$8e,$13,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$0b
+	fcb	$01,$9c
+	fcb	$02
+	fcb	$01,$9f
+	fcb	$01
+*
+	fcb	$09,$8c,$11,$98
+	fcb	$ae,$0e,$b8
+	fcb	$c5,$16,$d8
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$13
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$02
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+*
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$13
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$02
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+	fcb	$03,$8d,$0f,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$0b
+	fcb	$01,$9c
+	fcb	$02
+	fcb	$01,$9f
+	fcb	$01
+*
+	fcb	$09,$8c,$11,$98
+	fcb	$ae,$0e,$b8
+	fcb	$c5,$16,$d8
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$0f
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$06
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+	fcb	$03,$8e,$13,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$0f
+	fcb	$01,$9c
+	fcb	$06
+	fcb	$01,$9f
+	fcb	$01
+*
+	fcb	$09,$85,$16,$98
+	fcb	$ac,$11,$b8
+	fcb	$c9,$1a,$d8
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$1b
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$21
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+*
+	fcb	$09,$85,$16,$98
+	fcb	$ac,$11,$b8
+	fcb	$c9,$1a,$d8
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$13
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$02
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+	fcb	$03,$8e,$13,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$0b
+	fcb	$01,$9c
+	fcb	$02
+	fcb	$01,$9f
+	fcb	$01
+*
+	fcb	$09,$8c,$11,$98
+	fcb	$ae,$0e,$b8
+	fcb	$c5,$16,$d8
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$13
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$02
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+*
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$13
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$02
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+	fcb	$03,$8d,$0f,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$0b
+	fcb	$01,$9c
+	fcb	$02
+	fcb	$01,$9f
+	fcb	$01
+*
+	fcb	$09,$8c,$11,$98
+	fcb	$ae,$0e,$b8
+	fcb	$c5,$16,$d8
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$0f
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$06
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+*
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$0f
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$06
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+*
+	fcb	$09,$85,$16,$98
+	fcb	$ac,$11,$b8
+	fcb	$c9,$1a,$d8
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$1b
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$21
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+*
+	fcb	$09,$85,$16,$98
+	fcb	$ac,$11,$b8
+	fcb	$c9,$1a,$d8
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$13
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$02
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+*
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$0b
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$02
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+*
+	fcb	$09,$8c,$11,$98
+	fcb	$ae,$0e,$b8
+	fcb	$c5,$16,$d8
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$13
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$02
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+*
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$13
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$02
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+*
+	fcb	$09,$8d,$0f,$98
+	fcb	$a5,$0d,$b8
+	fcb	$ce,$13,$d8
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$0b
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$02
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+*
+	fcb	$09,$8c,$11,$98
+	fcb	$ae,$0e,$b8
+	fcb	$c5,$16,$d8
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$0f
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$06
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+*
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$0f
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$06
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+*
+	fcb	$09,$85,$16,$98
+	fcb	$ac,$11,$b8
+	fcb	$c9,$1a,$d8
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$1b
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$21
+	fcb	$03,$9f
+	fcb	$bf,$df
+*#>
+	fcb	$01
+	fcb	$03,$8f,$0b,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$13
+	fcb	$01,$9c
+	fcb	$02
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$03,$87,$0d,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$13
+	fcb	$01,$9c
+	fcb	$02
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$03,$8f,$0b,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$0b
+	fcb	$01,$9c
+	fcb	$02
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$03,$87,$0d,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$1b
+	fcb	$01,$9c
+	fcb	$0a
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$03,$8f,$0b,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$13
+	fcb	$01,$9c
+	fcb	$02
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$03,$87,$0d,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$13
+	fcb	$01,$9c
+	fcb	$02
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$03,$8f,$0b,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$0b
+	fcb	$01,$9c
+	fcb	$02
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$03,$8e,$0e,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$1b
+	fcb	$01,$9c
+	fcb	$0a
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$03,$8f,$0b,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$13
+	fcb	$01,$9c
+	fcb	$02
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$03,$87,$0d,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$13
+	fcb	$01,$9c
+	fcb	$02
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$03,$8f,$0b,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$0b
+	fcb	$01,$9c
+	fcb	$02
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$03,$87,$0d,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$1b
+	fcb	$01,$9c
+	fcb	$02
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$03,$87,$0d,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$0b
+	fcb	$01,$9c
+	fcb	$02
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$03,$87,$0d,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$1b
+	fcb	$01,$9c
+	fcb	$0a
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$03,$8e,$0e,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$0b
+	fcb	$01,$9c
+	fcb	$02
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$03,$87,$0d,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$0f
+	fcb	$01,$9c
+	fcb	$02
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$03,$8f,$0b,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$0b
+	fcb	$01,$9c
+	fcb	$02
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$03,$87,$0d,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$0f
 	fcb	$01,$9c
 	fcb	$1a
 	fcb	$01,$9f
 	fcb	$01
-	fcb	$03,$85,$16,$98
+*#<
+*
+	fcb	$09,$85,$16,$98
+	fcb	$ac,$11,$b8
+	fcb	$c9,$1a,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$13
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
 	fcb	$03,$8e,$13,$98
 	fcb	$01
@@ -4329,21 +5072,33 @@ SNGSTRT	fcb	$01
 	fcb	$02
 	fcb	$01,$9f
 	fcb	$01
-	fcb	$03,$8c,$11,$98
+*
+	fcb	$09,$8c,$11,$98
+	fcb	$ae,$0e,$b8
+	fcb	$c5,$16,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$13
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$8e,$13,$98
+*
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$13
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
 	fcb	$03,$8d,$0f,$98
 	fcb	$01
@@ -4353,13 +5108,19 @@ SNGSTRT	fcb	$01
 	fcb	$02
 	fcb	$01,$9f
 	fcb	$01
-	fcb	$03,$8c,$11,$98
+*
+	fcb	$09,$8c,$11,$98
+	fcb	$ae,$0e,$b8
+	fcb	$c5,$16,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$0f
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$06
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
 	fcb	$03,$8e,$13,$98
 	fcb	$01
@@ -4369,21 +5130,33 @@ SNGSTRT	fcb	$01
 	fcb	$06
 	fcb	$01,$9f
 	fcb	$01
-	fcb	$03,$85,$16,$98
+*
+	fcb	$09,$85,$16,$98
+	fcb	$ac,$11,$b8
+	fcb	$c9,$1a,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$1b
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$21
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$85,$16,$98
+*
+	fcb	$09,$85,$16,$98
+	fcb	$ac,$11,$b8
+	fcb	$c9,$1a,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$13
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
 	fcb	$03,$8e,$13,$98
 	fcb	$01
@@ -4393,21 +5166,33 @@ SNGSTRT	fcb	$01
 	fcb	$02
 	fcb	$01,$9f
 	fcb	$01
-	fcb	$03,$8c,$11,$98
+*
+	fcb	$09,$8c,$11,$98
+	fcb	$ae,$0e,$b8
+	fcb	$c5,$16,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$13
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$8e,$13,$98
+*
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$13
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
 	fcb	$03,$8d,$0f,$98
 	fcb	$01
@@ -4417,499 +5202,278 @@ SNGSTRT	fcb	$01
 	fcb	$02
 	fcb	$01,$9f
 	fcb	$01
-	fcb	$03,$8c,$11,$98
+*
+	fcb	$09,$8c,$11,$98
+	fcb	$ae,$0e,$b8
+	fcb	$c5,$16,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$0f
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$06
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$8e,$13,$98
+*
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$0f
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$06
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$85,$16,$98
+*
+	fcb	$09,$85,$16,$98
+	fcb	$ac,$11,$b8
+	fcb	$c9,$1a,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$1b
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$21
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$85,$16,$98
+*
+	fcb	$09,$85,$16,$98
+	fcb	$ac,$11,$b8
+	fcb	$c9,$1a,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$13
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$8e,$13,$98
+*
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$0b
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$8c,$11,$98
+*
+	fcb	$09,$8c,$11,$98
+	fcb	$ae,$0e,$b8
+	fcb	$c5,$16,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$13
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$8e,$13,$98
+*
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$13
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$8d,$0f,$98
+*
+	fcb	$09,$8d,$0f,$98
+	fcb	$a5,$0d,$b8
+	fcb	$ce,$13,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$0b
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$02
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$8c,$11,$98
+*
+	fcb	$09,$8c,$11,$98
+	fcb	$ae,$0e,$b8
+	fcb	$c5,$16,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$0f
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$06
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$8e,$13,$98
+*
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$0f
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$06
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$85,$16,$98
+*
+	fcb	$09,$85,$16,$98
+	fcb	$ac,$11,$b8
+	fcb	$c9,$1a,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$1b
-	fcb	$01,$9c
-	fcb	$31
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$8f,$0b,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$13
-	fcb	$01,$9c
-	fcb	$02
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$87,$0d,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$13
-	fcb	$01,$9c
-	fcb	$02
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$8f,$0b,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$0b
-	fcb	$01,$9c
-	fcb	$02
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$87,$0d,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$1b
-	fcb	$01,$9c
-	fcb	$0a
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$8f,$0b,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$13
-	fcb	$01,$9c
-	fcb	$02
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$87,$0d,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$13
-	fcb	$01,$9c
-	fcb	$02
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$8f,$0b,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$0b
-	fcb	$01,$9c
-	fcb	$02
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$8e,$0e,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$1b
-	fcb	$01,$9c
-	fcb	$0a
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$8f,$0b,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$13
-	fcb	$01,$9c
-	fcb	$02
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$87,$0d,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$13
-	fcb	$01,$9c
-	fcb	$02
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$8f,$0b,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$0b
-	fcb	$01,$9c
-	fcb	$02
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$87,$0d,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$1b
-	fcb	$01,$9c
-	fcb	$02
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$87,$0d,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$0b
-	fcb	$01,$9c
-	fcb	$02
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$87,$0d,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$1b
-	fcb	$01,$9c
-	fcb	$0a
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$8e,$0e,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$0b
-	fcb	$01,$9c
-	fcb	$02
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$87,$0d,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$0f
-	fcb	$01,$9c
-	fcb	$02
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$8f,$0b,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$0b
-	fcb	$01,$9c
-	fcb	$02
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$87,$0d,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$0f
-	fcb	$01,$9c
-	fcb	$1a
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$85,$16,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$13
-	fcb	$01,$9c
-	fcb	$02
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$8e,$13,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$0b
-	fcb	$01,$9c
-	fcb	$02
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$8c,$11,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$13
-	fcb	$01,$9c
-	fcb	$02
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$8e,$13,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$13
-	fcb	$01,$9c
-	fcb	$02
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$8d,$0f,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$0b
-	fcb	$01,$9c
-	fcb	$02
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$8c,$11,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$0f
-	fcb	$01,$9c
-	fcb	$06
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$8e,$13,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$0f
-	fcb	$01,$9c
-	fcb	$06
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$85,$16,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$1b
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$21
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
+*#>
 	fcb	$01
-	fcb	$03,$85,$16,$98
+*
+	fcb	$09,$8f,$0b,$98
+	fcb	$af,$09,$b8
+	fcb	$ce,$0e,$d8
 	fcb	$01
-	fcb	$01,$94
-	fcb	$13
-	fcb	$01,$9c
-	fcb	$02
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$8e,$13,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$0b
-	fcb	$01,$9c
-	fcb	$02
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$8c,$11,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$13
-	fcb	$01,$9c
-	fcb	$02
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$8e,$13,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$13
-	fcb	$01,$9c
-	fcb	$02
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$8d,$0f,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$0b
-	fcb	$01,$9c
-	fcb	$02
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$8c,$11,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$0f
-	fcb	$01,$9c
-	fcb	$06
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$8e,$13,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$0f
-	fcb	$01,$9c
-	fcb	$06
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$85,$16,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$1b
-	fcb	$01,$9c
-	fcb	$21
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$85,$16,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$13
-	fcb	$01,$9c
-	fcb	$02
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$8e,$13,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$0b
-	fcb	$01,$9c
-	fcb	$02
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$8c,$11,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$13
-	fcb	$01,$9c
-	fcb	$02
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$8e,$13,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$13
-	fcb	$01,$9c
-	fcb	$02
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$8d,$0f,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$0b
-	fcb	$01,$9c
-	fcb	$02
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$8c,$11,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$0f
-	fcb	$01,$9c
-	fcb	$06
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$8e,$13,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$0f
-	fcb	$01,$9c
-	fcb	$06
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$85,$16,$98
-	fcb	$01
-	fcb	$01,$94
-	fcb	$1b
-	fcb	$01,$9c
-	fcb	$21
-	fcb	$01,$9f
-	fcb	$01
-	fcb	$03,$8f,$0b,$98
-	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$44
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$14
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$87,$0d,$98
+*
+	fcb	$09,$87,$0d,$98
+	fcb	$a3,$0b,$b8
+	fcb	$cd,$0f,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$44
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$14
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$07
 	fcb	$01,$9f
 	fcb	$01
-	fcb	$03,$8f,$0b,$98
+*
+	fcb	$09,$8f,$0b,$98
+	fcb	$af,$09,$b8
+	fcb	$ce,$0e,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$44
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$14
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$8e,$0e,$98
+*
+	fcb	$09,$8e,$0e,$98
+	fcb	$ae,$0b,$b8
+	fcb	$cc,$11,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$44
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$14
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$07
 	fcb	$01,$9f
 	fcb	$01
-	fcb	$03,$8f,$0b,$98
+*
+	fcb	$09,$8f,$0b,$98
+	fcb	$af,$09,$b8
+	fcb	$ce,$0e,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$44
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$14
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$87,$0d,$98
+*
+	fcb	$09,$87,$0d,$98
+	fcb	$a3,$0b,$b8
+	fcb	$cd,$0f,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$44
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$14
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$07
 	fcb	$01,$9f
 	fcb	$01
-	fcb	$03,$8f,$0b,$98
+*
+	fcb	$09,$8f,$0b,$98
+	fcb	$af,$09,$b8
+	fcb	$ce,$0e,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$44
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$14
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$01
-	fcb	$03,$8e,$0e,$98
+*
+	fcb	$09,$8e,$0e,$98
+	fcb	$ae,$0b,$b8
+	fcb	$cc,$11,$d8
 	fcb	$01
-	fcb	$01,$94
+	fcb	$03,$94
+	fcb	$b4,$d4
 	fcb	$44
-	fcb	$01,$9c
+	fcb	$03,$9c
+	fcb	$bc,$dc
 	fcb	$14
-	fcb	$01,$9f
+	fcb	$03,$9f
+	fcb	$bf,$df
 	fcb	$07
 	fcb	$01,$9f
 SONGEND	equ	*
