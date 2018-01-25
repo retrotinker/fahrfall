@@ -2178,9 +2178,9 @@ INTRO	jsr	CLRSCRN		Clear the screen to black
 	lda	#CPYS2LN
 	jsr	DRWSTR
 
-	ldx	#GOLDSTR	Indicate that this is the "final" release...
+	ldx	#MSTRSTR	Indicate that this is the "final" release...
 	ldy	#(SCNBASE+48*SCNWIDT+8)
-	lda	#(GOLDSLN-GOLDSTR)
+	lda	#(MSTRSLN-MSTRSTR)
 	jsr	DRWSTR
 
 	leas	-2,s		Init time-out counter values
@@ -6137,14 +6137,10 @@ SONGEND	equ	*
 	endif
 
 *
-* Data for "GOLDEN EDITION"
-* Data for "GAME MASTER WIP"
+* Data for "MASTER EDITION"
 *
-*GOLDSTR	fcb	$20,$07,$0f,$0c,$04,$05,$0e,$20
-*	fcb	$05,$04,$09,$14,$09,$0f,$0e,$20
-GOLDSTR fcb	$20,$07,$01,$0d,$05,$20,$0d,$01
-	fcb	$13,$14,$05,$12,$20,$17,$09,$10
-	fcb	$20
-GOLDSLN	equ	*
+MSTRSTR	fcb	$20,$0d,$01,$13,$14,$05,$12,$20
+	fcb	$05,$04,$09,$14,$09,$0f,$0e,$20
+MSTRSLN	equ	*
 
 	end	INIT
