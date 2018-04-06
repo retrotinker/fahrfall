@@ -352,6 +352,9 @@ INHOFLP	ldb	,x+
 	deca
 	bne	INHOFLP
 
+	jsr	DCNSCRN		Show Dedication screen
+	jsr	THXSCRN		Show Thanks screen
+
 RESTART	equ	*		New game starts here!
 
 	lda	#FRMCTIN	Initialize frame sequence counter
@@ -3144,6 +3147,135 @@ HOFEXCC	leas	2,s		Clean-up stack
 	rts
 
 *
+* "Dedication" screen is from here to DCNLOOP
+*
+DCNSCRN	jsr	CLRSCRN
+
+	ldx	#DCTNSTR	Draw the dedication
+	ldy	#(SCNBASE+12*SCNWIDT+10)
+	lda	#DCTNLEN
+	jsr	DRWSTR
+
+	ldx	#TMWKSTR
+	ldy	#(SCNBASE+30*SCNWIDT+7)
+	lda	#TMWKLEN
+	jsr	DRWSTR
+
+	ldx	#AOKDSTR
+	ldy	#(SCNBASE+48*SCNWIDT+9)
+	lda	#AOKDLEN
+	jsr	DRWSTR
+
+	ldx	#KNMSSTR
+	ldy	#(SCNBASE+54*SCNWIDT+3)
+	lda	#KNMSLEN
+	jsr	DRWSTR
+
+	ldx	#MFPTSTR
+	ldy	#(SCNBASE+72*SCNWIDT+3)
+	lda	#MFPTLEN
+	jsr	DRWSTR
+
+	leas	-2,s
+
+	lda	#$02		Init time-out counter values
+	sta	1,s
+	clr	,s
+
+DCNSYNC	lda	$ff03		Wait for Vsync
+	bpl	DCNSYNC
+	lda	$ff02
+
+	jsr	PUSHBTN		Check for input
+	bcs	DCNEXCS		Exit "Hall Of Fame" if carry set
+
+	dec	,s		Decrement time-out counter
+	bne	DCNLOOP
+	dec	1,s
+	beq	DCNEXCC
+
+DCNLOOP	bra	DCNSYNC
+
+DCNEXCS	jsr	[INPREAD]	Read input, flags returned in B
+	andb	#JOYBTN		Only check for button press
+	bne	DCNEXCS		Do not exit if button still pressed
+
+	leas	2,s		Clean-up stack
+	orcc	#$01		Indicate game start
+	rts
+
+DCNEXCC	leas	2,s		Clean-up stack
+	andcc	#$fe		Indicate time-out
+	rts
+
+*
+* "Thanks" screen is from here to THXLOOP
+*
+THXSCRN	jsr	CLRSCRN
+
+	ldx	#STHXSTR	Draw the special thanks
+	ldy	#(SCNBASE+12*SCNWIDT+(SCNWIDT-STHXLEN)/2)
+	lda	#STHXLEN
+	jsr	DRWSTR
+
+	ldx	#NBNMSTR
+	ldy	#(SCNBASE+24*SCNWIDT+(SCNWIDT-NBNMLEN)/2)
+	lda	#NBNMLEN
+	jsr	DRWSTR
+
+	ldx	#FFBFSTR
+	ldy	#(SCNBASE+30*SCNWIDT+(SCNWIDT-FFBFLEN)/2)
+	lda	#FFBFLEN
+	jsr	DRWSTR
+
+	ldx	#INSPSTR
+	ldy	#(SCNBASE+48*SCNWIDT+(SCNWIDT-INSPLEN)/2)
+	lda	#INSPLEN
+	jsr	DRWSTR
+
+	ldx	#LLAPSTR
+	ldy	#(SCNBASE+66*SCNWIDT+(SCNWIDT-LLAPLEN)/2)
+	lda	#LLAPLEN
+	jsr	DRWSTR
+
+	ldx	#ALWSSTR
+	ldy	#(SCNBASE+72*SCNWIDT+(SCNWIDT-ALWSLEN)/2)
+	lda	#ALWSLEN
+	jsr	DRWSTR
+
+	leas	-2,s
+
+	lda	#$02		Init time-out counter values
+	sta	1,s
+	clr	,s
+
+THXSYNC	lda	$ff03		Wait for Vsync
+	bpl	THXSYNC
+	lda	$ff02
+
+	jsr	PUSHBTN		Check for input
+	bcs	THXEXCS		Exit "Hall Of Fame" if carry set
+
+	dec	,s		Decrement time-out counter
+	bne	THXLOOP
+	dec	1,s
+	beq	THXEXCC
+
+THXLOOP	bra	THXSYNC
+
+THXEXCS	jsr	[INPREAD]	Read input, flags returned in B
+	andb	#JOYBTN		Only check for button press
+	bne	THXEXCS		Do not exit if button still pressed
+
+	leas	2,s		Clean-up stack
+	orcc	#$01		Indicate game start
+	rts
+
+THXEXCC	leas	2,s		Clean-up stack
+	andcc	#$fe		Indicate time-out
+	rts
+
+*
 * Display "PUSH BUTTON" message and check for input
 *
 *	A,B,X,Y get clobbered
@@ -3692,6 +3824,102 @@ WAVEFRM	fcb	$50,$44,$58,$78,$b0,$bc,$a8,$88
 WAVESIZ	equ	*-WAVEFRM
 HUMFORM	fcb	$7c,$70,$72,$7e,$84,$90,$8e,$82
 HUMSIZE	equ	*-HUMFORM
+
+*
+* Data for "DEDICATION"
+*
+DCTNSTR	fcb	$20,$04,$05,$04,$09,$03,$01,$14
+	fcb	$09,$0f,$0e,$20
+DCTNTND	equ	*
+DCTNLEN	equ	(DCTNTND-DCTNSTR)
+
+*
+* Data for "TO MY WIFE KRIS"
+*
+TMWKSTR	fcb	$60,$54,$4f,$60,$4d,$59,$60,$57
+	fcb	$49,$46,$45,$60,$4b,$52,$49,$53
+	fcb	$6c,$60
+TMWKEND	equ	*
+TMWKLEN	equ	(TMWKEND-TMWKSTR)
+
+*
+* Data for "AND OUR KIDS"
+*
+AOKDSTR	fcb	$60,$41,$4e,$44,$60,$4f,$55,$52
+	fcb	$60,$4b,$49,$44,$53,$60
+AOKDEND	equ	*
+AOKDLEN	equ	(AOKDEND-AOKDSTR)
+
+*
+* Data for "JANE, SARAH, AND JOHN JR"
+*
+KNMSSTR	fcb	$60,$4a,$41,$4e,$45,$6c,$60,$53
+	fcb	$41,$52,$41,$48,$6c,$60,$41,$4e
+	fcb	$44,$60,$4a,$4f,$48,$4e,$60,$4a
+	fcb	$52,$60
+KNMSEND	equ	*
+KNMSLEN	equ	(KNMSEND-KNMSSTR)
+
+*
+* Data for "MY FAVORITE PLAYTESTERS!"
+*
+MFPTSTR	fcb	$20,$0d,$19,$20,$06,$01,$16,$0f
+	fcb	$12,$09,$14,$05,$20,$10,$0c,$01
+	fcb	$19,$14,$05,$13,$14,$05,$12,$13
+	fcb	$21,$20
+MFPTEND	equ	*
+MFPTLEN	equ	(MFPTEND-MFPTSTR)
+
+*
+* Data for "SPECIAL THANKS"
+*
+STHXSTR	fcb	$20,$13,$10,$05,$03,$09,$01,$0c
+	fcb	$20,$14,$08,$01,$0e,$0b,$13,$20
+STHXTND	equ	*
+STHXLEN	equ	(STHXTND-STHXSTR)
+
+*
+* Data for "NEIL BLANCHARD"
+*
+NBNMSTR	fcb	$60,$4e,$45,$49,$4c,$60,$42,$4c
+	fcb	$41,$4e,$43,$48,$41,$52,$44,$60
+NBNMTND	equ	*
+NBNMLEN	equ	(NBNMTND-NBNMSTR)
+
+*
+* Data for "FAHRFALL'S BIGGEST FAN"
+*
+FFBFSTR	fcb	$60,$46,$41,$48,$52,$46,$41,$4c
+	fcb	$4c,$67,$53,$60,$42,$49,$47,$47
+	fcb	$45,$53,$54,$60,$46,$41,$4e,$60
+FFBFTND	equ	*
+FFBFLEN	equ	(FFBFTND-FFBFSTR)
+
+*
+* Data for "INSPIRATIONAL"
+*
+INSPSTR	fcb	$20,$09,$0e,$13,$10,$09,$12,$01
+	fcb	$14,$09,$0f,$0e,$01,$0c,$20
+INSPTND	equ	*
+INSPLEN	equ	(INSPTND-INSPSTR)
+
+*
+* Data for "LIVE LONG AND PROSPER..."
+*
+LLAPSTR	fcb	$60,$4c,$49,$56,$45,$60,$4c,$4f
+	fcb	$4e,$47,$60,$41,$4e,$44,$60,$50
+	fcb	$52,$4f,$53,$50,$45,$52,$6e,$6e
+	fcb	$6e,$60
+LLAPTND	equ	*
+LLAPLEN	equ	(LLAPTND-LLAPSTR)
+
+*
+* Data for "ALWAYS!!"
+*
+ALWSSTR	fcb	$60,$41,$4c,$57,$41,$59,$53,$61
+	fcb	$61,$60
+ALWSTND	equ	*
+ALWSLEN	equ	(ALWSTND-ALWSSTR)
 
 *
 * Multiply note value by 0.029983521 for note frequency (multiplied by 2?)
