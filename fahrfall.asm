@@ -2213,7 +2213,7 @@ INTRO	jsr	CLRSCRN		Clear the screen to black
 
 	ldx	#MSTRSTR	Indicate that this is the "final" release...
 	ldy	#(SCNBASE+48*SCNWIDT+8)
-	lda	#(MSTRSLN-MSTRSTR)
+	lda	#MSTRSLN
 	jsr	DRWSTR
 
 	leas	-2,s		Init time-out counter values
@@ -6204,6 +6204,7 @@ SONGEND	equ	*
 *
 MSTRSTR	fcb	$20,$0d,$01,$13,$14,$05,$12,$20
 	fcb	$05,$04,$09,$14,$09,$0f,$0e,$20
-MSTRSLN	equ	*
+MSTREND	equ	*
+MSTRSLN	equ	(MSTREND-MSTRSTR)
 
 	end	INIT
