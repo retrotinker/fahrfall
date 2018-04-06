@@ -219,12 +219,27 @@ INIT	equ	*		Basic one-time setup goes here!
 	sta     $ff41
 	nop
 	nop
+	nop
+	nop
+	nop
+	nop
+	nop
 	lda     #$bf		Disable channel 1
 	sta     $ff41
 	nop
 	nop
+	nop
+	nop
+	nop
+	nop
+	nop
 	lda     #$df		Disable channel 2
 	sta     $ff41
+	nop
+	nop
+	nop
+	nop
+	nop
 	nop
 	nop
 	lda     #$ff		Disable channel 3
@@ -1806,12 +1821,30 @@ GMOVOUT	lda	SNDLDAT		Clear the sound output
 	sta     $ff41
 	nop
 	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
 	lda     #$bf		Disable channel 1
 	sta     $ff41
 	nop
 	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
 	lda     #$df		Disable channel 2
 	sta     $ff41
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
 	nop
 	nop
 	lda     #$ff		Disable channel 3
@@ -2352,12 +2385,27 @@ INTRXCS	jsr	[INPREAD]	Read input, flags returned in B
 	sta     $ff41
 	nop
 	nop
+	nop
+	nop
+	nop
+	nop
+	nop
 	lda     #$bf		Disable channel 1
 	sta     $ff41
 	nop
 	nop
+	nop
+	nop
+	nop
+	nop
+	nop
 	lda     #$df		Disable channel 2
 	sta     $ff41
+	nop
+	nop
+	nop
+	nop
+	nop
 	nop
 	nop
 	lda     #$ff		Disable channel 3
@@ -2975,12 +3023,27 @@ ISTEXIT	jsr	[INPREAD]	Read input, flags returned in B
 	sta     $ff41
 	nop
 	nop
+	nop
+	nop
+	nop
+	nop
+	nop
 	lda     #$bf		Disable channel 1
 	sta     $ff41
 	nop
 	nop
+	nop
+	nop
+	nop
+	nop
+	nop
 	lda     #$df		Disable channel 2
 	sta     $ff41
+	nop
+	nop
+	nop
+	nop
+	nop
 	nop
 	nop
 	lda     #$ff		Disable channel 3
