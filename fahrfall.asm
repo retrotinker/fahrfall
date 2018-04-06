@@ -7120,6 +7120,12 @@ MSTRSTR	fcb	$20,$0d,$01,$13,$14,$05,$12,$20
 MSTREND	equ	*
 MSTRSLN	equ	(MSTREND-MSTRSTR)
 
+	align	$100,$ff
+
+	ifdef ROM
+	org	$eb00
+	endif
+
 HISCSND
 	includebin "high-score.dat"
 HISCEND
