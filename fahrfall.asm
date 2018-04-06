@@ -3211,9 +3211,133 @@ HOFSCLP	lda	#3		Set size for initials string
 	sta	1,s
 	clr	,s
 
-HOFSYNC	lda	$ff03		Wait for Vsync
-	bpl	HOFSYNC
-	lda	$ff02
+	ldx	#FUGSTRT	Setup in-game background music
+	ifdef GMC
+	lda	,x+
+	else
+	lda	,x
+	endif
+	sta	NOTEDLY
+	ifdef DAC
+	ldd	1,x
+	std	NOTEINC
+	leax	3,x
+	stx	NOTENXT
+	lda	#WAVESIZ
+	sta	NOTESTP
+	endif
+	ifdef GMC
+	ldb	,x+
+	beq	.2?
+.1?	lda	,x+
+	sta	$ff41
+	nop
+	nop
+	nop
+	nop
+	decb
+	bne	.1?
+.2?	stx	NOTENXT
+	lda	$ff23           Enable MUX audio output
+	ora	#$38
+	sta	$ff23
+	endif
+
+HOFSYNC
+	ifdef DAC
+	lda	$ff23		Enable MUX audio output
+	ora	#$38
+	sta	$ff23
+
+	tst	NOTEINC		Bump the DAC, only when notes are playing
+	beq	.1?
+	ldx	#HUMFORM
+	ldb	HUMSTEP
+	lda	b,x
+	sta	$ff20
+	endif
+.1?	lda	$ff03		Wait for Vsync
+	bmi	.3?
+	ifdef DAC
+	lda	$ff01
+	bpl	.1?
+	lda	$ff00
+	ldd	NOTEINC
+	addd	NOTECNT
+	std	NOTECNT
+	bcc	.1?
+	ldx	#WAVEFRM
+	ldb	NOTESTP
+	decb
+	bne	.2?
+	ldb	#WAVESIZ
+.2?	stb	NOTESTP
+	ldb	b,x
+	stb	$ff20
+	endif
+	bra	.1?
+.3?	lda	$ff02
+	dec	NOTEDLY
+	bne	.5?
+	ldx	NOTENXT
+	ifdef GMC
+	cmpx	#FUGUEND
+	blt	.11?
+	lda	$ff23           Disable MUX audio output
+	anda	#$f7
+	sta	$ff23
+	bra	.5?
+.11?	lda	,x+
+	else
+	lda	,x
+	endif
+	sta	NOTEDLY
+	ifdef GMC
+	ldb	,x+
+	beq	.10?
+.9?	lda	,x+
+	sta	$ff41
+	nop
+	nop
+	nop
+	nop
+	decb
+	bne	.9?
+.10?	equ	*
+	else
+	ldd	1,x
+	std	NOTEINC
+	leax	3,x
+	cmpx	#PRELEND
+	blt	.4?
+	clr	NOTEDLY
+	clr	NOTEINC
+	clr	NOTEINC+1
+	lda	#WAVESIZ
+	sta	NOTESTP
+	endif
+.4?	stx	NOTENXT
+.5?	equ	*
+	ifdef DAC
+	tst	NOTEINC		Reset the DAC output (helps w/ noise)
+	bne	.6?
+	clra
+	bra	.7?
+.6?
+	ldx	#HUMFORM
+	ldb	HUMSTEP
+	decb
+	bne	.8?
+	ldb	#HUMSIZE
+.8?	stb	HUMSTEP
+	eorb	#(HUMSIZE/2)
+	lda	b,x
+.7?	sta	$ff20
+
+	lda	$ff23		Disable MUX audio output
+	anda	#$f7
+	sta	$ff23
+	endif
 
 	jsr	DRWFLMS		Draw the flames at the top center of the screen
 
@@ -3229,9 +3353,42 @@ HOFSYNC	lda	$ff03		Wait for Vsync
 	dec	1,s
 	beq	HOFEXCC
 
-HOFLOOP	bra	HOFSYNC
+HOFLOOP	lbra	HOFSYNC
 
-HOFEXCS	leas	2,s		Clean-up stack
+HOFEXCS
+	ifdef GMC
+	lda     #$9f		Disable channel 0
+	sta     $ff41
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	lda     #$bf		Disable channel 1
+	sta     $ff41
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	lda     #$df		Disable channel 2
+	sta     $ff41
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	lda     #$ff		Disable channel 3
+	sta     $ff41
+	endif
+
+	leas	2,s		Clean-up stack
 	orcc	#$01		Indicate game start
 	rts
 
@@ -4499,6 +4656,439 @@ PRLSTRT	fcb	$01
 	fcb	$03,$9f
 	fcb	$bf,$df
 PRELEND	equ	*
+
+FUGSTRT	fcb	$01
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$13
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$08
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$13
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$08
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$19
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$0c
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+	fcb	$03,$8c,$11,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$0b
+	fcb	$01,$9c
+	fcb	$08
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$03,$8d,$0f,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$0b
+	fcb	$01,$9c
+	fcb	$08
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$03,$8e,$0e,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$08
+	fcb	$01,$9c
+	fcb	$08
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$09,$85,$0d,$98
+	fcb	$a3,$0b,$98
+	fcb	$cd,$0f,$98
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$13
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$08
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+	fcb	$09,$85,$0d,$98
+	fcb	$a3,$0b,$98
+	fcb	$cd,$0f,$98
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$13
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$08
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+	fcb	$09,$85,$0d,$98
+	fcb	$a3,$0b,$98
+	fcb	$cd,$0f,$98
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$13
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$10
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+	fcb	$03,$8e,$0e,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$0b
+	fcb	$01,$9c
+	fcb	$08
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$03,$8d,$0f,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$0b
+	fcb	$01,$9c
+	fcb	$08
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$03,$8c,$11,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$08
+	fcb	$01,$9c
+	fcb	$08
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$13
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$08
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$13
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$08
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$19
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$0c
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+	fcb	$03,$8c,$11,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$0b
+	fcb	$01,$9c
+	fcb	$08
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$03,$8d,$0f,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$0b
+	fcb	$01,$9c
+	fcb	$08
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$03,$8e,$0e,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$08
+	fcb	$01,$9c
+	fcb	$08
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$09,$85,$0d,$98
+	fcb	$a3,$0b,$98
+	fcb	$cd,$0f,$98
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$26
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$20
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+	fcb	$09,$8e,$0e,$98
+	fcb	$ae,$0b,$98
+	fcb	$cc,$11,$98
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$26
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$20
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$13
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$08
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$13
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$08
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$19
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$0c
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+	fcb	$03,$8c,$11,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$0b
+	fcb	$01,$9c
+	fcb	$08
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$03,$8d,$0f,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$0b
+	fcb	$01,$9c
+	fcb	$08
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$03,$8e,$0e,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$08
+	fcb	$01,$9c
+	fcb	$08
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$09,$85,$0d,$98
+	fcb	$a3,$0b,$98
+	fcb	$cd,$0f,$98
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$13
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$08
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+	fcb	$09,$85,$0d,$98
+	fcb	$a3,$0b,$98
+	fcb	$cd,$0f,$98
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$13
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$08
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+	fcb	$09,$85,$0d,$98
+	fcb	$a3,$0b,$98
+	fcb	$cd,$0f,$98
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$13
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$10
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+	fcb	$03,$8e,$0e,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$0b
+	fcb	$01,$9c
+	fcb	$08
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$03,$8d,$0f,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$0b
+	fcb	$01,$9c
+	fcb	$08
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$03,$8c,$11,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$08
+	fcb	$01,$9c
+	fcb	$08
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$13
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$08
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$13
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$08
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$19
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$0c
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+	fcb	$03,$8c,$11,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$0b
+	fcb	$01,$9c
+	fcb	$08
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$03,$8d,$0f,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$0b
+	fcb	$01,$9c
+	fcb	$08
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$03,$8e,$0e,$98
+	fcb	$01
+	fcb	$01,$94
+	fcb	$08
+	fcb	$01,$9c
+	fcb	$08
+	fcb	$01,$9f
+	fcb	$01
+	fcb	$09,$8e,$0e,$98
+	fcb	$ae,$0b,$98
+	fcb	$cc,$11,$98
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$26
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$20
+	fcb	$03,$9f
+	fcb	$bf,$df
+	fcb	$01
+	fcb	$09,$8e,$13,$98
+	fcb	$ad,$0f,$98
+	fcb	$cc,$16,$98
+	fcb	$01
+	fcb	$03,$94
+	fcb	$b4,$d4
+	fcb	$26
+	fcb	$03,$9c
+	fcb	$bc,$dc
+	fcb	$10
+	fcb	$03,$9f
+	fcb	$bf,$df
+
+FUGUEND	equ	*
 
 SNGSTRT
 *#
@@ -6006,6 +6596,7 @@ OVTSTRT	fcb	$40		Start with a delay, so "FAHRFALL" can paint...
 	fdb	00
 OVRTEND	equ	*
 
+FUGSTRT
 PRLSTRT	fcb	$15
 	fdb	NOTE_C
 	fcb	$02
@@ -6039,6 +6630,7 @@ PRLSTRT	fcb	$15
 	fcb	$02
 	fdb	00
 PRELEND	equ	*
+FUGUEND	equ	*
 
 SNGSTRT	fcb	$15
 	fdb	NOTE_F
