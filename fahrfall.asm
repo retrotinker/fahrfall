@@ -1906,6 +1906,52 @@ GVHFREC	ldb	a,x		Load current score digit
 	sta	,-y
 	sta	,-y
 
+GVHTALK	lda	#$20
+.1?	ldb	$ff03
+	bpl	.1?
+	ldb	$ff02
+	deca
+	bne	.1?
+
+	lda	#$80		Zero DAC output
+	sta	$ff20
+	lda	$ff23           Enable MUX audio output
+	ora	#$38
+	sta	$ff23
+	lda	#$34		Select DAC output
+	sta	$ff01
+	lda	#$34
+	sta	$ff03
+	ldx	#HISCSND
+	ldb	,x+
+.1?	lda	$ff01		Wait for Hsync
+	bpl	.1?
+	lda	$ff00
+.2?	lda	$ff01		Wait for Hsync
+	bpl	.2?
+	lda	$ff00
+.3?	lda	$ff01		Wait for Hsync
+	bpl	.3?
+	lda	$ff00
+.4?	lda	$ff01		Wait for Hsync
+	bpl	.4?
+	lda	$ff00
+	stb	$ff20
+	cmpx	#HISCEND
+	bge	.5?
+	ldb	,x+
+	bra	.1?
+.5?	lda	$ff23           Disable MUX audio output
+	anda	#$f7
+	sta	$ff23
+
+	lda	#$20
+.1?	ldb	$ff03
+	bpl	.1?
+	ldb	$ff02
+	deca
+	bne	.1?
+
 	bsr	HFISCRN		Show the induction screen
 	bra	GVHFCKX		Then exit...
 
@@ -6434,5 +6480,9 @@ MSTRSTR	fcb	$20,$0d,$01,$13,$14,$05,$12,$20
 	fcb	$05,$04,$09,$14,$09,$0f,$0e,$20
 MSTREND	equ	*
 MSTRSLN	equ	(MSTREND-MSTRSTR)
+
+HISCSND
+	includebin "high-score.dat"
+HISCEND
 
 	end	INIT
