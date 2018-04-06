@@ -1953,7 +1953,54 @@ GVHTALK	lda	#$20
 	bne	.1?
 
 	bsr	HFISCRN		Show the induction screen
-	bra	GVHFCKX		Then exit...
+
+GVCTALK	lda	#$20
+.1?	ldb	$ff03
+	bpl	.1?
+	ldb	$ff02
+	deca
+	bne	.1?
+
+	lda	#$80		Zero DAC output
+	sta	$ff20
+	lda	$ff23           Enable MUX audio output
+	ora	#$38
+	sta	$ff23
+	lda	#$34		Select DAC output
+	sta	$ff01
+	lda	#$34
+	sta	$ff03
+	ldx	#COINSND
+	ldb	,x+
+.1?	lda	$ff01		Wait for Hsync
+	bpl	.1?
+	lda	$ff00
+.2?	lda	$ff01		Wait for Hsync
+	bpl	.2?
+	lda	$ff00
+.3?	lda	$ff01		Wait for Hsync
+	bpl	.3?
+	lda	$ff00
+.4?	lda	$ff01		Wait for Hsync
+	bpl	.4?
+	lda	$ff00
+	stb	$ff20
+	cmpx	#COINEND
+	bge	.5?
+	ldb	,x+
+	bra	.1?
+.5?	lda	$ff23           Disable MUX audio output
+	anda	#$f7
+	sta	$ff23
+
+	lda	#$20
+.1?	ldb	$ff03
+	bpl	.1?
+	ldb	$ff02
+	deca
+	bne	.1?
+
+	lbra	GVHFCKX		Then exit...
 
 *
 * "Hall Of Fame" induction screen is from here to HFILOOP
@@ -6484,5 +6531,9 @@ MSTRSLN	equ	(MSTREND-MSTRSTR)
 HISCSND
 	includebin "high-score.dat"
 HISCEND
+
+COINSND
+	includebin "coin.dat"
+COINEND
 
 	end	INIT
