@@ -4273,7 +4273,7 @@ OVTSTRT	fcb	$40
 	fcb	$01
 	fcb	$09,$8e,$13,$98
 	fcb	$ad,$0f,$98
-	fcb	$cc,$16,$98
+	fcb	$cb,$17,$98
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -4389,7 +4389,7 @@ OVTSTRT	fcb	$40
 *
 	fcb	$09,$8e,$13,$98
 	fcb	$ad,$0f,$b8
-	fcb	$cc,$16,$d8
+	fcb	$cb,$17,$d8
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -4403,7 +4403,7 @@ OVTSTRT	fcb	$40
 *
 	fcb	$09,$8e,$13,$98
 	fcb	$ad,$0f,$b8
-	fcb	$cc,$16,$d8
+	fcb	$cb,$17,$d8
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -4635,7 +4635,7 @@ PRLSTRT	fcb	$01
 	fcb	$01
 	fcb	$09,$8e,$13,$98
 	fcb	$ad,$0f,$98
-	fcb	$cc,$16,$98
+	fcb	$cb,$17,$98
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -4692,7 +4692,7 @@ PRELEND	equ	*
 FUGSTRT	fcb	$01
 	fcb	$09,$8e,$13,$98
 	fcb	$ad,$0f,$98
-	fcb	$cc,$16,$98
+	fcb	$cb,$17,$98
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -4705,7 +4705,7 @@ FUGSTRT	fcb	$01
 	fcb	$01
 	fcb	$09,$8e,$13,$98
 	fcb	$ad,$0f,$98
-	fcb	$cc,$16,$98
+	fcb	$cb,$17,$98
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -4718,7 +4718,7 @@ FUGSTRT	fcb	$01
 	fcb	$01
 	fcb	$09,$8e,$13,$98
 	fcb	$ad,$0f,$98
-	fcb	$cc,$16,$98
+	fcb	$cb,$17,$98
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -4818,7 +4818,7 @@ FUGSTRT	fcb	$01
 	fcb	$01
 	fcb	$09,$8e,$13,$98
 	fcb	$ad,$0f,$98
-	fcb	$cc,$16,$98
+	fcb	$cb,$17,$98
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -4831,7 +4831,7 @@ FUGSTRT	fcb	$01
 	fcb	$01
 	fcb	$09,$8e,$13,$98
 	fcb	$ad,$0f,$98
-	fcb	$cc,$16,$98
+	fcb	$cb,$17,$98
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -4844,7 +4844,7 @@ FUGSTRT	fcb	$01
 	fcb	$01
 	fcb	$09,$8e,$13,$98
 	fcb	$ad,$0f,$98
-	fcb	$cc,$16,$98
+	fcb	$cb,$17,$98
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -4907,7 +4907,7 @@ FUGSTRT	fcb	$01
 	fcb	$01
 	fcb	$09,$8e,$13,$98
 	fcb	$ad,$0f,$98
-	fcb	$cc,$16,$98
+	fcb	$cb,$17,$98
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -4920,7 +4920,7 @@ FUGSTRT	fcb	$01
 	fcb	$01
 	fcb	$09,$8e,$13,$98
 	fcb	$ad,$0f,$98
-	fcb	$cc,$16,$98
+	fcb	$cb,$17,$98
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -4933,7 +4933,7 @@ FUGSTRT	fcb	$01
 	fcb	$01
 	fcb	$09,$8e,$13,$98
 	fcb	$ad,$0f,$98
-	fcb	$cc,$16,$98
+	fcb	$cb,$17,$98
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -5033,7 +5033,7 @@ FUGSTRT	fcb	$01
 	fcb	$01
 	fcb	$09,$8e,$13,$98
 	fcb	$ad,$0f,$98
-	fcb	$cc,$16,$98
+	fcb	$cb,$17,$98
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -5046,7 +5046,7 @@ FUGSTRT	fcb	$01
 	fcb	$01
 	fcb	$09,$8e,$13,$98
 	fcb	$ad,$0f,$98
-	fcb	$cc,$16,$98
+	fcb	$cb,$17,$98
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -5059,7 +5059,7 @@ FUGSTRT	fcb	$01
 	fcb	$01
 	fcb	$09,$8e,$13,$98
 	fcb	$ad,$0f,$98
-	fcb	$cc,$16,$98
+	fcb	$cb,$17,$98
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -5109,7 +5109,7 @@ FUGSTRT	fcb	$01
 	fcb	$01
 	fcb	$09,$8e,$13,$98
 	fcb	$ad,$0f,$98
-	fcb	$cc,$16,$98
+	fcb	$cb,$17,$98
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -5247,7 +5247,7 @@ SNGSTRT
 *
 	fcb	$09,$8e,$13,$96
 	fcb	$ad,$0f,$96
-	fcb	$cc,$16,$96
+	fcb	$cb,$17,$96
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -5341,7 +5341,7 @@ SNGSTRT
 *
 	fcb	$09,$8e,$13,$96
 	fcb	$ad,$0f,$96
-	fcb	$cc,$16,$96
+	fcb	$cb,$17,$96
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -5377,7 +5377,7 @@ SNGSTRT
 *
 	fcb	$09,$8e,$13,$96
 	fcb	$ad,$0f,$96
-	fcb	$cc,$16,$96
+	fcb	$cb,$17,$96
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -5419,7 +5419,7 @@ SNGSTRT
 *
 	fcb	$09,$8e,$13,$96
 	fcb	$ad,$0f,$96
-	fcb	$cc,$16,$96
+	fcb	$cb,$17,$96
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -5447,7 +5447,7 @@ SNGSTRT
 *
 	fcb	$09,$8e,$13,$96
 	fcb	$ad,$0f,$96
-	fcb	$cc,$16,$96
+	fcb	$cb,$17,$96
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -5489,7 +5489,7 @@ SNGSTRT
 *
 	fcb	$09,$8e,$13,$96
 	fcb	$ad,$0f,$96
-	fcb	$cc,$16,$96
+	fcb	$cb,$17,$96
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -5643,7 +5643,7 @@ SNGSTRT
 *
 	fcb	$09,$8e,$13,$96
 	fcb	$ad,$0f,$96
-	fcb	$cc,$16,$96
+	fcb	$cb,$17,$96
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -5737,7 +5737,7 @@ SNGSTRT
 *
 	fcb	$09,$8e,$13,$96
 	fcb	$ad,$0f,$96
-	fcb	$cc,$16,$96
+	fcb	$cb,$17,$96
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -5773,7 +5773,7 @@ SNGSTRT
 *
 	fcb	$09,$8e,$13,$96
 	fcb	$ad,$0f,$96
-	fcb	$cc,$16,$96
+	fcb	$cb,$17,$96
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -5815,7 +5815,7 @@ SNGSTRT
 *
 	fcb	$09,$8e,$13,$96
 	fcb	$ad,$0f,$96
-	fcb	$cc,$16,$96
+	fcb	$cb,$17,$96
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -5843,7 +5843,7 @@ SNGSTRT
 *
 	fcb	$09,$8e,$13,$96
 	fcb	$ad,$0f,$96
-	fcb	$cc,$16,$96
+	fcb	$cb,$17,$96
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -5885,7 +5885,7 @@ SNGSTRT
 *
 	fcb	$09,$8e,$13,$96
 	fcb	$ad,$0f,$96
-	fcb	$cc,$16,$96
+	fcb	$cb,$17,$96
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -6095,7 +6095,7 @@ SNGSTRT
 *
 	fcb	$09,$8e,$13,$96
 	fcb	$ad,$0f,$96
-	fcb	$cc,$16,$96
+	fcb	$cb,$17,$96
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -6189,7 +6189,7 @@ SNGSTRT
 *
 	fcb	$09,$8e,$13,$96
 	fcb	$ad,$0f,$96
-	fcb	$cc,$16,$96
+	fcb	$cb,$17,$96
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -6225,7 +6225,7 @@ SNGSTRT
 *
 	fcb	$09,$8e,$13,$96
 	fcb	$ad,$0f,$96
-	fcb	$cc,$16,$96
+	fcb	$cb,$17,$96
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -6267,7 +6267,7 @@ SNGSTRT
 *
 	fcb	$09,$8e,$13,$96
 	fcb	$ad,$0f,$96
-	fcb	$cc,$16,$96
+	fcb	$cb,$17,$96
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -6295,7 +6295,7 @@ SNGSTRT
 *
 	fcb	$09,$8e,$13,$96
 	fcb	$ad,$0f,$96
-	fcb	$cc,$16,$96
+	fcb	$cb,$17,$96
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
@@ -6337,7 +6337,7 @@ SNGSTRT
 *
 	fcb	$09,$8e,$13,$96
 	fcb	$ad,$0f,$96
-	fcb	$cc,$16,$96
+	fcb	$cb,$17,$96
 	fcb	$01
 	fcb	$03,$94
 	fcb	$b4,$d4
