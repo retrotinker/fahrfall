@@ -3803,7 +3803,8 @@ JOYRDRT	orb	#JOYRT		Joystick points right
 
 JOYRDLT	orb	#JOYLT		Joystick points left
 
-JOYRDUD	lda	#$3c		Read the up/down axis of the left joystick
+JOYRDUD	bra	JYREADX
+	lda	#$3c		Read the up/down axis of the left joystick
 	sta	$ff01
 
 	lda	#$65		Test for low value on axis
