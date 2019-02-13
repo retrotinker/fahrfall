@@ -1972,7 +1972,7 @@ GVHTALK	lda	#$20
 	lda	$ff00
 	stb	$ff20
 	cmpx	#HISCEND
-	bge	.5?
+	bhs	.5?
 	ldb	,x+
 	bra	.1?
 .5?	lda	$ff23           Disable MUX audio output
@@ -2020,7 +2020,7 @@ GVCTALK	lda	#$20
 	lda	$ff00
 	stb	$ff20
 	cmpx	#COINEND
-	bge	.5?
+	bhs	.5?
 	ldb	,x+
 	bra	.1?
 .5?	lda	$ff23           Disable MUX audio output
