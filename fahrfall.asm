@@ -242,6 +242,15 @@ INIT	equ	*		Basic one-time setup goes here!
 	nop
 	nop
 	nop
+	lda     #$e6		Setup channel 3
+	sta     $ff41
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
 	lda     #$ff		Disable channel 3
 	sta     $ff41
 	endif
