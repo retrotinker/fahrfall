@@ -313,9 +313,14 @@ INIT	equ	*		Basic one-time setup goes here!
 	lda	#SQWVBIT
 	ora	$ff22
 	sta	PDDSEBL		Store PIA DDIR sound enable value
+	ifndef GMC
 	sta	$ff22
+	endif
 	anda	#($ff-SQWVBIT)
 	sta	PDDSDBL		Store PIA DDIR sound disable value
+	ifdef GMC
+	sta	$ff22
+	endif
 	lda	$ff23
 
 	ifdef GMC
@@ -652,15 +657,26 @@ VSYNC	equ	*
 	tst	GAMFLGS		Movement?  Check for platform collision
 	bpl	SNDDSBL		If not moving on a platform, disable sound
 
+	ifndef GMC
 	lda	#SQWVBIT	Enable sound effects
 	ora	SNDHDAT
 	sta	SNDHDAT
+	else
+	lda     #$f4		Turn-up channel 3
+	sta     $ff41
+	endif
 
 	bra	SCORCHK
 
-SNDDSBL	lda	#($ff-SQWVBIT)	Disable sound effects
+SNDDSBL
+	ifndef GMC
+	lda	#($ff-SQWVBIT)	Disable sound effects
 	anda	SNDHDAT
 	sta	SNDHDAT
+	else
+	lda     #$ff		Turn-down channel 3
+	sta     $ff41
+	endif
 
 SCORCHK	jsr	CMPSCOR		Compute score
 
@@ -1232,8 +1248,10 @@ SCRLPNT	lda	FRAMCNT
 	bita	#$01
 	bne	SCROUT1
 
+	ifndef GMC
 	lda	SNDHDAT		Bump the 30 Hz square wave generator
 	sta	$ff22
+	endif
 
 	lda	SCRTCOT		Retrieve last outer scroll top color data
 	tfr     a,b		Advance the color data
@@ -1247,8 +1265,11 @@ SCRLPNT	lda	FRAMCNT
 
 	bra	SCROTLP
 
-SCROUT1	lda	SNDLDAT		Bump the 30 Hz square wave generator
+SCROUT1
+	ifndef GMC
+	lda	SNDLDAT		Bump the 30 Hz square wave generator
 	sta	$ff22
+	endif
 
 	lda	SCRCCOT		Retrieve last outer scroll current color data
 	tfr     a,b		Recreate B half of the color data
@@ -1292,6 +1313,7 @@ SCRMO0	lda	SCRTCMO		Retrieve last outer-mid scroll top color data
 	ldy	#(SCNBASE+SCNQRTR)
 	pshs	y
 
+	ifndef GMC
 	lda	SNDLDAT		Enable square wave sound output
 	sta	$ff22
 	lda	PDDEABL
@@ -1300,6 +1322,7 @@ SCRMO0	lda	SCRTCMO		Retrieve last outer-mid scroll top color data
 	sta	$ff22
 	lda	PDDDABL
 	sta	$ff23
+	endif
 
 	bra	SCRMOLP
 
@@ -1310,6 +1333,7 @@ SCRMO1	ldx	#(SCNBASE+SCNQRTR)	Paint 2nd qtr...
 SCRMO2	ldx	#(SCNBASE+SCNHALF)	Paint 3rd qtr...
 	ldy	#(SCNBASE+SCN3QTR)
 
+	ifndef GMC
 	lda	SNDLDAT		Disable square wave sound output
 	sta	$ff22
 	lda	PDDEABL
@@ -1318,6 +1342,7 @@ SCRMO2	ldx	#(SCNBASE+SCNHALF)	Paint 3rd qtr...
 	sta	$ff22
 	lda	PDDDABL
 	sta	$ff23
+	endif
 
 	bra	SCRMOCM
 
