@@ -4206,23 +4206,20 @@ ALWSSTR	fcb	$60,$41,$4c,$57,$41,$59,$53,$61
 ALWSTND	equ	*
 ALWSLEN	equ	(ALWSTND-ALWSSTR)
 
-*
-* Multiply note value by 0.029983521 for note frequency (multiplied by 2?)
-*	(value is 15720 / (8 * 65536))
-*
-*							target		calculated	n		int(n)		hex(n)				encoded
-* NOTE_A2							880.00				142.045		142		08E	00 1000 1110		8E 08
-* NOTE_G2							783.99				159.441		159		09F	00 1001 1111		8F 09
-NOTE_F2	equ	23294		Actually "F5"...	698.46		698.436		178.971		179		0B3	00 1011 0011		83 0B
-NOTE_E	equ	21987					659.25		659.247		189.610		190		0BE	00 1011 1110		8E 0B
-NOTE_D	equ	19588					587.33		587.317		212.832		213		0D5	00 1101 0101		85 0D
-NOTE_C	equ	17451					523.25		523.242		238.895		239		0EE	00 1110 1110		8E 0E
-NOTE_B	equ	16471					493.88		493.858		253.109		253		0FD	00 1111 1101		8D 0F
-NOTE_A	equ	14674					440.00		439.978		284.105		284		11C	01 0001 1100		8C 11
-NOTE_G	equ	13073					392.00		391.974		318.899		319		13E	01 0011 1110		8E 13
-NOTE_F	equ	11647		Actually "F4"...	349.23		349.218		357.943		358		165	01 0110 0101		85 16
-* NOTE_E0							329.63				364.044		364		16C	01 0110 1100		8C 16
-* NOTE_D0							293.66				425.662		426		1A9	01 1010 1001		89 1A
+* NOTE_A2							880.00		8E 08
+* NOTE_G2							783.99		8F 09
+NOTE_F2		equ	23294		Actually "F5"...	698.46		83 0B
+NOTE_E		equ	21987					659.25		8E 0B
+NOTE_D		equ	19588					587.33		85 0D
+NOTE_C		equ	17451		Actually "C5"...	523.25		8E 0E
+NOTE_B		equ	16471					493.88		8D 0F
+NOTE_A		equ	14674					440.00		8C 11
+NOTE_G		equ	13073					392.00		8E 13
+NOTE_F		equ	11647		Actually "F4"...	349.23		85 16
+* NOTE_E0							329.63		8B 17
+* NOTE_D0							293.66		89 1A
+* NOTE_C0				Actually "C4"...	261.63		8D 1D
+* NOTE_B0				Actually "B3"...	246.94		8A 1F
 
 	ifdef GMC
 
