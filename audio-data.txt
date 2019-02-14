@@ -1,0 +1,30 @@
+DAC-based audio sample playback is a single channel, represented as
+8-bit unsigned integers. This is represented on the sox command line
+by the following parameters:
+
+	"-t raw -c 1 -b 8 -e unsigned-integer"
+
+The sample rate is derived from the 15700 Hz Horizontal Sync signal,
+and in Farhrfall that rate is divided by four. This yields a 3925 Hz
+sample rate, represented by the following sox command line parameter:
+
+	"-r 3925"
+
+Converting a WAV to a block of binary audio data with sox:
+
+	sox high-score.wav -t raw -c 1 -b 8 -e unsigned-integer -r 3925 \
+		high-score.dat
+
+And how to convert form the binary audio data back to WAV:
+
+	sox -t raw -c 1 -b 8 -e unsigned-integer -r 3925 high-score.dat \
+		high-score.wav
+
+Conversion in either direction can also have any other available and
+appropriate sox transformations (e.g. volume adjustment) applied.
+
+Other utilities from the sox suite use the same command line
+parameters. This allows you to playback or even record audio data
+directly to the desired format:
+
+	play -t raw -c 1 -b 8 -e unsigned-integer -r 3925 high-score.dat
