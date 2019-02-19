@@ -19,12 +19,16 @@ all: $(TARGETS)
 	cecb copy -2 -b -g $< \
 		$(@),$$(echo $< | cut -c1-8 | tr [:lower:] [:upper:])
 
+fahrfall.bin: high-score.dat coin.dat
+
 fahrfall.dsk: fahrfall.bin fahrfall.bas LICENSE.TXT
 	rm -f $@
 	decb dskini $@
 	decb copy -2 -b fahrfall.bin $@,FAHRFALL.BIN
 	decb copy -0 -b -l -t fahrfall.bas $@,FAHRFALL.BAS
 	decb copy -3 -a -l LICENSE.TXT $@,LICENSE.TXT
+
+fahrfall.ccc: high-score.dat coin.dat
 
 fahrfall.16k: fahrfall.ccc
 	rm -f $@
