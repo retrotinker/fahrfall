@@ -2164,6 +2164,9 @@ HFISCLP	lda	#3		Set size for initials string
 	bitb	#MOVRT
 	bne	HFIMVRT
 
+	jsr	[$A000]		Check for keyboard input
+	bne	HFIKYPR
+
 HFITIMO	dec	,s		Decrement time-out counter
 	bne	HFILOOP
 	dec	1,s
@@ -2191,6 +2194,11 @@ HFIPAU1	lda	$ff03		Wait for Vsync
 	sta	1,s
 
 	lbra	HFISYNC
+
+HFIKYPR	ldy	3,s		Get pointer to current HOF initial
+	sta	,y		Store new HOF initial
+
+	bra	HFIPAUS
 
 HFIMVLT	
 	ldy	3,s		Get pointer to current HOF initial
